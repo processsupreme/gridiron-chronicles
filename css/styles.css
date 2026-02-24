@@ -1876,7 +1876,14 @@ body::before {
   .drought-row-last { display:none; }
 
   /* ── MODAL ──────────────────────── */
-  .modal { max-height:95vh; }
+  .modal { max-height:92vh; }
+  .modal-close {
+    position:sticky; top:0; right:0; float:right;
+    z-index:10; margin:8px 8px 0 0;
+    padding:10px 14px; font-size:16px;
+    background:rgba(20,18,18,0.95); border:1px solid rgba(255,255,255,0.12);
+    border-radius:8px; backdrop-filter:blur(8px); -webkit-backdrop-filter:blur(8px);
+  }
   .stat-grid-3 { grid-template-columns:1fr 1fr; }
   .stat-grid-3 .stat-box:last-child { grid-column:1/-1; }
 }

@@ -1381,6 +1381,7 @@ function showManagerModal(nickname, highlightYear) {
 
   render();
   document.getElementById('modal-overlay').classList.add('open');
+  document.body.style.overflow = 'hidden';
   setTimeout(() => { const mc = document.querySelector('.modal-close'); if(mc) mc.focus(); }, 50);
   if (highlightYear) {
     setTimeout(() => {
@@ -1655,9 +1656,13 @@ function showSeasonModal(year) {
 
   `;
   document.getElementById('modal-overlay').classList.add('open');
+  document.body.style.overflow = 'hidden';
 }
 
-function closeModal() { document.getElementById('modal-overlay').classList.remove('open'); }
+function closeModal() {
+  document.getElementById('modal-overlay').classList.remove('open');
+  document.body.style.overflow = '';
+}
 
 function showTab(tab, btn) {
   if (tab === 'weekly') {
@@ -2238,6 +2243,7 @@ function showH2HModal(mgrA, mgrB) {
     <div style="max-height:380px;overflow-y:auto">${gamesHTML}</div>
   `;
   document.getElementById('modal-overlay').classList.add('open');
+  document.body.style.overflow = 'hidden';
 }
 
 // ── MOBILE ROUTER ─────────────────────────────────────────────
@@ -2282,12 +2288,10 @@ function renderView(view) {
 
   document.querySelectorAll('.section[data-view]').forEach(function(s) {
     s.classList.remove('active');
-    s.style.display = 'none';
   });
   var activeSection = document.getElementById('tab-' + meta.tab);
   if (activeSection) {
     activeSection.classList.add('active');
-    activeSection.style.display = 'block';
   }
 
   document.querySelectorAll('.drawer-link').forEach(function(l) {
