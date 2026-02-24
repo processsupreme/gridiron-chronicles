@@ -177,14 +177,7 @@ body::before {
 @keyframes landingFadeUp {
   to { opacity:1; transform:translateY(0); }
 }
-@media(max-width:600px) {
-  .landing-stats { gap:6px 10px; padding:0 16px; }
-  .landing-cta { padding:14px 36px; }
-}
-@media(max-width:380px) {
-  .landing-stats { flex-direction:column; gap:8px; }
-  .landing-dot { display:none; }
-}
+/* Landing mobile handled in main mobile block */
 
 /* ── MASTHEAD ───────────────────────── */
 .top-bar {
@@ -1623,15 +1616,7 @@ body::before {
   background:rgba(255,255,255,0.12);
 }
 
-/* ── COMPARE: RESPONSIVE ──────────── */
-@media(max-width:600px) {
-  .cmp-edge-panel { grid-template-columns:1fr; gap:16px; text-align:center; }
-  .cmp-edge-center { order:-1; padding-bottom:12px; border-bottom:1px solid var(--wine-border); }
-  .cmp-h2h-record { flex-direction:column; align-items:center; gap:4px; }
-  .cmp-h2h-team, .cmp-h2h-team:first-child, .cmp-h2h-team:last-child { text-align:center; }
-  .cmp-h2h-detail { flex-wrap:wrap; }
-  .cmp-h2h-detail-label { min-width:auto; }
-}
+/* Compare responsive now handled in main mobile block below */
 
 /* ── SCROLLBAR ──────────────────────── */
 ::-webkit-scrollbar { width:3px; height:3px; }
@@ -1647,33 +1632,180 @@ body::before {
   letter-spacing:2px; text-transform:uppercase;
 }
 
-/* ── MOBILE ─────────────────────────── */
-@media(max-width:600px) {
-  .power-table th:nth-child(5), .power-table td:nth-child(5),
-  .power-table th:nth-child(3), .power-table td:nth-child(3) { display:none; }
+/* ══════════════════════════════════════
+   MOBILE — 768px and below
+   ══════════════════════════════════════ */
+:root {
+  --space-xs: 6px;
+  --space-sm: 10px;
+  --space-md: 16px;
+  --space-lg: 24px;
+}
+
+@media(max-width:768px) {
+
+  /* ── GLOBAL / SECTIONS ─────────── */
+  .section { padding:var(--space-lg) var(--space-md); }
+  .section-header { margin-bottom:var(--space-lg); }
+  .section-title { font-size:28px; letter-spacing:2px; }
+  .section-eyebrow { font-size:9px; letter-spacing:3px; margin-bottom:6px; }
+  .section-desc { font-size:13px; }
+  .footnote { padding:24px var(--space-md) 20px; font-size:9px; }
+
+  /* ── NAV ────────────────────────── */
+  .nav { justify-content:flex-start; gap:0; }
+  .nav-btn { font-size:11px; letter-spacing:1px; padding:12px 10px; }
+
+  /* ── MASTHEAD ───────────────────── */
+  .masthead { padding:32px var(--space-md) 16px; }
+  .masthead-logo { font-size:64px !important; }
+  .masthead-meta-1 { font-size:11px; letter-spacing:0.2em; }
+  .masthead-meta-2 { font-size:10px; margin-bottom:24px; }
+  .league-stats-strip { grid-template-columns:repeat(2, 1fr); }
+  .strip-stat { padding:12px 8px; }
+  .strip-stat-num { font-size:24px; }
+
+  /* ── CHAMPIONS GRID ────────────── */
+  .champions-grid {
+    grid-template-columns:repeat(2, 1fr);
+    gap:var(--space-sm);
+  }
+
+  /* ── STANDINGS TABLE ───────────── */
+  .power-table th:nth-child(3), .power-table td:nth-child(3),
+  .power-table th:nth-child(5), .power-table td:nth-child(5) { display:none; }
+
+  /* ── SEASONS PAGE ──────────────── */
+  .season-row {
+    grid-template-columns:auto 1fr;
+    gap:var(--space-sm);
+    padding:var(--space-md) 14px;
+  }
+  .season-year-col { min-width:52px; gap:4px; }
+  .season-year-big { font-size:22px; }
+  .season-ring-thumb { width:34px; height:34px; border-radius:6px; }
+  .season-content { gap:var(--space-xs); }
+  .season-top-row { gap:var(--space-xs); }
+  .season-champ-name { font-size:16px; }
+  .season-champ-mgr { font-size:9px; }
+  .season-record-tag { font-size:8px; padding:2px 5px; }
+  .season-bottom-row { gap:6px; flex-direction:column; align-items:flex-start; }
+  .season-stat-pill { font-size:10px; }
+  .season-stat-pill-label { font-size:9px; }
+  .season-stat-pill-sub {
+    max-width:120px; overflow:hidden;
+    text-overflow:ellipsis; white-space:nowrap;
+  }
+  .season-recap-btn {
+    width:100%; text-align:center;
+    margin-left:0; padding:8px 12px;
+    font-size:10px; margin-top:2px;
+  }
+  .season-meta > *:nth-child(n+3) { display:none; }
+
+  /* ── MANAGERS PAGE ─────────────── */
+  .managers-grid { grid-template-columns:1fr; gap:var(--space-sm); }
+  .manager-card { border-radius:var(--radius-sm); }
+  .manager-header { padding:var(--space-md) var(--space-md) 12px; }
+  .manager-full-name { font-size:20px; }
+  .manager-sub-name { font-size:10px; }
+  .manager-status { font-size:8px; padding:2px 6px; margin-top:6px; }
+  .manager-stats {
+    padding:var(--space-sm) var(--space-md);
+    display:grid; grid-template-columns:1fr 1fr;
+    gap:var(--space-xs);
+  }
+  .stat-pill {
+    padding:6px 8px; font-size:11px;
+    border-radius:6px; justify-content:center;
+    flex-direction:column; gap:2px; text-align:center;
+  }
+  .stat-pill-label { font-size:8px; }
+  .stat-pill.pill-titles { font-size:12px; padding:6px 8px; }
+  .manager-sig { padding:0 var(--space-md) 8px; font-size:8px; letter-spacing:1.5px; }
+  .manager-resume { padding:0 var(--space-md) 0; }
+  .mgr-sort-chip { font-size:10px; padding:4px 10px; }
+
+  /* ── COMPARE PAGE ──────────────── */
+  /* Selects: stack vertically */
+  .compare-selects {
+    flex-direction:column; gap:var(--space-sm);
+    align-items:stretch; margin-bottom:var(--space-lg);
+  }
+  .custom-select { min-width:auto; width:100%; }
+  .custom-select-display { font-size:15px; padding:12px 36px 12px 14px; }
+  .compare-vs {
+    text-align:center; font-size:18px;
+    padding:2px 0;
+  }
+
+  /* Edge panel: compact card */
+  .cmp-edge-panel {
+    grid-template-columns:1fr;
+    gap:var(--space-md); text-align:center;
+    padding:var(--space-md);
+  }
+  .cmp-edge-center {
+    order:-1; padding-bottom:12px;
+    border-bottom:1px solid var(--wine-border);
+  }
+  .cmp-edge-name { font-size:22px; }
+  .cmp-edge-meta { font-size:9px; }
+  .cmp-edge-winner { font-size:18px; }
+  .cmp-edge-score { font-size:10px; }
+  .cmp-edge-bullets { gap:3px; }
+  .cmp-edge-bullet { font-size:9px; padding:2px 5px; }
+
+  /* H2H matchup block: stacked hero */
+  .cmp-h2h-block { padding:var(--space-md); }
+  .cmp-h2h-record {
+    flex-direction:column; align-items:center;
+    gap:2px;
+  }
+  .cmp-h2h-team,
+  .cmp-h2h-team:first-child,
+  .cmp-h2h-team:last-child {
+    text-align:center; font-size:15px;
+  }
+  .cmp-h2h-score { font-size:36px; margin:4px 0; }
+  .cmp-h2h-sub { font-size:9px; }
+  .cmp-h2h-detail { flex-wrap:wrap; padding:6px 8px; }
+  .cmp-h2h-detail-label { min-width:auto; font-size:8px; letter-spacing:1.5px; }
+  .cmp-h2h-detail-val { font-size:12px; }
+  .cmp-h2h-detail-ctx { font-size:9px; }
+
+  /* Stat rows: compact */
+  .cmp-section { margin-bottom:var(--space-lg); }
+  .cmp-section-label { font-size:9px; letter-spacing:2.5px; margin-bottom:10px; }
+  .cmp-stat-row { gap:6px; margin-bottom:12px; }
+  .cmp-stat-val { font-size:20px; min-width:44px; }
+  .cmp-stat-label { font-size:9px; letter-spacing:1.5px; }
+  .cmp-bar-tag { font-size:7px; padding:1px 4px; }
+  .cmp-stat-track { height:4px; }
+
+  /* ── LANDING PAGE ────────────── */
+  .landing-cta { padding:14px 36px; font-size:12px; }
+  .landing-stats { gap:6px 10px; padding:0 var(--space-md); }
+  .landing-title { font-size:72px; }
+
+  /* ── RECORDS PAGE ──────────────── */
+  .records-headlines { grid-template-columns:1fr; }
+  .records-dual { grid-template-columns:1fr; }
+  .drought-row-last { display:none; }
+
+  /* ── MODAL ──────────────────────── */
   .modal { max-height:95vh; }
   .stat-grid-3 { grid-template-columns:1fr 1fr; }
   .stat-grid-3 .stat-box:last-child { grid-column:1/-1; }
-  .strip-stat { padding:12px clamp(8px,3vw,14px); }
-  .drought-row-last { display:none; }
-  .season-row { gap:10px; padding:14px 12px; }
-  .season-year-col { min-width:56px; gap:4px; }
-  .season-year-big { font-size:24px; }
-  .season-ring-thumb { width:36px; height:36px; }
-  .season-bottom-row { gap:8px; }
-  .season-stat-pill { font-size:10px; }
-  .season-recap-btn { padding:5px 10px; font-size:10px; }
-  .season-record-tag { font-size:9px; padding:2px 6px; }
-  .season-meta > *:nth-child(n+3) { display:none; }
-  .champions-grid { grid-template-columns:repeat(auto-fill, minmax(128px, 1fr)); gap:6px; }
-  .managers-grid { grid-template-columns:1fr; }
-  .rivalry-team { font-size:clamp(13px,4vw,17px); }
 }
+
+/* ── EXTRA SMALL (≤ 380px) ─────────── */
 @media(max-width:380px) {
   .stat-grid-2, .stat-grid-3 { grid-template-columns:1fr; }
   .stat-grid-3 .stat-box:last-child { grid-column:auto; }
-  .season-row { grid-template-columns:1fr; text-align:center; }
-  .season-year-col { flex-direction:row; justify-content:center; gap:10px; min-width:auto; }
-  .season-top-row { justify-content:center; }
-  .season-bottom-row { justify-content:center; }
+  .champions-grid { grid-template-columns:1fr; }
+  .season-year-big { font-size:20px; }
+  .cmp-stat-val { font-size:18px; min-width:38px; }
+  .landing-stats { flex-direction:column; gap:8px; }
+  .landing-dot { display:none; }
 }
