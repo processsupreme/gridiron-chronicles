@@ -1,4 +1,4 @@
-// ── RETIRED FRANCHISES ───────────────────────────────────────
+// ââ RETIRED FRANCHISES âââââââââââââââââââââââââââââââââââââââ
 // These managers are in the history books but no longer active
 const RETIRED_MANAGERS = new Set([
   "A D",               // All Day
@@ -29,9 +29,9 @@ RING_IMAGES['2023'] = 'assets/rings/ring_2023.png';
 RING_IMAGES['2024'] = 'assets/rings/ring_2024.png';
 RING_IMAGES['2025'] = 'assets/rings/ring_2025.png';
 
-// ── DATA LOADER ──────────────────────────────────────────────
+// ââ DATA LOADER ââââââââââââââââââââââââââââââââââââââââââââââ
 let DATA = null;
-let MANAGERS_MAP = {};   // nickname → aggregated stats
+let MANAGERS_MAP = {};   // nickname â aggregated stats
 let SEASONS = [];
 
 function loadData() {
@@ -51,7 +51,7 @@ DATA = {"league_name":"BKGFFL","pulled_at":"2026-02-20 14:33:11","seasons":[{"se
   document.getElementById('landing-cta').addEventListener('click', enterSite);
 }
 
-// ── PROCESS RAW DATA ──────────────────────────────────────────
+// ââ PROCESS RAW DATA ââââââââââââââââââââââââââââââââââââââââââ
 function processData() {
   SEASONS = DATA.seasons;
 
@@ -139,9 +139,9 @@ function getMgrFromTeamName(teamName, season) {
   return found ? (found.managers[0] || null) : null;
 }
 
-// ── SHARED PLAYOFF HELPERS ──────────────────────────────────
+// ââ SHARED PLAYOFF HELPERS ââââââââââââââââââââââââââââââââââ
 // BKGFFL rule: top 6 seeds (by standings rank) are the championship bracket.
-// Seeds 7+ play consolation games during playoff weeks — those are NOT playoffs.
+// Seeds 7+ play consolation games during playoff weeks â those are NOT playoffs.
 
 /** Returns a Set of team_keys for the top-6 championship bracket in a given season. */
 function getChampionshipBracketKeys(season) {
@@ -181,7 +181,7 @@ function getSeasonFinalData(season) {
   const runnerKey = runnerTeam?.team_key || null;
   const playoffGames = season.matchups.filter(m => m.is_playoffs);
 
-  // Find the championship game — prefer is_championship flag, fallback to last playoff matchup with champion
+  // Find the championship game â prefer is_championship flag, fallback to last playoff matchup with champion
   let finalGame = playoffGames.find(m => m.is_championship) || null;
   if (!finalGame && champKey && runnerKey) {
     const directGames = playoffGames
@@ -227,10 +227,10 @@ function getSeasonFinalData(season) {
 }
 
 function formatBracketScore(points) {
-  return (typeof points === 'number' && Number.isFinite(points)) ? points.toFixed(1) : '—';
+  return (typeof points === 'number' && Number.isFinite(points)) ? points.toFixed(1) : 'â';
 }
 
-// ── RENDER ALL ───────────────────────────────────────────────
+// ââ RENDER ALL âââââââââââââââââââââââââââââââââââââââââââââââ
 function renderAll() {
   renderMasthead();
   renderChampions();
@@ -243,14 +243,14 @@ function renderAll() {
   renderDrought();
   renderCompare();
   document.getElementById('footnote').textContent =
-    `BKGFFL · THE GRIDIRON CHRONICLES · ${SEASONS.length} SEASONS · ${SEASONS.reduce((a,s)=>a+s.matchups.length,0)} MATCHUPS · DATA PULLED ${DATA.pulled_at}`;
+    `BKGFFL Â· THE GRIDIRON CHRONICLES Â· ${SEASONS.length} SEASONS Â· ${SEASONS.reduce((a,s)=>a+s.matchups.length,0)} MATCHUPS Â· DATA PULLED ${DATA.pulled_at}`;
 }
 
-// ── MASTHEAD ─────────────────────────────────────────────────
+// ââ MASTHEAD âââââââââââââââââââââââââââââââââââââââââââââââââ
 function renderMasthead() {
   const firstYear = SEASONS[0]?.season;
   const lastYear = SEASONS[SEASONS.length-1]?.season;
-  document.getElementById('masthead-vol').textContent = `EST. ${firstYear} · OFFICIAL RECORD · ${lastYear} EDITION`;
+  document.getElementById('masthead-vol').textContent = `EST. ${firstYear} Â· OFFICIAL RECORD Â· ${lastYear} EDITION`;
   const sub = document.querySelector('.masthead-subtitle');
 
   const allMatchups = SEASONS.reduce((a,s)=>a+s.matchups.length,0);
@@ -259,7 +259,7 @@ function renderMasthead() {
     if(m.team1.points>0) allScores.push(m.team1.points);
     if(m.team2.points>0) allScores.push(m.team2.points);
   }));
-  const highScore = allScores.length ? Math.max(...allScores).toFixed(1) : '—';
+  const highScore = allScores.length ? Math.max(...allScores).toFixed(1) : 'â';
   const managers = Object.keys(MANAGERS_MAP).length;
   const champCounts = {};
   SEASONS.forEach(s => { if(s.champion){ champCounts[s.champion.team_name]=(champCounts[s.champion.team_name]||0)+1; } });
@@ -277,7 +277,7 @@ function renderMasthead() {
   });
 }
 
-// ── CHAMPIONS ────────────────────────────────────────────────
+// ââ CHAMPIONS ââââââââââââââââââââââââââââââââââââââââââââââââ
 function renderChampions() {
   const grid = document.getElementById('champions-grid');
   grid.innerHTML = '';
@@ -285,7 +285,7 @@ function renderChampions() {
   // Known ring years
   const RING_YEAR_SET = new Set([2013,2014,2015,2016,2017,2018,2019,2020,2021,2022,2023,2024,2025]);
 
-  // Dynasty callout — find most-titled
+  // Dynasty callout â find most-titled
   const champCounts = {};
   SEASONS.forEach(s => {
     if (s.champion) {
@@ -338,7 +338,7 @@ function renderChampions() {
   });
 }
 
-// ── ALL-TIME FRANCHISE STATS ─────────────────────────────────
+// ââ ALL-TIME FRANCHISE STATS âââââââââââââââââââââââââââââââââ
 function renderPower() {
   const tbody = document.getElementById('power-tbody');
   const sortByWinPct = (a, b) => {
@@ -381,7 +381,7 @@ function renderPower() {
     if (pedestalClass) tr.className = pedestalClass;
     if (isDead) { tr.style.opacity = '0.55'; tr.style.filter = 'grayscale(40%)'; }
     tr.innerHTML = `
-      <td><span class="rank-num ${rankClass}">${isDead?'—':rank}</span></td>
+      <td><span class="rank-num ${rankClass}">${isDead?'â':rank}</span></td>
       <td>
         <div class="manager-name-cell" style="${dimStyle}">${m.teamName}</div>
         <div class="manager-team-cell">${m.nickname} \u00b7 ${m.seasons} yrs</div>
@@ -399,7 +399,7 @@ function renderPower() {
 
   activeSorted.forEach((m, i) => renderRow(m, i + 1, false));
 
-  // ── RETIRED FRANCHISES SECTION ──
+  // ââ RETIRED FRANCHISES SECTION ââ
   if (retiredSorted.length > 0) {
     const divRow = document.createElement('tr');
     divRow.innerHTML = `
@@ -418,7 +418,7 @@ function renderPower() {
   }
 }
 
-// ── HEAD TO HEAD ─────────────────────────────────────────────
+// ââ HEAD TO HEAD âââââââââââââââââââââââââââââââââââââââââââââ
 function renderH2H() {
   const table = document.getElementById('h2h-table');
   if (!table) return;
@@ -477,7 +477,7 @@ function renderH2H() {
 
   // Render header
   const thead = document.createElement('thead');
-  let hHTML2 = '<tr><th style="text-align:left;padding-left:10px;width:100px;max-width:100px;">vs →</th>';
+  let hHTML2 = '<tr><th style="text-align:left;padding-left:10px;width:100px;max-width:100px;">vs â</th>';
   sortedMgrs.forEach(n => {
     const isDead = RETIRED_MANAGERS.has(n);
     const colTeamName = MANAGERS_MAP[n]?.teamName || n;
@@ -495,7 +495,7 @@ function renderH2H() {
     const mgrTeamName = MANAGERS_MAP[mgr]?.teamName || mgr;
     let html = `<td class="h2h-row-header" style="${isMgrDead?'opacity:0.7;color:var(--bone-muted);':''}" title="${mgrTeamName}">${h2hName(mgrTeamName)}</td>`;
     sortedMgrs.forEach(opp => {
-      if (mgr === opp) { html += `<td class="h2h-self">—</td>`; return; }
+      if (mgr === opp) { html += `<td class="h2h-self">â</td>`; return; }
       const w = h2h[mgr][opp]||0;
       const l = h2h[opp][mgr]||0;
       totalW += w;
@@ -519,11 +519,11 @@ function renderH2H() {
   table.appendChild(tbody);
 }
 
-// ── RECORD BOOK ──────────────────────────────────────────────
+// ââ RECORD BOOK ââââââââââââââââââââââââââââââââââââââââââââââ
 function renderRecords() {
   const container = document.getElementById('records-container');
 
-  // ── GATHER ALL DATA ──
+  // ââ GATHER ALL DATA ââ
   // Uses shared helpers: isNonConsolationGame(), isTruePlayoffGame(), gameKey()
   // RULE: "Single-Game Scores" and "Biggest Blowouts" include regular season + TRUE
   //       playoffs only. Consolation bracket games are excluded everywhere.
@@ -548,11 +548,11 @@ function renderRecords() {
       // Skip consolation games entirely
       if (!isNonConsolationGame(m, s)) { _qaConsolationSkipped++; return; }
 
-      // ── DEDUP: Score-signature dedup ──
+      // ââ DEDUP: Score-signature dedup ââ
       // Data import bug: Wk16 playoff games are duplicated in Wk17 with identical
-      // teams + scores (confirmed in 2021–2025). We build a score signature that
+      // teams + scores (confirmed in 2021â2025). We build a score signature that
       // ignores the week: year + sorted team keys + sorted points.
-      // If seen before, this is a ghost duplicate — skip it.
+      // If seen before, this is a ghost duplicate â skip it.
       const teamKeys = [m.team1.team_key, m.team2.team_key].sort();
       const pts = [m.team1.points, m.team2.points].sort((a,b) => a-b);
       const scoreSig = s.season + ':' + teamKeys.join(':') + ':' + pts.join(':');
@@ -602,12 +602,12 @@ function renderRecords() {
   allWeeklyScores.sort((a,b)=>b.pts-a.pts);
   allMargins.sort((a,b)=>b.margin-a.margin);
 
-  // QA logging (dev only — check browser console)
+  // QA logging (dev only â check browser console)
   console.log('[RecordBook QA] Total games:', _qaTotal, '| Consolation excluded:', _qaConsolationSkipped, '| Ghost dups removed:', _qaDupSkipped, '| Included:', _qaIncluded, '| True playoff:', _qaTruePlayoff);
   console.log('[RecordBook QA] Top 10 scores:', allWeeklyScores.slice(0,10).map(s => s.year+' Wk'+s.week+' '+s.team+' '+s.pts.toFixed(1)+(s.playoff?' PO':'')));
   console.log('[RecordBook QA] Top 10 blowouts:', allMargins.slice(0,10).map(m => m._key+' +'+m.margin.toFixed(1)));
 
-  // ── STREAKS (regular season only) ──
+  // ââ STREAKS (regular season only) ââ
   const streakData = {};
   Object.keys(MANAGERS_MAP).forEach(mgr => { streakData[mgr] = {maxWin:0, maxLoss:0, curWin:0, curLoss:0, winDetails:'', lossDetails:''}; });
   SEASONS.forEach(s => {
@@ -640,8 +640,8 @@ function renderRecords() {
     });
   });
 
-  // ── PLAYOFF AGGREGATES ──
-  // Uses isTruePlayoffGame() — top-6 bracket only, no consolation.
+  // ââ PLAYOFF AGGREGATES ââ
+  // Uses isTruePlayoffGame() â top-6 bracket only, no consolation.
   // Also applies score-signature dedup to catch ghost Wk17 duplicates.
   const playoffWins = {};
   const playoffAppearances = {};
@@ -694,7 +694,7 @@ function renderRecords() {
     });
   });
 
-  // ══════ HEADLINE RECORDS ══════
+  // ââââââ HEADLINE RECORDS ââââââ
   const high = allWeeklyScores[0];
   const biggest = allMargins[0];
 
@@ -705,11 +705,11 @@ function renderRecords() {
     html += `<div class="record-headline featured">
       <div>
         <div class="rh-eyebrow">Most Championships</div>
-        <div class="rh-value" style="color:var(--wine-bright)">${champMgr.championships}×</div>
+        <div class="rh-value" style="color:var(--wine-bright)">${champMgr.championships}Ã</div>
       </div>
       <div>
         <div class="rh-holder">${champMgr.teamName}</div>
-        <div class="rh-context">${champMgr.champYears.join(' · ')}</div>
+        <div class="rh-context">${champMgr.champYears.join(' Â· ')}</div>
       </div>
     </div>`;
   }
@@ -721,7 +721,7 @@ function renderRecords() {
       <div class="rh-eyebrow">All-Time Highest Score</div>
       <div class="rh-value" style="color:var(--green)">${high.pts.toFixed(1)}</div>
       <div class="rh-holder">${high.team}</div>
-      <div class="rh-context">${high.mgr} · Week ${high.week}, ${high.year}${high.playoff?' · Playoffs':''}</div>
+      <div class="rh-context">${high.mgr} Â· Week ${high.week}, ${high.year}${high.playoff?' Â· Playoffs':''}</div>
     </div>`;
   }
 
@@ -732,7 +732,7 @@ function renderRecords() {
       <div class="rh-eyebrow">Biggest Blowout</div>
       <div class="rh-value" style="color:var(--yellow)">${biggest.margin.toFixed(1)}<span style="font-size:50%;color:var(--bone-dim);font-family:'IBM Plex Mono',monospace;font-weight:400"> pts</span></div>
       <div class="rh-holder">${biggest.wTeam} vs ${biggest.lTeam}</div>
-      <div class="rh-context">${biggest.ws.toFixed(1)} – ${biggest.ls.toFixed(1)} · ${biggest.year} Wk ${biggest.week}</div>
+      <div class="rh-context">${biggest.ws.toFixed(1)} â ${biggest.ls.toFixed(1)} Â· ${biggest.year} Wk ${biggest.week}</div>
     </div>`;
   }
 
@@ -743,7 +743,7 @@ function renderRecords() {
       <div class="rh-eyebrow">Best Season Record</div>
       <div class="rh-value" style="color:#5DADE2">${bestRecord.wins}-${bestRecord.losses}</div>
       <div class="rh-holder">${bestRecord.team}</div>
-      <div class="rh-context">${bestRecord.mgr} · ${bestRecord.year} · ${(bestRecord.pct*100).toFixed(1)}% win rate</div>
+      <div class="rh-context">${bestRecord.mgr} Â· ${bestRecord.year} Â· ${(bestRecord.pct*100).toFixed(1)}% win rate</div>
     </div>`;
   }
 
@@ -771,15 +771,15 @@ function renderRecords() {
       <div class="rh-eyebrow">Most Losing Seasons</div>
       <div class="rh-value" style="color:#e74c3c">${mostLosing.count}<span style="font-size:40%;color:var(--bone-dim);font-family:'IBM Plex Mono',monospace;font-weight:400"> of ${mostLosing.total}</span></div>
       <div class="rh-holder">${mostLosing.team}</div>
-      <div class="rh-context">${mostLosing.mgr} · Sub-.500 in ${((mostLosing.count/mostLosing.total)*100).toFixed(0)}% of seasons played</div>
+      <div class="rh-context">${mostLosing.mgr} Â· Sub-.500 in ${((mostLosing.count/mostLosing.total)*100).toFixed(0)}% of seasons played</div>
     </div>`;
   }
 
   html += '</div>';
 
-  // ══════ PLAYOFFS (first section after headlines) ══════
+  // ââââââ PLAYOFFS (first section after headlines) ââââââ
   html += '<div class="records-category">';
-  html += '<div class="records-cat-header"><div class="records-cat-icon">🏆</div><div class="records-cat-title">Playoff Records</div><div class="records-cat-desc">When it matters most</div></div>';
+  html += '<div class="records-cat-header"><div class="records-cat-icon">ð</div><div class="records-cat-title">Playoff Records</div><div class="records-cat-desc">When it matters most</div></div>';
   html += '<div class="records-dual">';
 
   // Most playoff wins
@@ -811,35 +811,35 @@ function renderRecords() {
   html += '</div></div>';
   html += '</div></div>';
 
-  // ══════ TOP 10: HIGHEST SINGLE-GAME SCORES ══════
+  // ââââââ TOP 10: HIGHEST SINGLE-GAME SCORES ââââââ
   html += '<div class="records-category">';
-  html += '<div class="records-cat-header"><div class="records-cat-icon">🔥</div><div class="records-cat-title">Top 10 Single-Game Scores</div><div class="records-cat-desc">All-time best performances</div></div>';
+  html += '<div class="records-cat-header"><div class="records-cat-icon">ð¥</div><div class="records-cat-title">Top 10 Single-Game Scores</div><div class="records-cat-desc">All-time best performances</div></div>';
   html += '<div class="records-leaderboard">';
   allWeeklyScores.slice(0, 10).forEach((s, i) => {
     html += `<div class="records-lb-row ${i===0?'gold':''}">
       <span class="lb-rank ${i===0?'r1':i<=2?'r2':''}">${i+1}</span>
       <span class="lb-name">${s.team}</span>
-      <span class="lb-context">${s.mgr} · ${s.year} Wk${s.week}${s.playoff?' ⚡':''}</span>
+      <span class="lb-context">${s.mgr} Â· ${s.year} Wk${s.week}${s.playoff?' â¡':''}</span>
       <span class="lb-value green">${s.pts.toFixed(1)}</span>
     </div>`;
   });
   html += '</div></div>';
 
-  // ══════ TOP 10: BIGGEST BLOWOUTS ══════
+  // ââââââ TOP 10: BIGGEST BLOWOUTS ââââââ
   html += '<div class="records-category">';
-  html += '<div class="records-cat-header"><div class="records-cat-icon">💀</div><div class="records-cat-title">Top 10 Biggest Blowouts</div><div class="records-cat-desc">Margin of victory</div></div>';
+  html += '<div class="records-cat-header"><div class="records-cat-icon">ð</div><div class="records-cat-title">Top 10 Biggest Blowouts</div><div class="records-cat-desc">Margin of victory</div></div>';
   html += '<div class="records-leaderboard">';
   allMargins.slice(0, 10).forEach((m, i) => {
     html += `<div class="records-lb-row ${i===0?'gold':''}">
       <span class="lb-rank ${i===0?'r1':i<=2?'r2':''}">${i+1}</span>
       <span class="lb-name">${m.wTeam} <span style="color:var(--bone-muted);font-weight:400;font-size:11px">over</span> ${m.lTeam}</span>
-      <span class="lb-context">${m.year} Wk${m.week}${m.playoff?' ⚡':''}</span>
+      <span class="lb-context">${m.year} Wk${m.week}${m.playoff?' â¡':''}</span>
       <span class="lb-value wine">+${m.margin.toFixed(1)}</span>
     </div>`;
   });
   html += '</div></div>';
 
-  // ══════ DUAL: WIN STREAKS + LOSS STREAKS ══════
+  // ââââââ DUAL: WIN STREAKS + LOSS STREAKS ââââââ
   const winStreaks = Object.entries(streakData)
     .filter(([mgr]) => !RETIRED_MANAGERS.has(mgr))
     .map(([mgr,d]) => ({mgr, streak:d.maxWin, year:d.winDetails, team:MANAGERS_MAP[mgr]?.teamName||mgr}))
@@ -850,7 +850,7 @@ function renderRecords() {
     .sort((a,b) => b.streak - a.streak);
 
   html += '<div class="records-category">';
-  html += '<div class="records-cat-header"><div class="records-cat-icon">📈</div><div class="records-cat-title">Streaks</div><div class="records-cat-desc">Longest runs of dominance and despair</div></div>';
+  html += '<div class="records-cat-header"><div class="records-cat-icon">ð</div><div class="records-cat-title">Streaks</div><div class="records-cat-desc">Longest runs of dominance and despair</div></div>';
   html += '<div class="records-dual">';
 
   // Win streaks
@@ -880,7 +880,7 @@ function renderRecords() {
   html += '</div></div>';
   html += '</div></div>';
 
-  // ══════ SEASON TOTALS ══════
+  // ââââââ SEASON TOTALS ââââââ
   const seasonTotals = [];
   Object.entries(seasonPtsMap).forEach(([year, teams]) => {
     Object.entries(teams).forEach(([mgr, pts]) => {
@@ -890,13 +890,13 @@ function renderRecords() {
   seasonTotals.sort((a,b) => b.pts - a.pts);
 
   html += '<div class="records-category">';
-  html += '<div class="records-cat-header"><div class="records-cat-icon">📊</div><div class="records-cat-title">Top 10 Regular Season Totals</div><div class="records-cat-desc">Most points in a single regular season</div></div>';
+  html += '<div class="records-cat-header"><div class="records-cat-icon">ð</div><div class="records-cat-title">Top 10 Regular Season Totals</div><div class="records-cat-desc">Most points in a single regular season</div></div>';
   html += '<div class="records-leaderboard">';
   seasonTotals.slice(0, 10).forEach((s, i) => {
     html += `<div class="records-lb-row ${i===0?'gold':''}">
       <span class="lb-rank ${i===0?'r1':i<=2?'r2':''}">${i+1}</span>
       <span class="lb-name">${s.team}</span>
-      <span class="lb-context">${s.mgr} · ${s.year}</span>
+      <span class="lb-context">${s.mgr} Â· ${s.year}</span>
       <span class="lb-value green">${s.pts.toFixed(1)}</span>
     </div>`;
   });
@@ -905,7 +905,7 @@ function renderRecords() {
   container.innerHTML = html;
 }
 
-// ── SEASONS ──────────────────────────────────────────────────
+// ââ SEASONS ââââââââââââââââââââââââââââââââââââââââââââââââââ
 function renderSeasons() {
   const list = document.getElementById('seasons-list');
   const champCounts = {};
@@ -954,8 +954,8 @@ function renderSeasons() {
         <div class="season-bottom-row">
           <div class="season-stat-pill">
             <span class="season-stat-pill-label">Final</span>
-            <span class="season-stat-pill-val">${finals.champScore!==null&&finals.runnerScore!==null?finals.champScore+' – '+finals.runnerScore:'—'}</span>
-            <span class="season-stat-pill-sub">vs ${finals.runnerTeam?.team_name||'—'}</span>
+            <span class="season-stat-pill-val">${finals.champScore!==null&&finals.runnerScore!==null?finals.champScore+' â '+finals.runnerScore:'â'}</span>
+            <span class="season-stat-pill-sub">vs ${finals.runnerTeam?.team_name||'â'}</span>
           </div>
           ${champRecord ? `<div class="season-stat-pill"><span class="season-stat-pill-label">Record</span><span style="color:var(--bone)">${champRecord.wins}-${champRecord.losses}</span></div>` : ''}
           <div class="season-stat-pill">
@@ -970,7 +970,7 @@ function renderSeasons() {
   });
 }
 
-// ── MANAGERS ─────────────────────────────────────────────────
+// ââ MANAGERS âââââââââââââââââââââââââââââââââââââââââââââââââ
 function renderManagers(sortKey) {
   sortKey = sortKey || 'titles';
   const grid = document.getElementById('managers-grid');
@@ -1053,11 +1053,11 @@ function renderManagers(sortKey) {
 
   // Signature line generator
   const getSig = (m) => {
-    if (m.championships >= 3) return m.championships + '× CHAMPION · DYNASTY';
-    if (m.championships === 0 && m.playoffAppearances >= 5 && m.winPct >= 0.50) return 'PLAYOFF REGULAR · NO TITLES';
-    if (m.championships === 0 && m.winPct >= 0.52) return 'GOOD TEAM · NO TITLES';
+    if (m.championships >= 3) return m.championships + 'Ã CHAMPION Â· DYNASTY';
+    if (m.championships === 0 && m.playoffAppearances >= 5 && m.winPct >= 0.50) return 'PLAYOFF REGULAR Â· NO TITLES';
+    if (m.championships === 0 && m.winPct >= 0.52) return 'GOOD TEAM Â· NO TITLES';
     if (m.championships === 0 && m.winPct < 0.48 && m.seasons >= 3) return 'REBUILD ETERNAL';
-    if (m.championships === 2) return '2× CHAMPION';
+    if (m.championships === 2) return '2Ã CHAMPION';
     if (m.championships === 1) return 'CHAMPION';
     return '';
   };
@@ -1069,18 +1069,18 @@ function renderManagers(sortKey) {
     card.className = 'manager-card ' + glow;
     const sig = getSig(m);
     const finalsApp = m.championships + (m.runnerUp || 0);
-    const resumeStr = 'Titles ' + m.championships + ' · Finals ' + finalsApp + ' · Playoffs ' + m.playoffAppearances;
+    const resumeStr = 'Titles ' + m.championships + ' Â· Finals ' + finalsApp + ' Â· Playoffs ' + m.playoffAppearances;
     const subName = NAME_MAP[m.teamName] || m.nickname;
 
     card.innerHTML =
       '<div class="manager-header">' +
         '<div class="manager-full-name">' + m.teamName + '</div>' +
-        '<div class="manager-sub-name">' + subName + ' · ' + m.seasons + ' yrs</div>' +
+        '<div class="manager-sub-name">' + subName + ' Â· ' + m.seasons + ' yrs</div>' +
         '<div class="manager-status ' + status.cls + '">' + status.label + '</div>' +
       '</div>' +
       '<div class="manager-stats">' +
         '<span class="stat-pill pill-titles">' +
-          '<span class="trophy-icon">🏆</span>' +
+          '<span class="trophy-icon">ð</span>' +
           '<span>' + m.championships + '</span>' +
           '<span class="stat-pill-label">Titles</span>' +
         '</span>' +
@@ -1119,11 +1119,11 @@ function renderManagers(sortKey) {
       card.innerHTML =
         '<div class="manager-header" style="background:linear-gradient(135deg,#0e1018,#0a0e1a)">' +
           '<div class="manager-full-name" style="color:rgba(232,220,200,0.5)">' + m.teamName + '</div>' +
-          '<div class="manager-sub-name">' + subName + ' · ' + m.seasons + ' yrs</div>' +
+          '<div class="manager-sub-name">' + subName + ' Â· ' + m.seasons + ' yrs</div>' +
         '</div>' +
         '<div class="manager-stats">' +
           '<span class="stat-pill pill-titles" style="opacity:0.5">' +
-            '<span class="trophy-icon">🏆</span>' +
+            '<span class="trophy-icon">ð</span>' +
             '<span>' + m.championships + '</span>' +
             '<span class="stat-pill-label">Titles</span>' +
           '</span>' +
@@ -1138,7 +1138,7 @@ function renderManagers(sortKey) {
   }
 }
 
-// ── MODALS ───────────────────────────────────────────────────
+// ââ MODALS âââââââââââââââââââââââââââââââââââââââââââââââââââ
 function showManagerModal(nickname, highlightYear) {
   const m = MANAGERS_MAP[nickname];
   if (!m) return;
@@ -1151,7 +1151,7 @@ function showManagerModal(nickname, highlightYear) {
   let h2hSort = 'winpct'; // 'winpct' | 'games' | 'alpha'
 
   function render() {
-    // ── Filter matchups ──
+    // ââ Filter matchups ââ
     const filteredSeasons = SEASONS.filter(s => s.season >= filterFrom && s.season <= filterTo);
     let totalW=0, totalL=0, totalPts=0, totalGames=0, highScore=0, lowScore=Infinity, highMeta='', lowMeta='';
     const champYearsInRange = [];
@@ -1195,25 +1195,25 @@ function showManagerModal(nickname, highlightYear) {
     const avgPts = totalGames > 0 ? (totalPts/totalGames).toFixed(1) : '0.0';
     if (lowScore === Infinity) { lowScore = 0; lowMeta = '\u2014'; }
 
-    // ── Trophy line ──
+    // ââ Trophy line ââ
     const allChampYears = m.champYears || [];
     const trophyLine = allChampYears.length > 0
       ? allChampYears.map(y => `<span style="display:inline-flex;align-items:center;gap:3px;padding:2px 8px;border-radius:4px;background:rgba(201,168,76,0.1);border:1px solid rgba(201,168,76,0.2);font-family:'IBM Plex Mono',monospace;font-size:11px;color:#c9a84c;margin:2px">\ud83c\udfc6 ${y}</span>`).join('')
       : '<span style="font-family:\'IBM Plex Mono\',monospace;font-size:11px;color:var(--bone-muted)">No championships</span>';
 
-    // ── Year selects ──
+    // ââ Year selects ââ
     const yearOpts = SEASONS.map(s => s.season);
     const fromOpts = yearOpts.map(y => `<option value="${y}" ${y===filterFrom?'selected':''}>${y}</option>`).join('');
     const toOpts = yearOpts.map(y => `<option value="${y}" ${y===filterTo?'selected':''}>${y}</option>`).join('');
 
-    // ── HEADER ──
+    // ââ HEADER ââ
     document.getElementById('modal-header').innerHTML = `
       <div style="font-family:'Bebas Neue',sans-serif;font-size:clamp(32px,8vw,42px);color:var(--bone);letter-spacing:2px;line-height:1">${m.teamName}</div>
       <div style="font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--bone-muted);margin-top:6px;letter-spacing:1px">${m.nickname} \u00b7 ${m.seasons} SEASONS</div>
       <div style="margin-top:10px;display:flex;flex-wrap:wrap;gap:4px">${trophyLine}</div>
     `;
 
-    // ── FILTERS BAR ──
+    // ââ FILTERS BAR ââ
     const filtersHTML = `
       <div class="mgr-modal-filters">
         <div class="mgr-filter-group">
@@ -1236,7 +1236,7 @@ function showManagerModal(nickname, highlightYear) {
       </div>
     `;
 
-    // ── STAT CARDS ──
+    // ââ STAT CARDS ââ
     const statsHTML = `
       <div class="stat-grid-3" style="margin-bottom:16px">
         <div class="stat-box"><div class="stat-box-label">Record</div><div class="stat-box-num" style="font-size:clamp(22px,5vw,28px)">${winPct}%</div><div class="stat-box-sub">${totalW}W\u2013${totalL}L</div></div>
@@ -1249,7 +1249,7 @@ function showManagerModal(nickname, highlightYear) {
       </div>
     `;
 
-    // ── VIEW: SEASONS ──
+    // ââ VIEW: SEASONS ââ
     let viewHTML = '';
     if (viewMode === 'seasons') {
       let rows = '';
@@ -1279,7 +1279,7 @@ function showManagerModal(nickname, highlightYear) {
         <div class="mgr-season-list">${rows}</div>`;
     }
 
-    // ── VIEW: H2H ──
+    // ââ VIEW: H2H ââ
     if (viewMode === 'h2h') {
       const mgrs = Object.keys(MANAGERS_MAP).filter(o=>o!==nickname);
       const h2h = {};
@@ -1333,7 +1333,7 @@ function showManagerModal(nickname, highlightYear) {
         <div class="mgr-h2h-list">${h2hRows}</div>`;
     }
 
-    // ── VIEW: AWARDS ──
+    // ââ VIEW: AWARDS ââ
     if (viewMode === 'awards') {
       let awardsRows = '';
       filteredSeasons.forEach(s => {
@@ -1360,10 +1360,10 @@ function showManagerModal(nickname, highlightYear) {
         <div class="mgr-award-list-wrap">${awardsRows || '<div style="color:var(--bone-muted);font-size:13px;padding:12px">No awards in selected range.</div>'}</div>`;
     }
 
-    // ── ASSEMBLE BODY ──
+    // ââ ASSEMBLE BODY ââ
     document.getElementById('modal-body').innerHTML = filtersHTML + statsHTML + viewHTML;
 
-    // ── BIND EVENTS ──
+    // ââ BIND EVENTS ââ
     document.getElementById('mgr-f-from').onchange = (e) => { filterFrom = +e.target.value; render(); };
     document.getElementById('mgr-f-to').onchange = (e) => { filterTo = +e.target.value; render(); };
     document.getElementById('mgr-f-playoffs').onclick = () => { includePlayoffs = !includePlayoffs; render(); };
@@ -1387,7 +1387,7 @@ function showManagerModal(nickname, highlightYear) {
 }
 
 function buildH2HForManager(nickname) {
-  // Legacy compat — kept for any external callers
+  // Legacy compat â kept for any external callers
   return '';
 }
 
@@ -1399,7 +1399,7 @@ function showSeasonModal(year) {
   const championRecord = finals.champTeam || null;
     const ringImg = RING_IMAGES[String(s.season)] || RING_IMAGES['2023'];
 
-  // ── PLAYOFF BRACKET (championship bracket only, no consolation) ──
+  // ââ PLAYOFF BRACKET (championship bracket only, no consolation) ââ
   const playoffTeamCount = s.num_teams >= 12 ? 6 : 4;
   const regularSeasonSeeded = [...s.standings].sort((a,b) => a.rank - b.rank);
   const playoffSeeds = regularSeasonSeeded.slice(0, playoffTeamCount);
@@ -1432,7 +1432,7 @@ function showSeasonModal(year) {
     const renderRound = (label, wk, games, note = '') => {
       if (!games.length && !note) return;
       bracketHTML += '<div style="margin-bottom:12px">';
-      bracketHTML += '<div style="font-family:\'IBM Plex Mono\',monospace;font-size:9px;letter-spacing:2px;color:var(--bone-muted);margin-bottom:6px">' + label + (wk ? ' · WK ' + wk : '') + '</div>';
+      bracketHTML += '<div style="font-family:\'IBM Plex Mono\',monospace;font-size:9px;letter-spacing:2px;color:var(--bone-muted);margin-bottom:6px">' + label + (wk ? ' Â· WK ' + wk : '') + '</div>';
       if (note) bracketHTML += '<div style="font-family:\'IBM Plex Mono\',monospace;font-size:10px;color:var(--bone-muted);margin-bottom:6px">' + note + '</div>';
       games.forEach(g => {
         const winner = winnerKeyOf(g);
@@ -1548,7 +1548,7 @@ function showSeasonModal(year) {
     }
   }
 
-  // ── SEASON AWARDS ──
+  // ââ SEASON AWARDS ââ
   const regSeason = s.matchups.filter(m => !m.is_playoffs);
   let allScores = [];
   let allMargins = [];
@@ -1601,19 +1601,19 @@ function showSeasonModal(year) {
   let awardsHTML = '';
   awardsHTML += '<div class="season-awards-grid">';
   if (mvp) awardsHTML += '<div class="season-award"><div class="season-award-label">Season MVP</div><div class="season-award-value">' + mvp[1].toFixed(1) + '</div><div class="season-award-holder">' + mvp[0] + '</div><div class="season-award-context">Most total points (reg. season)</div></div>';
-  if (weekHigh) awardsHTML += '<div class="season-award"><div class="season-award-label">Best Single Week</div><div class="season-award-value">' + weekHigh.pts.toFixed(1) + '</div><div class="season-award-holder">' + weekHigh.team + '</div><div class="season-award-context">Week ' + weekHigh.week + (weekHigh.playoff?' · Playoffs':'') + '</div></div>';
-  if (bigBlowout) awardsHTML += '<div class="season-award"><div class="season-award-label">Biggest Blowout</div><div class="season-award-value">' + bigBlowout.margin.toFixed(1) + ' pts</div><div class="season-award-holder">' + bigBlowout.winner + '</div><div class="season-award-context">' + bigBlowout.wScore.toFixed(1) + ' – ' + bigBlowout.lScore.toFixed(1) + ' · Wk ' + bigBlowout.week + '</div></div>';
-  if (nailbiter) awardsHTML += '<div class="season-award"><div class="season-award-label">Closest Game</div><div class="season-award-value">' + nailbiter.margin.toFixed(2) + ' pts</div><div class="season-award-holder">' + nailbiter.winner + ' vs ' + nailbiter.loser + '</div><div class="season-award-context">' + nailbiter.wScore.toFixed(2) + ' – ' + nailbiter.lScore.toFixed(2) + ' · Wk ' + nailbiter.week + '</div></div>';
+  if (weekHigh) awardsHTML += '<div class="season-award"><div class="season-award-label">Best Single Week</div><div class="season-award-value">' + weekHigh.pts.toFixed(1) + '</div><div class="season-award-holder">' + weekHigh.team + '</div><div class="season-award-context">Week ' + weekHigh.week + (weekHigh.playoff?' Â· Playoffs':'') + '</div></div>';
+  if (bigBlowout) awardsHTML += '<div class="season-award"><div class="season-award-label">Biggest Blowout</div><div class="season-award-value">' + bigBlowout.margin.toFixed(1) + ' pts</div><div class="season-award-holder">' + bigBlowout.winner + '</div><div class="season-award-context">' + bigBlowout.wScore.toFixed(1) + ' â ' + bigBlowout.lScore.toFixed(1) + ' Â· Wk ' + bigBlowout.week + '</div></div>';
+  if (nailbiter) awardsHTML += '<div class="season-award"><div class="season-award-label">Closest Game</div><div class="season-award-value">' + nailbiter.margin.toFixed(2) + ' pts</div><div class="season-award-holder">' + nailbiter.winner + ' vs ' + nailbiter.loser + '</div><div class="season-award-context">' + nailbiter.wScore.toFixed(2) + ' â ' + nailbiter.lScore.toFixed(2) + ' Â· Wk ' + nailbiter.week + '</div></div>';
   if (weekLow) awardsHTML += '<div class="season-award"><div class="season-award-label">Worst Single Week</div><div class="season-award-value" style="color:#e74c3c">' + weekLow.pts.toFixed(1) + '</div><div class="season-award-holder">' + weekLow.team + '</div><div class="season-award-context">Week ' + weekLow.week + '</div></div>';
   if (worstRecord) awardsHTML += '<div class="season-award"><div class="season-award-label">Worst Record</div><div class="season-award-value" style="color:#e74c3c">' + worstRecord.wins + '-' + worstRecord.losses + '</div><div class="season-award-holder">' + worstRecord.team_name + '</div></div>';
   awardsHTML += '</div>';
 
-  // ── ASSEMBLE MODAL ──
+  // ââ ASSEMBLE MODAL ââ
   document.getElementById('modal-header').innerHTML = `
     <div style="display:flex;align-items:flex-start;gap:20px">
       <div>
         <div style="font-family:'Playfair Display',serif;font-weight:900;font-size:clamp(48px,12vw,72px);color:var(--wine-bright);line-height:0.9">${year}</div>
-        <div style="font-family:'IBM Plex Mono',monospace;font-size:12px;color:var(--bone-muted);letter-spacing:3px;margin-top:14px">BKGFFL · SEASON ${year - 2012} OF 13</div>
+        <div style="font-family:'IBM Plex Mono',monospace;font-size:12px;color:var(--bone-muted);letter-spacing:3px;margin-top:14px">BKGFFL Â· SEASON ${year - 2012} OF 13</div>
       </div>
     </div>
   `;
@@ -1624,14 +1624,14 @@ function showSeasonModal(year) {
       <div><img src="${ringImg}" style="width:clamp(72px,18vw,96px);height:clamp(72px,18vw,96px);object-fit:cover;border-radius:12px;box-shadow:0 4px 20px rgba(114,47,55,0.4), 0 0 40px rgba(201,168,76,0.15);margin:4px 0;"></div>
       <div style="font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:3px;color:var(--bone-muted);margin-top:10px">CHAMPION</div>
       <div style="font-family:'Playfair Display',serif;font-weight:900;font-size:clamp(22px,6vw,32px);color:var(--bone);margin-top:4px">${s.champion?.team_name||'TBD'}</div>
-      <div style="font-family:'IBM Plex Mono',monospace;font-size:12px;color:var(--bone-dim);margin-top:4px">${mgr}${championRecord?' · '+championRecord.wins+'-'+championRecord.losses+' regular season':''}</div>
-      ${finals.champScore!==null&&finals.runnerScore!==null?`<div style="font-family:'IBM Plex Mono',monospace;font-size:clamp(18px,5vw,24px);color:var(--wine-bright);margin-top:12px;font-weight:600">${finals.champScore} – ${finals.runnerScore}</div><div style="font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--bone-muted);margin-top:2px">defeated ${finals.runnerTeam?.team_name||'—'}</div>`:''}
+      <div style="font-family:'IBM Plex Mono',monospace;font-size:12px;color:var(--bone-dim);margin-top:4px">${mgr}${championRecord?' Â· '+championRecord.wins+'-'+championRecord.losses+' regular season':''}</div>
+      ${finals.champScore!==null&&finals.runnerScore!==null?`<div style="font-family:'IBM Plex Mono',monospace;font-size:clamp(18px,5vw,24px);color:var(--wine-bright);margin-top:12px;font-weight:600">${finals.champScore} â ${finals.runnerScore}</div><div style="font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--bone-muted);margin-top:2px">defeated ${finals.runnerTeam?.team_name||'â'}</div>`:''}
     </div>
 
     <!-- Season Extremes -->
     <div class="stat-grid-2" style="margin-bottom:20px">
-      <div class="stat-box"><div class="stat-box-label">Season High</div><div class="stat-box-num" style="color:var(--green);font-size:clamp(22px,6vw,28px)">${s.season_high_score.points.toFixed(1)}</div><div class="stat-box-sub">${s.season_high_score.team} · Wk ${s.season_high_score.week}</div></div>
-      <div class="stat-box"><div class="stat-box-label">Season Low</div><div class="stat-box-num" style="color:#e74c3c;font-size:clamp(22px,6vw,28px)">${s.season_low_score.points.toFixed(1)}</div><div class="stat-box-sub">${s.season_low_score.team} · Wk ${s.season_low_score.week}</div></div>
+      <div class="stat-box"><div class="stat-box-label">Season High</div><div class="stat-box-num" style="color:var(--green);font-size:clamp(22px,6vw,28px)">${s.season_high_score.points.toFixed(1)}</div><div class="stat-box-sub">${s.season_high_score.team} Â· Wk ${s.season_high_score.week}</div></div>
+      <div class="stat-box"><div class="stat-box-label">Season Low</div><div class="stat-box-num" style="color:#e74c3c;font-size:clamp(22px,6vw,28px)">${s.season_low_score.points.toFixed(1)}</div><div class="stat-box-sub">${s.season_low_score.team} Â· Wk ${s.season_low_score.week}</div></div>
     </div>
 
     <!-- Playoff Bracket -->
@@ -1669,7 +1669,7 @@ function showTab(tab, btn) {
 }
 
 
-// ── RING ROOM ────────────────────────────────────────────────
+// ââ RING ROOM ââââââââââââââââââââââââââââââââââââââââââââââââ
 function renderRingRoom() {
   const shelf = document.getElementById('ring-room-shelf');
   const champCounts = {};
@@ -1710,7 +1710,7 @@ function renderRingRoom() {
     tile.className = 'ring-tile';
     tile.tabIndex = 0;
     tile.setAttribute('role', 'button');
-    tile.setAttribute('aria-label', 'Open ' + s.season + ' champion details — ' + s.champion.team_name);
+    tile.setAttribute('aria-label', 'Open ' + s.season + ' champion details â ' + s.champion.team_name);
 
     tile.innerHTML =
       '' +
@@ -1747,7 +1747,7 @@ function renderRingRoom() {
   document.getElementById('ring-arrow-right').onclick = () => { shelf.scrollBy({left:scrollAmt, behavior:'smooth'}); };
 }
 
-// ── RIVALRIES ────────────────────────────────────────────────
+// ââ RIVALRIES ââââââââââââââââââââââââââââââââââââââââââââââââ
 function renderRivalries() {
   const container = document.getElementById('rivalries-container');
   if (!container) return;
@@ -1793,16 +1793,16 @@ function renderRivalries() {
     card.innerHTML = `
       <div>
         <div class="rivalry-team" style="color:${aLead?'var(--wine)':tied?'var(--bone)':'var(--bone-dim)'}">${aTeam}</div>
-        <div class="rivalry-stat">${r.aW} wins · ${(r.aW/r.games*100).toFixed(0)}%</div>
+        <div class="rivalry-stat">${r.aW} wins Â· ${(r.aW/r.games*100).toFixed(0)}%</div>
       </div>
       <div>
         <div class="rivalry-vs">VS</div>
-        <div class="rivalry-record">${r.aW} – ${r.bW}</div>
-        <div style="font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--bone-dim);text-align:center;margin-top:4px">${r.games} GAMES · AVG MARGIN ${r.avgMargin.toFixed(1)}</div>
+        <div class="rivalry-record">${r.aW} â ${r.bW}</div>
+        <div style="font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--bone-dim);text-align:center;margin-top:4px">${r.games} GAMES Â· AVG MARGIN ${r.avgMargin.toFixed(1)}</div>
       </div>
       <div style="text-align:right">
         <div class="rivalry-team" style="color:${!aLead&&!tied?'var(--wine)':tied?'var(--bone)':'var(--bone-dim)'}">${bTeam}</div>
-        <div class="rivalry-stat" style="text-align:right">${r.bW} wins · ${(r.bW/r.games*100).toFixed(0)}%</div>
+        <div class="rivalry-stat" style="text-align:right">${r.bW} wins Â· ${(r.bW/r.games*100).toFixed(0)}%</div>
       </div>
     `;
     card.onclick = () => showH2HModal(r.a, r.b);
@@ -1810,7 +1810,7 @@ function renderRivalries() {
   });
 }
 
-// ── DROUGHT (merged into Records tab) ─────────────────────────
+// ââ DROUGHT (merged into Records tab) âââââââââââââââââââââââââ
 function renderDrought() {
   const container = document.getElementById('records-drought');
   if (!container) return;
@@ -1878,7 +1878,7 @@ function renderDrought() {
   container.innerHTML = html;
 }
 
-// ── COMPARE MODE ─────────────────────────────────────────────
+// ââ COMPARE MODE âââââââââââââââââââââââââââââââââââââââââââââ
 function renderCompare() {
   const activeMgrs = Object.values(MANAGERS_MAP)
     .filter(m => !RETIRED_MANAGERS.has(m.nickname))
@@ -1947,7 +1947,7 @@ function drawComparison() {
     return;
   }
 
-  // ── Gather all head-to-head games ──
+  // ââ Gather all head-to-head games ââ
   const h2hGames = [];
   SEASONS.forEach(s => {
     const realPlayoffKeys = new Set();
@@ -1987,11 +1987,11 @@ function drawComparison() {
     else break;
   }
 
-  // ── Games played ──
+  // ââ Games played ââ
   const gamesA = mA.weeklyScores.length;
   const gamesB = mB.weeklyScores.length;
 
-  // ── Build stat sections ──
+  // ââ Build stat sections ââ
   const sections = [
     { title: 'SUCCESS', stats: [
       { label: 'Wins', a: mA.wins, b: mB.wins },
@@ -2029,9 +2029,9 @@ function drawComparison() {
     .sort((a,b) => b.delta - a.delta)
     .slice(0, 4);
 
-  // ══════════════════════════════════════
+  // ââââââââââââââââââââââââââââââââââââââ
   //  1) EDGE SUMMARY PANEL
-  // ══════════════════════════════════════
+  // ââââââââââââââââââââââââââââââââââââââ
   const edgeBorderColor = edgeWinnerSide ? 'rgba(201,168,76,0.25)' : 'var(--wine-border)';
   let edgeBullets = '';
   if (topDeltas.length > 0) {
@@ -2069,9 +2069,9 @@ function drawComparison() {
       </div>
     </div>`;
 
-  // ══════════════════════════════════════
+  // ââââââââââââââââââââââââââââââââââââââ
   //  2) HEAD-TO-HEAD MATCHUP BLOCK
-  // ══════════════════════════════════════
+  // ââââââââââââââââââââââââââââââââââââââ
   const totalH2H = h2hA + h2hB;
   const streakTeam = streak.who === 'a' ? mA.teamName : mB.teamName;
   const streakLabel = streak.count > 0 ? streakTeam + ' W' + streak.count : '\u2014';
@@ -2106,9 +2106,9 @@ function drawComparison() {
       ${h2hDetailLines ? '<div class="cmp-h2h-details">' + h2hDetailLines + '</div>' : ''}
     </div>`;
 
-  // ══════════════════════════════════════
+  // ââââââââââââââââââââââââââââââââââââââ
   //  3 & 4) SECTIONED STAT BARS
-  // ══════════════════════════════════════
+  // ââââââââââââââââââââââââââââââââââââââ
   sections.forEach(sec => {
     let rowsHTML = '';
     sec.stats.forEach(s => {
@@ -2164,7 +2164,7 @@ function drawComparison() {
 }
 
 
-// ── H2H DEEP DIVE MODAL ───────────────────────────────────────
+// ââ H2H DEEP DIVE MODAL âââââââââââââââââââââââââââââââââââââââ
 function showH2HModal(mgrA, mgrB) {
   const mA = MANAGERS_MAP[mgrA];
   const mB = MANAGERS_MAP[mgrB];
@@ -2202,7 +2202,7 @@ function showH2HModal(mgrA, mgrB) {
       <span style="font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--bone-muted);width:70px">${g.season} Wk${g.week}</span>
       <span style="font-family:'Bebas Neue',sans-serif;font-size:16px;flex:1;color:${aColor}">${mA.teamName}</span>
       <span style="font-family:'IBM Plex Mono',monospace;font-size:13px;color:${aColor}">${g.aPts.toFixed(1)}</span>
-      <span style="font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--bone-dim);margin:0 4px">—</span>
+      <span style="font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--bone-dim);margin:0 4px">â</span>
       <span style="font-family:'IBM Plex Mono',monospace;font-size:13px;color:${bColor}">${g.bPts.toFixed(1)}</span>
       <span style="font-family:'Bebas Neue',sans-serif;font-size:16px;flex:1;text-align:right;color:${bColor}">${mB.teamName}</span>
       ${playoffBadge(g.isPlayoffs)}
@@ -2235,5 +2235,152 @@ function showH2HModal(mgrA, mgrB) {
   `;
   document.getElementById('modal-overlay').classList.add('open');
 }
+
+// ── MOBILE ROUTER ─────────────────────────────────────────────
+const MOBILE_BP = 768;
+const VIEW_META = {
+  home:       { tab: 'champions', title: 'HALL OF CHAMPIONS', sub: '' },
+  champions:  { tab: 'champions', title: 'CHAMPIONS', sub: 'Every title. Every ring.' },
+  standings:  { tab: 'power',     title: 'STANDINGS', sub: 'All-time franchise stats' },
+  records:    { tab: 'records',   title: 'RECORDS',   sub: 'Single-game and season marks' },
+  seasons:    { tab: 'seasons',   title: 'SEASONS',   sub: 'Year-by-year results' },
+  managers:   { tab: 'managers',  title: 'MANAGERS',  sub: 'Career profiles' },
+  compare:    { tab: 'compare',   title: 'COMPARE',   sub: 'Head-to-head careers' },
+};
+
+function isMobile() { return window.innerWidth <= MOBILE_BP; }
+
+function getViewFromURL() {
+  const p = new URLSearchParams(window.location.search);
+  const v = p.get('view');
+  return (v && VIEW_META[v]) ? v : 'home';
+}
+
+function renderView(view) {
+  if (!isMobile()) return;
+  const meta = VIEW_META[view] || VIEW_META.home;
+  const heroHeader = document.getElementById('heroHeader');
+  const mph = document.getElementById('mobilePageHeader');
+  const isHome = (view === 'home');
+
+  if (isHome) {
+    document.body.classList.remove('mobile-view');
+    heroHeader.style.display = '';
+    mph.style.display = 'none';
+  } else {
+    document.body.classList.add('mobile-view');
+    heroHeader.style.display = 'none';
+    mph.style.display = 'block';
+    document.getElementById('mphKicker').textContent = 'BKGFFL';
+    document.getElementById('mphTitle').textContent = meta.title;
+    document.getElementById('mphSub').textContent = meta.sub;
+  }
+
+  document.querySelectorAll('.section[data-view]').forEach(function(s) {
+    s.classList.remove('active');
+    s.style.display = 'none';
+  });
+  var activeSection = document.getElementById('tab-' + meta.tab);
+  if (activeSection) {
+    activeSection.classList.add('active');
+    activeSection.style.display = 'block';
+  }
+
+  document.querySelectorAll('.drawer-link').forEach(function(l) {
+    l.classList.toggle('active', l.dataset.nav === view);
+  });
+
+  window.scrollTo(0, 0);
+}
+
+function setView(view, opts) {
+  var replace = opts && opts.replace;
+  var url = view === 'home' ? window.location.pathname : '?view=' + view;
+  if (replace) {
+    history.replaceState({ view: view }, '', url);
+  } else {
+    history.pushState({ view: view }, '', url);
+  }
+  renderView(view);
+}
+
+var _origShowTab = showTab;
+showTab = function(tab, btn) {
+  if (isMobile()) {
+    var tabToView = { champions:'champions', power:'standings', records:'records',
+                      seasons:'seasons', managers:'managers', compare:'compare' };
+    var view = tabToView[tab] || 'home';
+    setView(view);
+    return;
+  }
+  _origShowTab(tab, btn);
+};
+
+(function initDrawer() {
+  var hamburger = document.getElementById('hamburger');
+  var overlay = document.getElementById('drawer-overlay');
+  if (!hamburger || !overlay) return;
+
+  function openDrawer() {
+    hamburger.classList.add('open');
+    hamburger.setAttribute('aria-expanded', 'true');
+    overlay.classList.add('open');
+    document.body.style.overflow = 'hidden';
+  }
+  function closeDrawer() {
+    hamburger.classList.remove('open');
+    hamburger.setAttribute('aria-expanded', 'false');
+    overlay.classList.remove('open');
+    document.body.style.overflow = '';
+  }
+
+  hamburger.addEventListener('click', function() {
+    overlay.classList.contains('open') ? closeDrawer() : openDrawer();
+  });
+  overlay.addEventListener('click', function(e) {
+    if (e.target === overlay) closeDrawer();
+  });
+  document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape' && overlay.classList.contains('open')) closeDrawer();
+  });
+  overlay.querySelectorAll('.drawer-link').forEach(function(link) {
+    link.addEventListener('click', function() {
+      closeDrawer();
+      setView(link.dataset.nav);
+    });
+  });
+})();
+
+window.addEventListener('popstate', function(e) {
+  if (isMobile()) {
+    var view = (e.state && e.state.view) ? e.state.view : getViewFromURL();
+    renderView(view);
+  }
+});
+
+function initMobileRouter() {
+  if (isMobile()) {
+    var view = getViewFromURL();
+    renderView(view);
+    history.replaceState({ view: view }, '', view === 'home' ? window.location.pathname : '?view=' + view);
+  } else {
+    document.body.classList.remove('mobile-view');
+    var hh = document.getElementById('heroHeader');
+    if (hh) hh.style.display = '';
+    var mp = document.getElementById('mobilePageHeader');
+    if (mp) mp.style.display = 'none';
+    document.querySelectorAll('.section[data-view]').forEach(function(s) {
+      s.style.display = '';
+    });
+  }
+}
+
+var _resizeTimer;
+window.addEventListener('resize', function() {
+  clearTimeout(_resizeTimer);
+  _resizeTimer = setTimeout(initMobileRouter, 150);
+});
+
+setTimeout(initMobileRouter, 200);
 
 setTimeout(loadData, 100);
