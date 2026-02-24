@@ -1,5 +1,22 @@
-// ── RETIRED FRANCHISES ───────────────────────────────────────
-// These managers are in the history books but no longer active
+// ── LEAGUE DATA POLICY ──────────────────────────────────────
+// Centralized filter constants — the single source of truth.
+const MIN_SEASON_YEAR = 2014;
+const ALLOWED_MANAGERS = new Set([
+  "LVC",              // LVC
+  "JG JR",            // Make Joco Great Again (MJGA)
+  "Bird",             // Team Beef
+  "mark",             // The Greek
+  "bubcon",           // Ohio City Cons
+  "terry",            // The Edmund Fitzgerald
+  "Fuzzy",            // Fuz Nuts U
+  "Ryan",             // Doobie Bros
+  "Jonathan",         // 98
+  "Johnny Fantasy",   // Johnny Fantasy
+  "andrew",           // Make List Avg Again
+  "B-waite",          // Opolos
+]);
+
+// Exiled franchises — NOT in ALLOWED_MANAGERS
 const RETIRED_MANAGERS = new Set([
   "A D",               // All Day
   "Clarke",            // Scott's Stars
@@ -10,12 +27,46 @@ const RETIRED_MANAGERS = new Set([
   "RealDeal-WhatWhat", // The Hurricane
 ]);
 
+/** Central filter: returns clean dataset with only allowed seasons and franchises.
+ *  ALL data consumers must use this instead of reading DATA.seasons directly. */
+function applyLeagueFilters(rawSeasons) {
+  return rawSeasons
+    .filter(s => s.season >= MIN_SEASON_YEAR)
+    .map(s => {
+      // Filter standings to allowed managers only
+      const filteredStandings = s.standings.filter(t => {
+        const mgr = t.managers[0] || '';
+        return ALLOWED_MANAGERS.has(mgr);
+      });
+      // Filter matchups: both teams must have allowed managers
+      const filteredMatchups = s.matchups.filter(m => {
+        const mgr1 = getMgrFromTeamKeyRaw(m.team1.team_key, s);
+        const mgr2 = getMgrFromTeamKeyRaw(m.team2.team_key, s);
+        if (!ALLOWED_MANAGERS.has(mgr1) || !ALLOWED_MANAGERS.has(mgr2)) {
+          if (typeof console !== 'undefined' && console.warn) {
+            console.warn('[LeagueFilter] Excluded matchup:', s.season, 'Wk' + m.week,
+              m.team1.team_name, 'vs', m.team2.team_name, '(exiled franchise)');
+          }
+          return false;
+        }
+        return true;
+      });
+      return { ...s, standings: filteredStandings, matchups: filteredMatchups };
+    });
+}
+
+/** Raw team_key lookup that works on unfiltered season data (used by applyLeagueFilters). */
+function getMgrFromTeamKeyRaw(teamKey, season) {
+  if (!teamKey) return '';
+  const found = season.standings.find(t => t.team_key === teamKey);
+  return found ? (found.managers[0] || '') : '';
+}
+
 
 
 
 
 const RING_IMAGES = {};
-RING_IMAGES['2013'] = 'assets/rings/ring_2013.png';
 RING_IMAGES['2014'] = 'assets/rings/ring_2014.png';
 RING_IMAGES['2015'] = 'assets/rings/ring_2015.png';
 RING_IMAGES['2016'] = 'assets/rings/ring_2016.png';
@@ -57,7 +108,7 @@ DATA = {"league_name":"BKGFFL","pulled_at":"2026-02-20 14:33:11","seasons":[{"se
 
 // ── PROCESS RAW DATA ──────────────────────────────────────────
 function processData() {
-  SEASONS = DATA.seasons;
+  SEASONS = applyLeagueFilters(DATA.seasons);
 
   // Build manager registry from standings across all seasons
   SEASONS.forEach(s => {
@@ -287,7 +338,7 @@ function renderChampions() {
   grid.innerHTML = '';
 
   // Known ring years
-  const RING_YEAR_SET = new Set([2013,2014,2015,2016,2017,2018,2019,2020,2021,2022,2023,2024,2025]);
+  const RING_YEAR_SET = new Set([2014,2015,2016,2017,2018,2019,2020,2021,2022,2023,2024,2025]);
 
   // Dynasty callout — find most-titled
   const champCounts = {};
@@ -307,6 +358,7 @@ function renderChampions() {
     if (!s.champion) return;
     const finals = getSeasonFinalData(s);
     const mgr = getMgrFromTeamKey(s.champion.team_key, s) || '';
+    if (!mgr || !ALLOWED_MANAGERS.has(mgr)) return;
     const hasRing = RING_YEAR_SET.has(s.season);
     const champScore = finals.champScore;
     const runnerScore = finals.runnerScore;
@@ -349,9 +401,8 @@ function renderPower() {
     if (b.winPct !== a.winPct) return b.winPct - a.winPct;
     return b.wins - a.wins;
   };
-  const allMgrs = Object.values(MANAGERS_MAP);
-  const activeSorted = allMgrs.filter(m => !RETIRED_MANAGERS.has(m.nickname)).sort(sortByWinPct);
-  const retiredSorted = allMgrs.filter(m => RETIRED_MANAGERS.has(m.nickname)).sort(sortByWinPct);
+  const allMgrs = Object.values(MANAGERS_MAP).filter(m => ALLOWED_MANAGERS.has(m.nickname));
+  const activeSorted = allMgrs.sort(sortByWinPct);
 
   // Legacy badge helper
   const getLegacy = (m) => {
@@ -402,31 +453,13 @@ function renderPower() {
   };
 
   activeSorted.forEach((m, i) => renderRow(m, i + 1, false));
-
-  // ── RETIRED FRANCHISES SECTION ──
-  if (retiredSorted.length > 0) {
-    const divRow = document.createElement('tr');
-    divRow.innerHTML = `
-      <td colspan="7" style="padding:28px 16px 12px;border-bottom:1px solid rgba(201,168,76,0.15);">
-        <div style="display:flex;align-items:center;gap:16px;">
-          <div style="flex:1;height:1px;background:linear-gradient(90deg,transparent,rgba(201,168,76,0.3))"></div>
-          <div style="font-family:'Bebas Neue',sans-serif;font-size:18px;letter-spacing:4px;color:var(--bone-muted);">EXILED FRANCHISES</div>
-          <div style="flex:1;height:1px;background:linear-gradient(90deg,rgba(201,168,76,0.3),transparent)"></div>
-        </div>
-        <div style="font-family:'IBM Plex Mono',monospace;font-style:italic;font-size:11px;color:var(--bone-dim);text-align:center;margin-top:8px;letter-spacing:2px;">They know what they did.</div>
-      </td>
-    `;
-    tbody.appendChild(divRow);
-
-    retiredSorted.forEach((m) => renderRow(m, null, true));
-  }
 }
 
 // ── HEAD TO HEAD ─────────────────────────────────────────────
 function renderH2H() {
   const table = document.getElementById('h2h-table');
   if (!table) return;
-  const mgrs = Object.keys(MANAGERS_MAP);
+  const mgrs = Object.keys(MANAGERS_MAP).filter(m => ALLOWED_MANAGERS.has(m));
 
   // Build H2H matrix
   const h2h = {};
@@ -438,6 +471,7 @@ function renderH2H() {
       const t1mgr = getMgrFromTeamKey(m.team1.team_key, s);
       const t2mgr = getMgrFromTeamKey(m.team2.team_key, s);
       if (!t1mgr || !t2mgr || t1mgr === t2mgr) return;
+      if (!ALLOWED_MANAGERS.has(t1mgr) || !ALLOWED_MANAGERS.has(t2mgr)) return;
       if (m.winner_team_key === m.team1.team_key) {
         if(h2h[t1mgr]!==undefined) h2h[t1mgr][t2mgr]++;
       } else {
@@ -446,10 +480,7 @@ function renderH2H() {
     });
   });
 
-  // Sort managers: active first, dead last
-  const activeMgrsH2H = mgrs.filter(m => !RETIRED_MANAGERS.has(m));
-  const deadMgrsH2H = mgrs.filter(m => RETIRED_MANAGERS.has(m));
-  const sortedMgrs = [...activeMgrsH2H, ...deadMgrsH2H];
+  const sortedMgrs = [...mgrs].sort((a,b) => (MANAGERS_MAP[b]?.winPct||0) - (MANAGERS_MAP[a]?.winPct||0));
 
   // Abbreviation map for H2H grid
   function h2hName(name) {
@@ -457,7 +488,6 @@ function renderH2H() {
       'Make Joco Great Again (MJGA)': 'MJGA',
       'The Edmund Fitzgerald': 'Edm Fitz',
       'Make Lilst Avg Again': 'Lilst Avg',
-      'Cleveland Breedens': 'Cle Breed',
       'Zionsville Bubcons': 'Z Bubcons',
       'Santa Clara 49Cons': 'SC 49Cons',
       "Terry's Big Fantasy Team 2024": "Terry BFT",
@@ -469,10 +499,7 @@ function renderH2H() {
       'Johnny Fantasy': 'J Fantasy',
       'Ohio City Cons': 'OH Cons',
       'Boston Bubcons': 'Bos Bubc',
-      "Squeek's Squad": "Squeek's",
-      'The HurricaneS': 'Hurricane',
       'Tig\u0027s Trail Mix': 'Tig Trail',
-      'Scott Stars': 'S Stars',
       'Doobie Bros': 'Doobie',
       'JG Peterson': 'JG P',
     };
@@ -483,9 +510,8 @@ function renderH2H() {
   const thead = document.createElement('thead');
   let hHTML2 = '<tr><th style="text-align:left;padding-left:10px;width:100px;max-width:100px;">vs →</th>';
   sortedMgrs.forEach(n => {
-    const isDead = RETIRED_MANAGERS.has(n);
     const colTeamName = MANAGERS_MAP[n]?.teamName || n;
-    hHTML2 += `<th style="${isDead?'color:var(--bone-muted);opacity:0.7;':''}" title="${colTeamName}">${h2hName(colTeamName)}</th>`;
+    hHTML2 += `<th title="${colTeamName}">${h2hName(colTeamName)}</th>`;
   });
   hHTML2 += '<th>TOT</th></tr>';
   thead.innerHTML = hHTML2;
@@ -494,10 +520,9 @@ function renderH2H() {
   const tbody = document.createElement('tbody');
   sortedMgrs.forEach(mgr => {
     const tr = document.createElement('tr');
-    const isMgrDead = RETIRED_MANAGERS.has(mgr);
     let totalW = 0;
     const mgrTeamName = MANAGERS_MAP[mgr]?.teamName || mgr;
-    let html = `<td class="h2h-row-header" style="${isMgrDead?'opacity:0.7;color:var(--bone-muted);':''}" title="${mgrTeamName}">${h2hName(mgrTeamName)}</td>`;
+    let html = `<td class="h2h-row-header" title="${mgrTeamName}">${h2hName(mgrTeamName)}</td>`;
     sortedMgrs.forEach(opp => {
       if (mgr === opp) { html += `<td class="h2h-self">—</td>`; return; }
       const w = h2h[mgr][opp]||0;
@@ -508,16 +533,8 @@ function renderH2H() {
       else if (w < l) { cls='h2h-loss'; if(l-w>=5) cellCls=' h2h-dominated'; }
       html += `<td class="${cellCls}" onclick="showH2HModal('${mgr}','${opp}')" style="cursor:pointer" title="Click for deep dive"><span class="${cls}">${w}-${l}</span></td>`;
     });
-    html += `<td style="font-family:'IBM Plex Mono',monospace;font-weight:600;color:${isMgrDead?'var(--bone-muted)':'var(--wine)'}">${totalW}</td>`;
-    tr.style.cssText = isMgrDead ? 'opacity:0.7;' : '';
+    html += `<td style="font-family:'IBM Plex Mono',monospace;font-weight:600;color:var(--wine)">${totalW}</td>`;
     tr.innerHTML = html;
-    // Add divider before first dead franchise
-    if (isMgrDead && !tbody.querySelector('.dead-divider')) {
-      const divRow = document.createElement('tr');
-      divRow.className = 'dead-divider';
-      divRow.innerHTML = `<td colspan="${sortedMgrs.length+2}" style="padding:16px;text-align:center;font-family:'Bebas Neue',sans-serif;font-size:14px;letter-spacing:3px;color:var(--bone-muted);border-top:1px solid #333;border-bottom:1px solid #333;background:rgba(0,0,0,0.3);">EXILED FRANCHISES</td>`;
-      tbody.appendChild(divRow);
-    }
     tbody.appendChild(tr);
   });
   table.appendChild(tbody);
@@ -845,11 +862,11 @@ function renderRecords() {
 
   // ══════ DUAL: WIN STREAKS + LOSS STREAKS ══════
   const winStreaks = Object.entries(streakData)
-    .filter(([mgr]) => !RETIRED_MANAGERS.has(mgr))
+    .filter(([mgr]) => ALLOWED_MANAGERS.has(mgr))
     .map(([mgr,d]) => ({mgr, streak:d.maxWin, year:d.winDetails, team:MANAGERS_MAP[mgr]?.teamName||mgr}))
     .sort((a,b) => b.streak - a.streak);
   const lossStreaks = Object.entries(streakData)
-    .filter(([mgr]) => !RETIRED_MANAGERS.has(mgr))
+    .filter(([mgr]) => ALLOWED_MANAGERS.has(mgr))
     .map(([mgr,d]) => ({mgr, streak:d.maxLoss, year:d.lossDetails, team:MANAGERS_MAP[mgr]?.teamName||mgr}))
     .sort((a,b) => b.streak - a.streak);
 
@@ -989,17 +1006,16 @@ function renderManagers(sortKey) {
     'Opolos':'BensonWaite', 'Johnny Fantasy':'Johnny', 'Fuz Nuts U':'Fuzzy',
     'Make Lilist Avg Again':'Andrew', 'Make Lilst Avg Again':'Andrew',
     'Doobie Bros':'Ryan', 'The Edmund Fitzgerald':'Terry',
-    'ALL DAY':'A D', 'Scott Stars':'Clarke'
   };
 
-  const allMgrs = Object.values(MANAGERS_MAP);
-  const activeMgrs = allMgrs.filter(m => !RETIRED_MANAGERS.has(m.nickname));
-  const retiredMgrs = allMgrs.filter(m => RETIRED_MANAGERS.has(m.nickname));
+  const allMgrs = Object.values(MANAGERS_MAP).filter(m => ALLOWED_MANAGERS.has(m.nickname));
+  const activeMgrs = allMgrs;
+  const retiredMgrs = [];
 
   // Compute drought for each
   activeMgrs.forEach(m => {
     const last = m.champYears.length ? Math.max(...m.champYears) : null;
-    m._drought = last ? (currentYear - last) : (currentYear - 2013 + 1);
+    m._drought = last ? (currentYear - last) : (currentYear - MIN_SEASON_YEAR + 1);
   });
 
   // Sort
@@ -1691,7 +1707,6 @@ function renderRingRoom() {
 
   // Per-year visual treatments: alternating gold/silver/platinum + unique accents
   const ringStyles = {
-    2013: { filter:'sepia(0.2) saturate(1.4)', glow:'rgba(218,165,32,0.4)', rot:-2 },
     2014: { filter:'sepia(0.15) saturate(1.2) brightness(1.05) hue-rotate(-5deg)', glow:'rgba(201,168,76,0.35)', rot:1 },
     2015: { filter:'saturate(0.12) brightness(1.3) contrast(1.1)', glow:'rgba(180,190,220,0.4)', rot:-1 },
     2016: { filter:'sepia(0.1) saturate(1.3) brightness(0.95) hue-rotate(5deg)', glow:'rgba(201,168,76,0.45)', rot:2 },
@@ -1710,6 +1725,7 @@ function renderRingRoom() {
     if (!s.champion) return;
     const finals = getSeasonFinalData(s);
     const mgr = getMgrFromTeamKey(s.champion.team_key, s) || '';
+    if (!mgr || !ALLOWED_MANAGERS.has(mgr)) return;
     const ringImg = RING_IMAGES[String(s.season)] || RING_IMAGES['2023'];
     const score = finals.champScore !== null && finals.runnerScore !== null ? finals.champScore + ' \u2013 ' + finals.runnerScore : '';
     const champIsDead = RETIRED_MANAGERS.has(mgr);
@@ -1760,7 +1776,7 @@ function renderRingRoom() {
 function renderRivalries() {
   const container = document.getElementById('rivalries-container');
   if (!container) return;
-  const mgrs = Object.keys(MANAGERS_MAP);
+  const mgrs = Object.keys(MANAGERS_MAP).filter(m => ALLOWED_MANAGERS.has(m));
   const rivalries = [];
 
   // Build all pairings with total games, records, avg margin
@@ -1824,7 +1840,7 @@ function renderDrought() {
   const container = document.getElementById('records-drought');
   if (!container) return;
   const currentYear = SEASONS[SEASONS.length-1].season;
-  const activeMgrs = Object.values(MANAGERS_MAP).filter(m => !RETIRED_MANAGERS.has(m.nickname));
+  const activeMgrs = Object.values(MANAGERS_MAP).filter(m => ALLOWED_MANAGERS.has(m.nickname));
 
   const droughts = activeMgrs.map(m => {
     const lastChamp = m.champYears.length ? Math.max(...m.champYears) : null;
@@ -1839,7 +1855,7 @@ function renderDrought() {
     return b.drought - a.drought;
   });
 
-  const maxDrought = currentYear - 2013;
+  const maxDrought = currentYear - MIN_SEASON_YEAR;
   const reigning = droughts.find(m => m.drought === 0);
   const longestActive = droughts.find(m => !m.lastChamp) || droughts[0];
 
@@ -1862,7 +1878,7 @@ function renderDrought() {
   html += '<div class="drought-list">';
   droughts.forEach((m, i) => {
     const neverWon = !m.lastChamp;
-    const droughtYears = neverWon ? (currentYear - 2013 + 1) : m.drought;
+    const droughtYears = neverWon ? (currentYear - MIN_SEASON_YEAR + 1) : m.drought;
     const barWidth = Math.min((droughtYears / maxDrought) * 100, 100);
     const isReigning = m.drought === 0;
     const barClass = neverWon ? 'drought-fill--never'
@@ -1879,7 +1895,7 @@ function renderDrought() {
       <div class="drought-row-name">${m.teamName}</div>
       <div class="drought-row-bar"><div class="drought-row-fill ${barClass}" style="width:${barWidth}%"></div></div>
       <div class="drought-row-tag ${labelClass}">${label}</div>
-      <div class="drought-row-last">${neverWon ? 'Est. 2013' : isReigning ? currentYear : 'Last: '+m.lastChamp}</div>
+      <div class="drought-row-last">${neverWon ? 'Est. ' + MIN_SEASON_YEAR : isReigning ? currentYear : 'Last: '+m.lastChamp}</div>
     </div>`;
   });
   html += '</div>';
@@ -1890,7 +1906,7 @@ function renderDrought() {
 // ── COMPARE MODE ─────────────────────────────────────────────
 function renderCompare() {
   const activeMgrs = Object.values(MANAGERS_MAP)
-    .filter(m => !RETIRED_MANAGERS.has(m.nickname))
+    .filter(m => ALLOWED_MANAGERS.has(m.nickname))
     .sort((a,b) => b.winPct !== a.winPct ? b.winPct - a.winPct : b.wins - a.wins);
 
   // Setup custom selects
