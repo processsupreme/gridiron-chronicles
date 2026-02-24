@@ -39,14 +39,13 @@
 }
 
 *, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
-html { scroll-behavior:smooth; -webkit-text-size-adjust:100%; overscroll-behavior:none; }
+html { scroll-behavior:smooth; -webkit-text-size-adjust:100%; }
 body {
   background:var(--black);
   color:var(--bone);
   font-family:'DM Sans', system-ui, sans-serif;
   font-size:15px; font-weight:400;
   overflow-x:hidden;
-  overscroll-behavior:none;
   -webkit-font-smoothing:antialiased;
   -moz-osx-font-smoothing:grayscale;
 }
@@ -1721,6 +1720,11 @@ body::before {
 }
 
 @media(max-width:768px) {
+
+  /* ── MOBILE SCROLL FIX ────────── */
+  html { scroll-behavior:auto; overscroll-behavior:contain; }
+  body { overscroll-behavior:contain; }
+  body::before { display:none; }
 
   /* ── GLOBAL / SECTIONS ─────────── */
   .section { padding:var(--space-lg) var(--space-md); }

@@ -698,7 +698,7 @@ function renderRecords() {
     });
   });
 
-  // ââââââ HEADLINE RECORDS ââââââ
+  // ══════ HEADLINE RECORDS ══════
   const high = allWeeklyScores[0];
   const biggest = allMargins[0];
 
@@ -781,9 +781,9 @@ function renderRecords() {
 
   html += '</div>';
 
-  // ââââââ PLAYOFFS (first section after headlines) ââââââ
+  // ══════ PLAYOFFS (first section after headlines) ══════
   html += '<div class="records-category">';
-  html += '<div class="records-cat-header"><div class="records-cat-icon">ð</div><div class="records-cat-title">Playoff Records</div><div class="records-cat-desc">When it matters most</div></div>';
+  html += '<div class="records-cat-header"><div class="records-cat-icon">🏆</div><div class="records-cat-title">Playoff Records</div><div class="records-cat-desc">When it matters most</div></div>';
   html += '<div class="records-dual">';
 
   // Most playoff wins
@@ -815,9 +815,9 @@ function renderRecords() {
   html += '</div></div>';
   html += '</div></div>';
 
-  // ââââââ TOP 10: HIGHEST SINGLE-GAME SCORES ââââââ
+  // ══════ TOP 10: HIGHEST SINGLE-GAME SCORES ══════
   html += '<div class="records-category">';
-  html += '<div class="records-cat-header"><div class="records-cat-icon">ð¥</div><div class="records-cat-title">Top 10 Single-Game Scores</div><div class="records-cat-desc">All-time best performances</div></div>';
+  html += '<div class="records-cat-header"><div class="records-cat-icon">🔥</div><div class="records-cat-title">Top 10 Single-Game Scores</div><div class="records-cat-desc">All-time best performances</div></div>';
   html += '<div class="records-leaderboard">';
   allWeeklyScores.slice(0, 10).forEach((s, i) => {
     html += `<div class="records-lb-row ${i===0?'gold':''}">
@@ -829,9 +829,9 @@ function renderRecords() {
   });
   html += '</div></div>';
 
-  // ââââââ TOP 10: BIGGEST BLOWOUTS ââââââ
+  // ══════ TOP 10: BIGGEST BLOWOUTS ══════
   html += '<div class="records-category">';
-  html += '<div class="records-cat-header"><div class="records-cat-icon">ð</div><div class="records-cat-title">Top 10 Biggest Blowouts</div><div class="records-cat-desc">Margin of victory</div></div>';
+  html += '<div class="records-cat-header"><div class="records-cat-icon">💀</div><div class="records-cat-title">Top 10 Biggest Blowouts</div><div class="records-cat-desc">Margin of victory</div></div>';
   html += '<div class="records-leaderboard">';
   allMargins.slice(0, 10).forEach((m, i) => {
     html += `<div class="records-lb-row ${i===0?'gold':''}">
@@ -843,7 +843,7 @@ function renderRecords() {
   });
   html += '</div></div>';
 
-  // ââââââ DUAL: WIN STREAKS + LOSS STREAKS ââââââ
+  // ══════ DUAL: WIN STREAKS + LOSS STREAKS ══════
   const winStreaks = Object.entries(streakData)
     .filter(([mgr]) => !RETIRED_MANAGERS.has(mgr))
     .map(([mgr,d]) => ({mgr, streak:d.maxWin, year:d.winDetails, team:MANAGERS_MAP[mgr]?.teamName||mgr}))
@@ -854,7 +854,7 @@ function renderRecords() {
     .sort((a,b) => b.streak - a.streak);
 
   html += '<div class="records-category">';
-  html += '<div class="records-cat-header"><div class="records-cat-icon">ð</div><div class="records-cat-title">Streaks</div><div class="records-cat-desc">Longest runs of dominance and despair</div></div>';
+  html += '<div class="records-cat-header"><div class="records-cat-icon">📈</div><div class="records-cat-title">Streaks</div><div class="records-cat-desc">Longest runs of dominance and despair</div></div>';
   html += '<div class="records-dual">';
 
   // Win streaks
@@ -884,7 +884,7 @@ function renderRecords() {
   html += '</div></div>';
   html += '</div></div>';
 
-  // ââââââ SEASON TOTALS ââââââ
+  // ══════ SEASON TOTALS ══════
   const seasonTotals = [];
   Object.entries(seasonPtsMap).forEach(([year, teams]) => {
     Object.entries(teams).forEach(([mgr, pts]) => {
@@ -894,7 +894,7 @@ function renderRecords() {
   seasonTotals.sort((a,b) => b.pts - a.pts);
 
   html += '<div class="records-category">';
-  html += '<div class="records-cat-header"><div class="records-cat-icon">ð</div><div class="records-cat-title">Top 10 Regular Season Totals</div><div class="records-cat-desc">Most points in a single regular season</div></div>';
+  html += '<div class="records-cat-header"><div class="records-cat-icon">📊</div><div class="records-cat-title">Top 10 Regular Season Totals</div><div class="records-cat-desc">Most points in a single regular season</div></div>';
   html += '<div class="records-leaderboard">';
   seasonTotals.slice(0, 10).forEach((s, i) => {
     html += `<div class="records-lb-row ${i===0?'gold':''}">
@@ -1084,7 +1084,7 @@ function renderManagers(sortKey) {
       '</div>' +
       '<div class="manager-stats">' +
         '<span class="stat-pill pill-titles">' +
-          '<span class="trophy-icon">ð</span>' +
+          '<span class="trophy-icon">🏆</span>' +
           '<span>' + m.championships + '</span>' +
           '<span class="stat-pill-label">Titles</span>' +
         '</span>' +
@@ -1127,7 +1127,7 @@ function renderManagers(sortKey) {
         '</div>' +
         '<div class="manager-stats">' +
           '<span class="stat-pill pill-titles" style="opacity:0.5">' +
-            '<span class="trophy-icon">ð</span>' +
+            '<span class="trophy-icon">🏆</span>' +
             '<span>' + m.championships + '</span>' +
             '<span class="stat-pill-label">Titles</span>' +
           '</span>' +
@@ -2038,9 +2038,9 @@ function drawComparison() {
     .sort((a,b) => b.delta - a.delta)
     .slice(0, 4);
 
-  // ââââââââââââââââââââââââââââââââââââââ
+  // ══════════════════════════════════════
   //  1) EDGE SUMMARY PANEL
-  // ââââââââââââââââââââââââââââââââââââââ
+  // ══════════════════════════════════════
   const edgeBorderColor = edgeWinnerSide ? 'rgba(201,168,76,0.25)' : 'var(--wine-border)';
   let edgeBullets = '';
   if (topDeltas.length > 0) {
@@ -2078,9 +2078,9 @@ function drawComparison() {
       </div>
     </div>`;
 
-  // ââââââââââââââââââââââââââââââââââââââ
+  // ══════════════════════════════════════
   //  2) HEAD-TO-HEAD MATCHUP BLOCK
-  // ââââââââââââââââââââââââââââââââââââââ
+  // ══════════════════════════════════════
   const totalH2H = h2hA + h2hB;
   const streakTeam = streak.who === 'a' ? mA.teamName : mB.teamName;
   const streakLabel = streak.count > 0 ? streakTeam + ' W' + streak.count : '\u2014';
@@ -2115,9 +2115,9 @@ function drawComparison() {
       ${h2hDetailLines ? '<div class="cmp-h2h-details">' + h2hDetailLines + '</div>' : ''}
     </div>`;
 
-  // ââââââââââââââââââââââââââââââââââââââ
+  // ══════════════════════════════════════
   //  3 & 4) SECTIONED STAT BARS
-  // ââââââââââââââââââââââââââââââââââââââ
+  // ══════════════════════════════════════
   sections.forEach(sec => {
     let rowsHTML = '';
     sec.stats.forEach(s => {
