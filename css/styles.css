@@ -39,13 +39,14 @@
 }
 
 *, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
-html { scroll-behavior:smooth; -webkit-text-size-adjust:100%; }
+html { scroll-behavior:smooth; -webkit-text-size-adjust:100%; overscroll-behavior:none; }
 body {
   background:var(--black);
   color:var(--bone);
   font-family:'DM Sans', system-ui, sans-serif;
   font-size:15px; font-weight:400;
   overflow-x:hidden;
+  overscroll-behavior:none;
   -webkit-font-smoothing:antialiased;
   -moz-osx-font-smoothing:grayscale;
 }
@@ -1735,6 +1736,7 @@ body::before {
   body.mobile-view .masthead,
   body.mobile-view .top-bar { display:none; }
   body.mobile-view .mobile-page-header { display:block; }
+  body.mobile-view .section-header { display:none; }
 
   /* ── MASTHEAD ───────────────────── */
   .masthead { padding:32px var(--space-md) 16px; }
