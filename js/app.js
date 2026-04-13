@@ -1245,13 +1245,14 @@ function renderManagers(sortKey) {
 
   // Signature line generator
   const getSig = (m) => {
-    if (m.championships >= 3) return m.championships + '× CHAMPION · DYNASTY';
-    if (m.championships === 0 && m.playoffAppearances >= 5 && m.winPct >= 0.50) return 'PLAYOFF REGULAR · NO TITLES';
-    if (m.championships === 0 && m.winPct >= 0.52) return 'GOOD TEAM · NO TITLES';
-    if (m.championships === 0 && m.winPct < 0.48 && m.seasons >= 3) return 'REBUILD ETERNAL';
-    if (m.championships === 2) return '2× CHAMPION';
+    if (m.championships >= 3) return m.championships + '\u00d7 CHAMPION \u00b7 DYNASTY';
+    if (m.championships === 2) return '2\u00d7 CHAMPION';
     if (m.championships === 1) return 'CHAMPION';
-    return '';
+    if (m.playoffAppearances >= 6) return 'PLAYOFF REGULAR \u00b7 NO TITLES';
+    if (m.playoffAppearances >= 4) return 'CONTENDER \u00b7 NO TITLES';
+    if (m.winPct >= 0.50) return 'ABOVE .500 \u00b7 NO TITLES';
+    if (m.winPct < 0.47 && m.seasons >= 3) return 'REBUILD MODE';
+    return 'STILL SEARCHING';
   };
 
   sorted.forEach(m => {
