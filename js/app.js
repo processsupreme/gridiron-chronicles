@@ -317,24 +317,43 @@ function getSeasonFinalData(season) {
   };
 }
 
-function buildSparkline(yearlyStats, width, height) {
+function buildSparkline(yearlyStats, width, height, champYears) {
   if (!yearlyStats || yearlyStats.length < 2) return '';
   const sorted = [...yearlyStats].sort((a, b) => a.year - b.year);
-  const vals = sorted.map(s => s.winPct);
+  const champSet = new Set(champYears || []);
+  // Use a composite score: win% as base, boosted by playoff rank
+  // rank 1-2 = championship contender, rank 7+ = bad season
+  const vals = sorted.map(s => {
+    let score = s.winPct;
+    if (s.rank <= 2) score += 0.15;
+    else if (s.rank <= 4) score += 0.08;
+    else if (s.rank <= 6) score += 0.03;
+    return Math.min(score, 1);
+  });
   const min = Math.min(...vals), max = Math.max(...vals);
   const range = max - min || 0.1;
   const step = width / (vals.length - 1);
-  const points = vals.map((v, i) => {
-    const x = (i * step).toFixed(1);
-    const y = (height - ((v - min) / range) * (height - 4) - 2).toFixed(1);
-    return x + ',' + y;
-  }).join(' ');
+  const coords = vals.map((v, i) => ({
+    x: parseFloat((i * step).toFixed(1)),
+    y: parseFloat((height - ((v - min) / range) * (height - 4) - 2).toFixed(1)),
+  }));
+  const points = coords.map(c => c.x + ',' + c.y).join(' ');
   const lastVal = vals[vals.length - 1];
   const firstVal = vals[0];
   const trendColor = lastVal > firstVal ? '#4ade80' : lastVal < firstVal ? '#f87171' : '#c9a84c';
-  return '<svg width="' + width + '" height="' + height + '" style="display:block;margin-top:6px" aria-label="Win% trend: ' + (firstVal * 100).toFixed(0) + '% to ' + (lastVal * 100).toFixed(0) + '%">' +
+
+  // Build championship markers
+  let champMarkers = '';
+  sorted.forEach((s, i) => {
+    if (champSet.has(s.year)) {
+      champMarkers += '<circle cx="' + coords[i].x + '" cy="' + coords[i].y + '" r="3" fill="#c9a84c" stroke="#0A0A0A" stroke-width="1"/>';
+    }
+  });
+
+  return '<svg width="' + width + '" height="' + height + '" style="display:block;margin-top:6px" aria-label="Performance trend with championship markers">' +
     '<polyline points="' + points + '" fill="none" stroke="' + trendColor + '" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" opacity="0.7"/>' +
-    '<circle cx="' + (step * (vals.length - 1)).toFixed(1) + '" cy="' + (height - ((lastVal - min) / range) * (height - 4) - 2).toFixed(1) + '" r="2.5" fill="' + trendColor + '"/>' +
+    champMarkers +
+    '<circle cx="' + coords[coords.length - 1].x + '" cy="' + coords[coords.length - 1].y + '" r="2.5" fill="' + trendColor + '"/>' +
     '</svg>';
 }
 
@@ -1270,7 +1289,7 @@ function renderManagers(sortKey) {
       '</div>' +
       '<div class="manager-sparkline">' +
         '<div class="sparkline-label">WIN% TREND</div>' +
-        buildSparkline(m.yearlyStats, 120, 28) +
+        buildSparkline(m.yearlyStats, 120, 28, m.champYears) +
       '</div>' +
       (function() {
         if (!m.yearlyStats || m.yearlyStats.length < 2) return '';
