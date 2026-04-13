@@ -398,7 +398,7 @@ function renderAll() {
   renderRecordsNav();
   renderCompare();
   document.getElementById('footnote').textContent =
-    `BKGFFL · THE GRIDIRON CHRONICLES · ${SEASONS.length} SEASONS · ${SEASONS.reduce((a,s)=>a+s.matchups.length,0)} MATCHUPS · DATA PULLED ${DATA.pulled_at}`;
+    `BKGFFL · THE BKGFFL LEDGER · ${SEASONS.length} SEASONS · ${SEASONS.reduce((a,s)=>a+s.matchups.length,0)} MATCHUPS · DATA PULLED ${DATA.pulled_at}`;
 }
 
 // ── MASTHEAD ─────────────────────────────────────────────────
