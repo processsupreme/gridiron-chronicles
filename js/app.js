@@ -747,10 +747,12 @@ function renderRecords() {
   SEASONS.forEach(s => {
     const seasonStreaks = {};
     Object.keys(MANAGERS_MAP).forEach(mgr => { seasonStreaks[mgr] = {w:0, l:0}; });
-    const sortedMatchups = [...s.matchups].filter(m=>!m.is_playoffs).sort((a,b)=>a.week-b.week);
+    const fullMu = s.allMatchups || s.matchups;
+    const fullSt = s.allStandings || s.standings;
+    const sortedMatchups = [...fullMu].filter(m=>!m.is_playoffs).sort((a,b)=>a.week-b.week);
     sortedMatchups.forEach(m => {
-      const t1mgr = getMgrFromTeamKey(m.team1.team_key, s);
-      const t2mgr = getMgrFromTeamKey(m.team2.team_key, s);
+      const t1mgr = getMgrFromTeamKeyFull(m.team1.team_key, fullSt);
+      const t2mgr = getMgrFromTeamKeyFull(m.team2.team_key, fullSt);
       if (!t1mgr || !t2mgr) return;
       const t1Won = m.winner_team_key === m.team1.team_key;
       [{ mgr:t1mgr, won:t1Won }, { mgr:t2mgr, won:!t1Won }].forEach(({mgr, won}) => {
