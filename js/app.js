@@ -88,7 +88,11 @@ DATA = {"league_name":"BKGFFL","pulled_at":"2026-02-20 14:33:11","seasons":[{"se
     renderAll();
   } catch (err) {
     var cta = document.getElementById('landing-cta');
-    if (cta) { cta.textContent = 'LOAD ERROR — REFRESH PAGE'; cta.disabled = true; }
+    if (cta) { cta.textContent = 'ERROR: ' + err.message; cta.disabled = true; }
+    var errDiv = document.createElement('div');
+    errDiv.style.cssText = 'position:fixed;bottom:0;left:0;right:0;padding:12px;background:#1a0000;color:#f87171;font-family:monospace;font-size:11px;z-index:9999;max-height:40vh;overflow:auto';
+    errDiv.textContent = err.stack || err.message;
+    document.body.appendChild(errDiv);
     return;
   }
 
