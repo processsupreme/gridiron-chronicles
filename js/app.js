@@ -2168,7 +2168,7 @@ function renderCloseGames() {
 
   // Top 5 closest games of all time
   if (closestGames.length > 0) {
-    html += '<div style="margin-top:24px;font-family:\'IBM Plex Mono\',monospace;font-size:10px;letter-spacing:2px;color:var(--bone-muted)">CLOSEST GAMES OF ALL TIME</div>';
+    html += '<div style="margin-top:24px;font-family:\'IBM Plex Mono\',monospace;font-size:10px;letter-spacing:2px;color:var(--bone-muted)">CLOSEST GAMES OF ALL TIME (EXCLUDING TIES)</div>';
     html += '<div class="luck-list" style="margin-top:8px">';
     closestGames.slice(0, 7).forEach((g, i) => {
       const poTag = g.isPlayoff ? ' <span style="color:var(--wine-bright);font-size:9px">PLAYOFF</span>' : '';
