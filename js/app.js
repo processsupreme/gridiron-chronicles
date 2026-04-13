@@ -1978,14 +1978,18 @@ function renderPlayoffPerformance() {
   });
 
   SEASONS.forEach(s => {
-    const bracketKeys = getChampionshipBracketKeys(s);
-    const champMgr = s.champion ? getMgrFromTeamKey(s.champion.team_key, s) : null;
-    const runnerMgr = s.runner_up ? getMgrFromTeamKey(s.runner_up.team_key, s) : null;
+    const fullSt = s.allStandings || s.standings;
+    const fullMu = s.allMatchups || s.matchups;
+    const bracketKeys = new Set();
+    fullSt.forEach(t => { if (t.rank <= 6) bracketKeys.add(t.team_key); });
+
+    const champMgr = s.champion ? getMgrFromTeamKeyFull(s.champion.team_key, fullSt) : null;
+    const runnerMgr = s.runner_up ? getMgrFromTeamKeyFull(s.runner_up.team_key, fullSt) : null;
 
     // Track appearances and seeds
-    s.standings.forEach(t => {
+    fullSt.forEach(t => {
       if (t.rank > 6) return;
-      const mgr = getMgrFromTeamKey(t.team_key, s);
+      const mgr = t.managers[0] || null;
       if (mgr && stats[mgr]) {
         stats[mgr].appearances++;
         stats[mgr].seeds.push(t.rank);
@@ -1995,30 +1999,30 @@ function renderPlayoffPerformance() {
     if (champMgr && stats[champMgr]) stats[champMgr].titles++;
     if (runnerMgr && stats[runnerMgr]) stats[runnerMgr].runnerUps++;
 
-    // Track playoff wins/losses and upsets
-    s.matchups.forEach(m => {
-      if (!isTruePlayoffGame(m, s)) return;
+    // Track playoff wins/losses and upsets from ALL matchups
+    fullMu.forEach(m => {
+      if (!m.is_playoffs) return;
+      if (!bracketKeys.has(m.team1.team_key) || !bracketKeys.has(m.team2.team_key)) return;
       if (!m.winner_team_key) return;
-      const mgr1 = getMgrFromTeamKey(m.team1.team_key, s);
-      const mgr2 = getMgrFromTeamKey(m.team2.team_key, s);
-      if (!mgr1 || !mgr2 || !stats[mgr1] || !stats[mgr2]) return;
+      const mgr1 = getMgrFromTeamKeyFull(m.team1.team_key, fullSt);
+      const mgr2 = getMgrFromTeamKeyFull(m.team2.team_key, fullSt);
 
       const winnerMgr = m.winner_team_key === m.team1.team_key ? mgr1 : mgr2;
       const loserMgr = m.winner_team_key === m.team1.team_key ? mgr2 : mgr1;
-      stats[winnerMgr].wins++;
-      stats[loserMgr].losses++;
+      if (stats[winnerMgr]) stats[winnerMgr].wins++;
+      if (stats[loserMgr]) stats[loserMgr].losses++;
 
-      // Track best playoff week
+      // Track best playoff week (only for allowed managers)
       const winnerPts = m.winner_team_key === m.team1.team_key ? m.team1.points : m.team2.points;
-      if (winnerPts > stats[winnerMgr].bestWeek) stats[winnerMgr].bestWeek = winnerPts;
       const loserPts = m.winner_team_key === m.team1.team_key ? m.team2.points : m.team1.points;
-      if (loserPts > stats[loserMgr].bestWeek) stats[loserMgr].bestWeek = loserPts;
+      if (stats[winnerMgr] && winnerPts > stats[winnerMgr].bestWeek) stats[winnerMgr].bestWeek = winnerPts;
+      if (stats[loserMgr] && loserPts > stats[loserMgr].bestWeek) stats[loserMgr].bestWeek = loserPts;
 
       // Check upset (lower seed beat higher seed)
-      const winnerSt = s.standings.find(t => t.team_key === (m.winner_team_key === m.team1.team_key ? m.team1.team_key : m.team2.team_key));
-      const loserSt = s.standings.find(t => t.team_key === (m.winner_team_key === m.team1.team_key ? m.team2.team_key : m.team1.team_key));
+      const winnerSt = fullSt.find(t => t.team_key === (m.winner_team_key === m.team1.team_key ? m.team1.team_key : m.team2.team_key));
+      const loserSt = fullSt.find(t => t.team_key === (m.winner_team_key === m.team1.team_key ? m.team2.team_key : m.team1.team_key));
       if (winnerSt && loserSt && winnerSt.rank > loserSt.rank) {
-        stats[winnerMgr].upsets++;
+        if (stats[winnerMgr]) stats[winnerMgr].upsets++;
       }
     });
   });
