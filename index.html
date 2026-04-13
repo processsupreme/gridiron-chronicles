@@ -12,9 +12,14 @@
 <meta name="twitter:description" content="The complete statistical archive of 12 seasons of BKGFFL fantasy football.">
 <meta name="theme-color" content="#722F37">
 <link rel="icon" type="image/svg+xml" href="favicon.svg">
+<link rel="manifest" href="manifest.json">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="BKGFFL">
+<link rel="apple-touch-icon" href="icons/icon-192.png">
 <title>BKGFFL — The Gridiron Chronicles</title>
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,400&family=DM+Sans:wght@300;400;500;600;700&family=IBM+Plex+Mono:wght@300;400;500;600&family=Bebas+Neue&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="css/styles.css?v=8">
+<link rel="stylesheet" href="css/styles.css?v=9">
 </head>
 <body>
 
@@ -124,9 +129,23 @@
 </div>
 
 <button class="back-to-top" id="back-to-top" aria-label="Back to top" onclick="window.scrollTo({top:0,behavior:'smooth'})">&#9650;</button>
+
+<div id="install-banner" class="install-banner" style="display:none">
+  <span class="install-banner-text">Add BKGFFL to your home screen for offline access</span>
+  <button id="install-btn" class="install-btn">Install</button>
+  <button id="install-dismiss" class="install-dismiss">&#10005;</button>
+</div>
+
 <div class="footnote" id="footnote"></div>
 </div>
 
-<script src="js/app.js?v=8" defer></script>
+<script src="js/app.js?v=9" defer></script>
+<script>
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', function() {
+    navigator.serviceWorker.register('/sw.js');
+  });
+}
+</script>
 </body>
 </html>

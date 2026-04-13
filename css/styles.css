@@ -1,6 +1,3 @@
-
-@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,400&family=DM+Sans:wght@300;400;500;600;700&family=IBM+Plex+Mono:wght@300;400;500;600&family=Bebas+Neue&display=swap');
-
 /* ════════════════════════════════════════════
    BKGFFL — MISSION CONTROL
    Wine + Bone + Terminal
@@ -2060,6 +2057,32 @@ body::before {
   font-family:'IBM Plex Mono',monospace; font-size:10px; color:var(--bone-muted);
   margin-top:4px; letter-spacing:0.5px;
 }
+
+/* ── INSTALL BANNER ──────── */
+.install-banner {
+  position:fixed; bottom:0; left:0; right:0; z-index:95;
+  background:linear-gradient(135deg, #1a0a0c, #0f0a0b);
+  border-top:1px solid rgba(114,47,55,0.4);
+  padding:14px 20px; display:flex; align-items:center; gap:12px;
+  box-shadow:0 -4px 20px rgba(0,0,0,0.5);
+  animation:slideUp 0.3s ease;
+}
+.install-banner-text {
+  flex:1; font-family:'DM Sans',sans-serif; font-size:13px;
+  color:var(--bone); line-height:1.3;
+}
+.install-btn {
+  font-family:'IBM Plex Mono',monospace; font-size:11px; letter-spacing:2px;
+  background:var(--wine); color:var(--bone); border:1px solid rgba(255,255,255,0.1);
+  padding:8px 16px; border-radius:4px; cursor:pointer; text-transform:uppercase;
+  transition:background 0.15s;
+}
+.install-btn:hover { background:var(--wine-bright); }
+.install-dismiss {
+  background:none; border:none; color:var(--bone-dim); font-size:16px;
+  cursor:pointer; padding:4px 8px;
+}
+.install-dismiss:hover { color:var(--bone); }
 
 /* ── BACK TO TOP ──────── */
 .back-to-top {
