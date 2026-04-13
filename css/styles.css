@@ -1722,7 +1722,7 @@ body::before {
 
 /* ── HAMBURGER (hidden on desktop) ──── */
 .hamburger {
-  display:none; position:fixed; top:12px; right:14px; z-index:200;
+  display:none; position:fixed; top:calc(12px + env(safe-area-inset-top, 0px)); right:14px; z-index:200;
   background:rgba(20,18,18,0.9); border:1px solid var(--wine-border);
   border-radius:8px; padding:10px 11px;
   cursor:pointer; backdrop-filter:blur(12px); -webkit-backdrop-filter:blur(12px);
@@ -1751,7 +1751,7 @@ body::before {
   position:absolute; top:0; right:0;
   width:min(280px, 75vw); height:100%;
   background:var(--card); border-left:1px solid var(--wine-border);
-  padding:72px 0 32px;
+  padding:calc(72px + env(safe-area-inset-top, 0px)) 0 32px;
   transform:translateX(100%); transition:transform 0.3s cubic-bezier(0.4,0,0.2,1);
   overflow-y:auto;
 }
@@ -1779,7 +1779,7 @@ body::before {
 .mobile-page-header {
   display:none;
   text-align:center;
-  padding:24px 16px 16px;
+  padding:calc(24px + env(safe-area-inset-top, 0px)) 16px 16px;
   border-bottom:1px solid var(--wine-border);
   background:linear-gradient(180deg, rgba(114,47,55,0.06) 0%, transparent 100%);
 }
@@ -2073,7 +2073,7 @@ body::before {
   position:fixed; bottom:0; left:0; right:0; z-index:95;
   background:linear-gradient(135deg, #1a0a0c, #0f0a0b);
   border-top:1px solid rgba(114,47,55,0.4);
-  padding:14px 20px; display:flex; align-items:center; gap:12px;
+  padding:14px 20px calc(14px + env(safe-area-inset-bottom, 0px)); display:flex; align-items:center; gap:12px;
   box-shadow:0 -4px 20px rgba(0,0,0,0.5);
   animation:slideUp 0.3s ease;
 }
