@@ -47,7 +47,7 @@ function applyLeagueFilters(rawSeasons) {
         }
         return true;
       });
-      return { ...s, standings: filteredStandings, matchups: filteredMatchups, allStandings: s.standings };
+      return { ...s, standings: filteredStandings, matchups: filteredMatchups, allStandings: s.standings, allMatchups: s.matchups };
     });
 }
 
@@ -124,10 +124,12 @@ DATA = {"league_name":"BKGFFL","pulled_at":"2026-02-20 14:33:11","seasons":[{"se
 function processData() {
   SEASONS = applyLeagueFilters(DATA.seasons);
 
-  // Build manager registry from standings across all seasons
+  // Build manager registry from FULL standings (allStandings) so stats reflect real 12-team seasons
   SEASONS.forEach(s => {
-    s.standings.forEach(t => {
+    const fullStandings = s.allStandings || s.standings;
+    fullStandings.forEach(t => {
       const mgr = t.managers[0] || 'Unknown';
+      if (!ALLOWED_MANAGERS.has(mgr)) return; // skip non-franchise managers
       if (!MANAGERS_MAP[mgr]) {
         MANAGERS_MAP[mgr] = {
           nickname: mgr, teamNames: new Set(), wins: 0, losses: 0, ties: 0,
@@ -168,18 +170,19 @@ function processData() {
     }
 
     // Playoff appearances = top 6 finishers by standings rank (reliable source of truth)
-    s.standings.forEach(t => {
+    fullStandings.forEach(t => {
       if (t.rank <= 6) {
         const mgr = t.managers[0] || null;
         if (mgr && MANAGERS_MAP[mgr]) MANAGERS_MAP[mgr].playoffAppearances++;
       }
     });
 
-    // Weekly high/low from matchups
-    s.matchups.forEach(m => {
+    // Weekly high/low from ALL matchups (not filtered) so game counts are accurate
+    const allMu = s.allMatchups || s.matchups;
+    allMu.forEach(m => {
       [m.team1, m.team2].forEach(t => {
         if (!t || t.points <= 0) return;
-        const mgr = getMgrFromTeamKey(t.team_key, s);
+        const mgr = getMgrFromTeamKeyFull(t.team_key, fullStandings);
         if (!mgr || !MANAGERS_MAP[mgr]) return;
         const mm = MANAGERS_MAP[mgr];
         mm.weeklyScores.push(t.points);
@@ -208,6 +211,12 @@ function processData() {
     la.championships = activeMgrs.reduce((s, m) => s + m.championships, 0) / activeMgrs.length;
   }
   window.LEAGUE_AVGS = la;
+}
+
+function getMgrFromTeamKeyFull(teamKey, standings) {
+  if (!teamKey) return null;
+  const found = standings.find(t => t.team_key === teamKey);
+  return found ? (found.managers[0] || null) : null;
 }
 
 function getMgrFromTeamKey(teamKey, season) {
@@ -2796,9 +2805,9 @@ function drawComparison() {
     else break;
   }
 
-  // ── Games played ──
-  const gamesA = mA.weeklyScores.length;
-  const gamesB = mB.weeklyScores.length;
+  // ── Games played (regular season W+L+T from standings) ──
+  const gamesA = mA.wins + mA.losses + mA.ties;
+  const gamesB = mB.wins + mB.losses + mB.ties;
 
   // ── Build stat sections ──
   const sections = [
