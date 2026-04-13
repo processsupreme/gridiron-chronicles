@@ -3,13 +3,24 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="description" content="12 seasons of BKGFFL fantasy football history. Championships, records, rivalries, and the stats that settle arguments.">
+<meta property="og:title" content="BKGFFL — The Gridiron Chronicles">
+<meta property="og:description" content="12 seasons. 12 managers. 849 matchups. 6 champions. The complete archive of BKGFFL fantasy football.">
+<meta property="og:type" content="website">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="BKGFFL — The Gridiron Chronicles">
+<meta name="twitter:description" content="The complete statistical archive of 12 seasons of BKGFFL fantasy football.">
+<meta name="theme-color" content="#722F37">
+<link rel="icon" type="image/svg+xml" href="favicon.svg">
 <title>BKGFFL — The Gridiron Chronicles</title>
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,400&family=DM+Sans:wght@300;400;500;600;700&family=IBM+Plex+Mono:wght@300;400;500;600&family=Bebas+Neue&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="css/styles.css?v=7">
+<link rel="stylesheet" href="css/styles.css?v=8">
 </head>
 <body>
 
-<div id="landing" class="landing">
+<a href="#tab-champions" class="skip-link">Skip to content</a>
+
+<div id="landing" class="landing" role="banner">
   <div class="landing-grain"></div>
   <div class="landing-vignette"></div>
   <div class="landing-inner">
@@ -18,14 +29,14 @@
     <div class="landing-est">EST. 2014</div>
     <button class="landing-cta" id="landing-cta">ENTER THE ARCHIVES</button>
   </div>
-  <div class="landing-stats">
-    <span><strong>12</strong> SEASONS</span>
+  <div class="landing-stats" id="landing-stats">
+    <span><strong id="ls-seasons">12</strong> SEASONS</span>
     <span class="landing-dot"></span>
-    <span><strong>12</strong> MANAGERS</span>
+    <span><strong id="ls-managers">12</strong> MANAGERS</span>
     <span class="landing-dot"></span>
-    <span><strong>849</strong> MATCHUPS</span>
+    <span><strong id="ls-matchups">849</strong> MATCHUPS</span>
     <span class="landing-dot"></span>
-    <span><strong>6</strong> CHAMPIONS</span>
+    <span><strong id="ls-champions">6</strong> CHAMPIONS</span>
   </div>
 </div>
 
@@ -60,50 +71,51 @@
 </header>
 
 <div class="top-bar"></div>
-<div class="masthead" id="heroHeader">
+<header class="masthead" id="heroHeader">
   <div class="masthead-eyebrow">The Gridiron Chronicles</div>
   <div class="masthead-logo">BKGFFL</div>
   <div class="masthead-rule"></div>
   <div class="masthead-meta-1">COMPLETE LEAGUE ARCHIVE</div>
-  <div class="masthead-meta-2">EST. 2014 · 12 SEASONS OF HISTORY</div>
+  <div class="masthead-meta-2" id="masthead-meta-2">EST. 2014 · 12 SEASONS OF HISTORY</div>
   <div class="masthead-vol" id="masthead-vol" style="display:none"></div>
   <div class="league-stats-strip" id="stats-strip"></div>
-</div>
+</header>
 
 <nav class="nav" id="desktopNav">
-  <button class="nav-btn active" onclick="showTab('champions',this)">◆ Champions</button>
-  <button class="nav-btn" onclick="showTab('power',this)">▲ Standings</button>
-  <button class="nav-btn" onclick="showTab('records',this)">◉ Records</button>
-  <button class="nav-btn" onclick="showTab('seasons',this)">▸ Seasons</button>
-  <button class="nav-btn" onclick="showTab('managers',this)">● Managers</button>
-  <button class="nav-btn" onclick="showTab('compare',this)">⇄ Compare</button>
-<div class="nav-fade"></div>
+  <button class="nav-btn active" onclick="showTab('champions',this)" aria-label="View Champions">◆ Champions</button>
+  <button class="nav-btn" onclick="showTab('power',this)" aria-label="View Standings">▲ Standings</button>
+  <button class="nav-btn" onclick="showTab('records',this)" aria-label="View Records">◉ Records</button>
+  <button class="nav-btn" onclick="showTab('seasons',this)" aria-label="View Seasons">▸ Seasons</button>
+  <button class="nav-btn" onclick="showTab('managers',this)" aria-label="View Managers">● Managers</button>
+  <button class="nav-btn" onclick="showTab('compare',this)" aria-label="Compare Managers">⇄ Compare</button>
 </nav>
 
-<div id="tab-champions" class="section active" data-view="champions">
+<main>
+<section id="tab-champions" class="section active" data-view="champions">
   <div class="section-header">
     <span class="section-title">HALL OF CHAMPIONS</span>
     <div class="dynasty-callout" id="dynasty-callout"></div>
   </div>
   <div class="champions-grid" id="champions-grid"></div>
-</div>
+</section>
 
-<div id="tab-power" class="section" data-view="standings"><div class="section-header"><div class="section-eyebrow">All Time</div><span class="section-title">All-Time Franchise Stats</span><span class="section-desc">Career numbers across every season</span><span class="section-desc" style="font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:3px;color:rgba(232,220,200,0.25);text-transform:uppercase;margin-top:6px;">Dynasties. Pretenders. The forever rebuild.</span></div><table class="power-table"><thead><tr><th>Rank</th><th>Franchise</th><th>W-L</th><th>Win %</th><th>Titles</th><th>Playoffs</th><th>PPG</th></tr></thead><tbody id="power-tbody"></tbody></table></div>
-<div id="tab-records" class="section" data-view="records"><div class="section-header"><div class="section-eyebrow">Historical Data</div><span class="section-title">The Record Book</span><span class="section-desc">12 seasons of receipts</span></div><div class="records-container" id="records-container"></div><div id="records-drought" class="records-chapter"></div></div>
-<div id="tab-seasons" class="section" data-view="seasons"><div class="section-header"><div class="section-eyebrow">Year By Year</div><span class="section-title">Season History</span></div><div class="seasons-list" id="seasons-list"></div></div>
-<div id="tab-managers" class="section" data-view="managers"><div class="section-header"><div class="section-eyebrow">The Roster</div><span class="section-title">Manager Profiles</span><span class="section-desc">Complete franchise histories.</span></div><div class="managers-grid" id="managers-grid"></div></div>
+<section id="tab-power" class="section" data-view="standings"><div class="section-header"><div class="section-eyebrow">All Time</div><span class="section-title">All-Time Franchise Stats</span><span class="section-desc">Career numbers across every season</span><span class="section-desc" style="font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:3px;color:rgba(232,220,200,0.25);text-transform:uppercase;margin-top:6px;">Dynasties. Pretenders. The forever rebuild.</span></div><table class="power-table"><thead><tr><th data-sort="rank">Rank</th><th>Franchise</th><th data-sort="wins">W-L</th><th data-sort="winPct" class="sort-active sort-desc">Win %</th><th data-sort="championships">Titles</th><th data-sort="playoffAppearances">Playoffs</th><th data-sort="avgPts">PPG</th></tr></thead><tbody id="power-tbody"></tbody></table></section>
+<section id="tab-records" class="section" data-view="records"><div class="section-header"><div class="section-eyebrow">Historical Data</div><span class="section-title">The Record Book</span><span class="section-desc">12 seasons of receipts</span></div><nav class="records-nav" id="records-nav" aria-label="Record Book chapters"></nav><div class="records-container" id="records-container"></div><div id="records-blowouts" class="records-chapter"></div><div id="records-playoffs" class="records-chapter"></div><div id="records-close" class="records-chapter"></div><div id="records-sos" class="records-chapter"></div><div id="records-consistency" class="records-chapter"></div><div id="records-bestseason" class="records-chapter"></div><div id="records-oddities" class="records-chapter"></div><div id="records-luck" class="records-chapter"></div><div id="records-drought" class="records-chapter"></div></section>
+<section id="tab-seasons" class="section" data-view="seasons"><div class="section-header"><div class="section-eyebrow">Year By Year</div><span class="section-title">Season History</span></div><div class="timeline" id="timeline"></div><div class="seasons-list" id="seasons-list"></div></section>
+<section id="tab-managers" class="section" data-view="managers"><div class="section-header"><div class="section-eyebrow">The Roster</div><span class="section-title">Manager Profiles</span><span class="section-desc">Complete franchise histories.</span></div><div class="managers-grid" id="managers-grid"></div></section>
 
-<div id="tab-compare" class="section" data-view="compare">
+<section id="tab-compare" class="section" data-view="compare">
   <div class="section-header"><div class="section-eyebrow">Side by Side</div><span class="section-title">Compare</span><span class="section-desc">Head-to-head career stats</span></div>
   <div class="compare-selects">
-    <div class="custom-select" id="cmp-a-wrap"><div class="custom-select-display" id="cmp-a-display" tabindex="0">Select Manager</div><div class="custom-select-options" id="cmp-a-options"></div><input type="hidden" id="cmp-a"></div>
+    <div class="custom-select" id="cmp-a-wrap"><div class="custom-select-display" id="cmp-a-display" tabindex="0" role="combobox" aria-label="Select first manager" aria-expanded="false">Select Manager</div><div class="custom-select-options" id="cmp-a-options" role="listbox"></div><input type="hidden" id="cmp-a"></div>
     <div class="compare-vs">VS</div>
-    <div class="custom-select" id="cmp-b-wrap"><div class="custom-select-display" id="cmp-b-display" tabindex="0">Select Manager</div><div class="custom-select-options" id="cmp-b-options"></div><input type="hidden" id="cmp-b"></div>
+    <div class="custom-select" id="cmp-b-wrap"><div class="custom-select-display" id="cmp-b-display" tabindex="0" role="combobox" aria-label="Select second manager" aria-expanded="false">Select Manager</div><div class="custom-select-options" id="cmp-b-options" role="listbox"></div><input type="hidden" id="cmp-b"></div>
   </div>
   <div id="compare-container"></div>
-</div>
+</section>
+</main>
 <div class="modal-overlay" id="modal-overlay" onclick="if(event.target===this)closeModal()">
-  <div class="modal">
+  <div class="modal" role="dialog" aria-modal="true">
     <div class="modal-drag-handle"></div>
     <button class="modal-close" onclick="closeModal()">✕</button>
     <div class="modal-header" id="modal-header"></div>
@@ -111,9 +123,10 @@
   </div>
 </div>
 
+<button class="back-to-top" id="back-to-top" aria-label="Back to top" onclick="window.scrollTo({top:0,behavior:'smooth'})">&#9650;</button>
 <div class="footnote" id="footnote"></div>
 </div>
 
-<script src="js/app.js?v=7" defer></script>
+<script src="js/app.js?v=8" defer></script>
 </body>
 </html>
