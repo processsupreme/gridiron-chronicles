@@ -237,7 +237,7 @@ function getMgrFromTeamName(teamName, season) {
 /** Returns a Set of team_keys for the top-6 championship bracket in a given season. */
 function getChampionshipBracketKeys(season) {
   const keys = new Set();
-  season.standings.forEach(t => { if (t.rank <= 6) keys.add(t.team_key); });
+  (season.allStandings || season.standings).forEach(t => { if (t.rank <= 6) keys.add(t.team_key); });
   return keys;
 }
 
@@ -679,8 +679,10 @@ function renderRecords() {
   let _qaTotal = 0, _qaConsolationSkipped = 0, _qaIncluded = 0, _qaTruePlayoff = 0;
 
   SEASONS.forEach(s => {
-    // Process matchups in week order so earlier weeks win the dedup
-    const sortedMu = [...s.matchups].sort((a,b) => a.week - b.week);
+    // Use ALL matchups (including vs non-franchise managers) for accurate records
+    const fullMu = s.allMatchups || s.matchups;
+    const fullSt = s.allStandings || s.standings;
+    const sortedMu = [...fullMu].sort((a,b) => a.week - b.week);
     sortedMu.forEach(m => {
       _qaTotal++;
 
@@ -705,8 +707,8 @@ function renderRecords() {
       const isPlayoff = isTruePlayoffGame(m, s);
       if (isPlayoff) _qaTruePlayoff++;
 
-      const t1mgr = getMgrFromTeamKey(m.team1.team_key, s) || m.team1.team_name;
-      const t2mgr = getMgrFromTeamKey(m.team2.team_key, s) || m.team2.team_name;
+      const t1mgr = getMgrFromTeamKeyFull(m.team1.team_key, fullSt) || m.team1.team_name;
+      const t2mgr = getMgrFromTeamKeyFull(m.team2.team_key, fullSt) || m.team2.team_name;
       const gk = gameKey(m, s);
 
       // Individual scores
@@ -1784,12 +1786,13 @@ function showSeasonModal(year) {
   }
 
   // ── SEASON AWARDS ──
-  const regSeason = s.matchups.filter(m => !m.is_playoffs);
+  const seasonFullMu = s.allMatchups || s.matchups;
+  const regSeason = seasonFullMu.filter(m => !m.is_playoffs);
   let allScores = [];
   let allMargins = [];
   const teamTotals = {};
 
-  s.matchups.forEach(m => {
+  seasonFullMu.forEach(m => {
     if (m.team1.points > 0) allScores.push({pts:m.team1.points, team:m.team1.team_name, week:m.week, playoff:m.is_playoffs});
     if (m.team2.points > 0) allScores.push({pts:m.team2.points, team:m.team2.team_name, week:m.week, playoff:m.is_playoffs});
     if (m.team1.points > 0 && m.team2.points > 0) {
@@ -2134,25 +2137,31 @@ function renderCloseGames() {
   const closestGames = [];
 
   SEASONS.forEach(s => {
-    s.matchups.forEach(m => {
-      if (!isNonConsolationGame(m, s)) return;
+    const cgFullMu = s.allMatchups || s.matchups;
+    const cgFullSt = s.allStandings || s.standings;
+    cgFullMu.forEach(m => {
+      if (m.is_playoffs) return; // regular season only
       if (!m.winner_team_key) return;
-      const mgr1 = getMgrFromTeamKey(m.team1.team_key, s);
-      const mgr2 = getMgrFromTeamKey(m.team2.team_key, s);
-      if (!mgr1 || !mgr2 || !stats[mgr1] || !stats[mgr2]) return;
+      const mgr1 = getMgrFromTeamKeyFull(m.team1.team_key, cgFullSt);
+      const mgr2 = getMgrFromTeamKeyFull(m.team2.team_key, cgFullSt);
+      if (!mgr1 || !mgr2) return;
+      // Only track stats for allowed managers
+      const mgr1Allowed = stats[mgr1] !== undefined;
+      const mgr2Allowed = stats[mgr2] !== undefined;
+      if (!mgr1Allowed && !mgr2Allowed) return;
 
       const margin = Math.abs(m.team1.points - m.team2.points);
       if (margin > CLOSE_MARGIN) return;
 
       const winnerMgr = m.winner_team_key === m.team1.team_key ? mgr1 : mgr2;
       const loserMgr = m.winner_team_key === m.team1.team_key ? mgr2 : mgr1;
-      stats[winnerMgr].closeWins++;
-      stats[loserMgr].closeLosses++;
+      if (stats[winnerMgr]) stats[winnerMgr].closeWins++;
+      if (stats[loserMgr]) stats[loserMgr].closeLosses++;
 
       closestGames.push({
         margin,
-        winner: MANAGERS_MAP[winnerMgr].teamName,
-        loser: MANAGERS_MAP[loserMgr].teamName,
+        winner: (MANAGERS_MAP[winnerMgr]?.teamName) || winnerMgr || m.team1.team_name,
+        loser: (MANAGERS_MAP[loserMgr]?.teamName) || loserMgr || m.team2.team_name,
         score: m.team1.points > m.team2.points
           ? m.team1.points.toFixed(1) + '\u2013' + m.team2.points.toFixed(1)
           : m.team2.points.toFixed(1) + '\u2013' + m.team1.points.toFixed(1),
@@ -2229,22 +2238,24 @@ function renderBlowoutDealers() {
   });
 
   SEASONS.forEach(s => {
-    s.matchups.forEach(m => {
-      if (!isNonConsolationGame(m, s)) return;
+    const boFullMu = s.allMatchups || s.matchups;
+    const boFullSt = s.allStandings || s.standings;
+    boFullMu.forEach(m => {
+      if (m.is_playoffs) return; // regular season only
       if (!m.winner_team_key) return;
-      const mgr1 = getMgrFromTeamKey(m.team1.team_key, s);
-      const mgr2 = getMgrFromTeamKey(m.team2.team_key, s);
-      if (!mgr1 || !mgr2 || !stats[mgr1] || !stats[mgr2]) return;
+      const mgr1 = getMgrFromTeamKeyFull(m.team1.team_key, boFullSt);
+      const mgr2 = getMgrFromTeamKeyFull(m.team2.team_key, boFullSt);
+      if (!mgr1 || !mgr2) return;
 
       const margin = Math.abs(m.team1.points - m.team2.points);
       if (margin < BLOWOUT_MARGIN) return;
 
       const winnerMgr = m.winner_team_key === m.team1.team_key ? mgr1 : mgr2;
       const loserMgr = m.winner_team_key === m.team1.team_key ? mgr2 : mgr1;
-      stats[winnerMgr].dealt++;
-      stats[loserMgr].received++;
-      if (margin > stats[winnerMgr].biggestWin) stats[winnerMgr].biggestWin = margin;
-      if (margin > stats[loserMgr].biggestLoss) stats[loserMgr].biggestLoss = margin;
+      if (stats[winnerMgr]) stats[winnerMgr].dealt++;
+      if (stats[loserMgr]) stats[loserMgr].received++;
+      if (stats[winnerMgr] && margin > stats[winnerMgr].biggestWin) stats[winnerMgr].biggestWin = margin;
+      if (stats[loserMgr] && margin > stats[loserMgr].biggestLoss) stats[loserMgr].biggestLoss = margin;
     });
   });
 
@@ -2545,29 +2556,30 @@ function renderLuckFactor() {
   });
 
   SEASONS.forEach(s => {
+    const lfFullMu = s.allMatchups || s.matchups;
+    const lfFullSt = s.allStandings || s.standings;
     const playoffStart = s.playoff_start_week || 14;
 
-    // Gather regular-season weekly scores per team
+    // Gather regular-season weekly scores for ALL teams (full 12-team pool)
     const weeklyScores = {};
-    s.matchups.forEach(m => {
-      if (m.week >= playoffStart) return; // regular season only
-      const mgr1 = getMgrFromTeamKey(m.team1.team_key, s);
-      const mgr2 = getMgrFromTeamKey(m.team2.team_key, s);
+    lfFullMu.forEach(m => {
+      if (m.week >= playoffStart) return;
+      const mgr1 = getMgrFromTeamKeyFull(m.team1.team_key, lfFullSt);
+      const mgr2 = getMgrFromTeamKeyFull(m.team2.team_key, lfFullSt);
       if (!mgr1 || !mgr2) return;
-      if (!ALLOWED_MANAGERS.has(mgr1) || !ALLOWED_MANAGERS.has(mgr2)) return;
 
       if (!weeklyScores[m.week]) weeklyScores[m.week] = [];
       weeklyScores[m.week].push({ mgr: mgr1, pts: m.team1.points });
       weeklyScores[m.week].push({ mgr: mgr2, pts: m.team2.points });
     });
 
-    // Track which managers participated this season
+    // Track which allowed managers participated this season
     const seasonMgrs = new Set();
 
-    // For each week, compute all-play record
+    // For each week, compute all-play record against ALL 11 opponents
     Object.values(weeklyScores).forEach(scores => {
       scores.forEach(entry => {
-        if (!luckData[entry.mgr]) return;
+        if (!luckData[entry.mgr]) return; // only track allowed managers
         seasonMgrs.add(entry.mgr);
         const opponents = scores.filter(o => o.mgr !== entry.mgr);
         const wins = opponents.filter(o => entry.pts > o.pts).length;
@@ -2576,9 +2588,9 @@ function renderLuckFactor() {
       });
     });
 
-    // Actual wins from standings
-    s.standings.forEach(t => {
-      const mgr = getMgrFromTeamKey(t.team_key, s);
+    // Actual wins from full standings
+    lfFullSt.forEach(t => {
+      const mgr = t.managers[0] || null;
       if (mgr && luckData[mgr] && seasonMgrs.has(mgr)) {
         luckData[mgr].actualWins += t.wins;
         luckData[mgr].actualLosses += t.losses;
