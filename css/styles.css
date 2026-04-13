@@ -441,7 +441,7 @@ body::before {
 
 /* ── STANDINGS TABLE ────────────────────── */
 .power-table {
-  width:100%; border-collapse:separate; border-spacing:0 4px;
+  width:100%; border-collapse:separate; border-spacing:0 4px; table-layout:fixed;
 }
 .power-table thead tr { }
 .power-table th {
@@ -473,6 +473,7 @@ body::before {
 }
 .power-table td {
   padding:clamp(12px,2.5vw,16px) 14px; vertical-align:middle;
+  overflow:hidden; text-overflow:ellipsis;
 }
 .power-table td:first-child { border-radius:var(--radius-sm) 0 0 var(--radius-sm); }
 .power-table td:last-child { border-radius:0 var(--radius-sm) var(--radius-sm) 0; }
@@ -1848,6 +1849,9 @@ body::before {
   /* ── STANDINGS TABLE ───────────── */
   .power-table th:nth-child(3), .power-table td:nth-child(3),
   .power-table th:nth-child(5), .power-table td:nth-child(5) { display:none; }
+  .power-table th, .power-table td { padding:8px 8px; font-size:10px; }
+  .power-table th:first-child, .power-table td:first-child { width:32px; }
+  .power-table th:nth-child(2), .power-table td:nth-child(2) { width:auto; }
 
   /* ── SEASONS PAGE ──────────────── */
   .season-row {
