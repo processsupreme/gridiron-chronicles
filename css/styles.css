@@ -1965,12 +1965,12 @@ body::before {
   /* ── RECORDS PAGE ──────────────── */
   .records-headlines { grid-template-columns:1fr; }
   .records-dual { grid-template-columns:1fr; }
-  .drought-row-last { display:none; }
   .drought-row { flex-wrap:wrap; gap:4px 8px; padding:10px 12px; }
   .drought-row-name { min-width:0; flex:1 1 auto; font-size:13px; }
   .drought-row-bar { flex-basis:100%; order:10; margin-top:2px; }
   .drought-row-tag { min-width:auto; font-size:10px; }
   .drought-row-rank { min-width:20px; font-size:12px; }
+  .drought-row-last { flex-basis:100%; order:11; font-size:9px; margin-top:2px; text-align:left; }
   .oddities-grid { grid-template-columns:1fr; }
   .playoff-perf-card { flex-wrap:wrap; }
   .playoff-perf-stats { width:100%; justify-content:space-between; margin-top:6px; }

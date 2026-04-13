@@ -391,10 +391,7 @@ function renderAll() {
   renderManagers();
   renderRivalries();
   renderBlowoutDealers();
-  renderPlayoffPerformance();
   renderCloseGames();
-  renderSOS();
-  renderConsistency();
   renderBestSeasons();
   renderLuckFactor();
   renderDrought();
@@ -2208,22 +2205,6 @@ function renderCloseGames() {
   });
   html += '</div>';
 
-  // Top 5 closest games of all time
-  if (closestGames.length > 0) {
-    html += '<div style="margin-top:24px;font-family:\'IBM Plex Mono\',monospace;font-size:10px;letter-spacing:2px;color:var(--bone-muted)">CLOSEST GAMES OF ALL TIME (EXCLUDING TIES)</div>';
-    html += '<div class="luck-list" style="margin-top:8px">';
-    closestGames.slice(0, 7).forEach((g, i) => {
-      const poTag = g.isPlayoff ? ' <span style="color:var(--wine-bright);font-size:9px">PLAYOFF</span>' : '';
-      html += `<div class="drought-row">
-        <div class="drought-row-rank">${i+1}</div>
-        <div class="drought-row-name">${g.winner} def. ${g.loser}${poTag}</div>
-        <div class="drought-row-tag" style="color:#c9a84c">+${g.margin.toFixed(1)}</div>
-        <div class="drought-row-last">${g.score} \u00b7 Wk${g.week}, ${g.year}</div>
-      </div>`;
-    });
-    html += '</div>';
-  }
-
   container.innerHTML = html;
 }
 
@@ -2723,10 +2704,7 @@ function renderRecordsNav() {
   const chapters = [
     { id: 'records-container', label: 'Records' },
     { id: 'records-blowouts', label: 'The Shed' },
-    { id: 'records-playoffs', label: 'Playoffs' },
     { id: 'records-close', label: 'Close Games' },
-    { id: 'records-sos', label: 'Schedule' },
-    { id: 'records-consistency', label: 'Consistency' },
     { id: 'records-bestseason', label: 'Best Seasons' },
     { id: 'records-luck', label: 'Luck' },
     { id: 'records-drought', label: 'Drought' },
@@ -2734,6 +2712,20 @@ function renderRecordsNav() {
   nav.innerHTML = chapters.map(c =>
     '<a class="records-nav-link" href="#' + c.id + '">' + c.label + '</a>'
   ).join('');
+
+  // Click handler for smooth scrolling with offset
+  nav.querySelectorAll('.records-nav-link').forEach(function(link) {
+    link.addEventListener('click', function(e) {
+      e.preventDefault();
+      var targetId = link.getAttribute('href').substring(1);
+      var target = document.getElementById(targetId);
+      if (target) {
+        var offset = 60;
+        var top = target.getBoundingClientRect().top + window.pageYOffset - offset;
+        window.scrollTo({ top: top, behavior: 'smooth' });
+      }
+    });
+  });
 }
 
 // ── COMPARE MODE ─────────────────────────────────────────────
