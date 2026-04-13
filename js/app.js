@@ -2225,8 +2225,8 @@ function renderBlowoutDealers() {
 
   let html = '<div class="records-chapter-header">';
   html += '<div class="records-chapter-label">Chapter</div>';
-  html += '<div class="records-chapter-title">Blowout Report</div>';
-  html += '<div class="records-chapter-sub">Games won or lost by 20+ points \u2014 who humiliates and who gets humiliated?</div>';
+  html += '<div class="records-chapter-title">Taken to the Shed</div>';
+  html += '<div class="records-chapter-sub">Games won or lost by 20+ points \u2014 who does the taking and who gets taken?</div>';
   html += '</div>';
 
   html += '<div class="luck-list">';
@@ -2678,7 +2678,7 @@ function renderRecordsNav() {
   if (!nav) return;
   const chapters = [
     { id: 'records-container', label: 'Records' },
-    { id: 'records-blowouts', label: 'Blowouts' },
+    { id: 'records-blowouts', label: 'The Shed' },
     { id: 'records-playoffs', label: 'Playoffs' },
     { id: 'records-close', label: 'Close Games' },
     { id: 'records-sos', label: 'Schedule' },
