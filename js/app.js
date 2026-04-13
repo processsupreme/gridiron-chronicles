@@ -2805,10 +2805,6 @@ function drawComparison() {
     else break;
   }
 
-  // ── Games played (regular season W+L+T from standings) ──
-  const gamesA = mA.wins + mA.losses + mA.ties;
-  const gamesB = mB.wins + mB.losses + mB.ties;
-
   // ── Build stat sections ──
   const sections = [
     { title: 'SUCCESS', stats: [
@@ -2821,10 +2817,6 @@ function drawComparison() {
       { label: 'Win %', a: parseFloat((mA.winPct*100).toFixed(1)), b: parseFloat((mB.winPct*100).toFixed(1)), fmt: v => v.toFixed(1)+'%', pctTie: true },
       { label: 'Avg PPG', a: parseFloat(mA.avgPts.toFixed(1)), b: parseFloat(mB.avgPts.toFixed(1)), fmt: v => v.toFixed(1), pctTie: true },
       { label: 'High Score', a: parseFloat(mA.highScore.toFixed(1)), b: parseFloat(mB.highScore.toFixed(1)), fmt: v => v.toFixed(1) },
-    ]},
-    { title: 'LONGEVITY', stats: [
-      { label: 'Seasons', a: mA.seasons, b: mB.seasons },
-      { label: 'Games Played', a: gamesA, b: gamesB },
     ]},
   ];
 
