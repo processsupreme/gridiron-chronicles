@@ -1999,6 +1999,11 @@ function renderPlayoffPerformance() {
     if (champMgr && stats[champMgr]) stats[champMgr].titles++;
     if (runnerMgr && stats[runnerMgr]) stats[runnerMgr].runnerUps++;
 
+    // Compute true seeding from regular season record (not post-playoff rank)
+    const seeding = [...fullSt].sort((a, b) => b.wins - a.wins || b.points_for - a.points_for);
+    const seedMap = {};
+    seeding.forEach((t, i) => { seedMap[t.team_key] = i + 1; });
+
     // Track playoff wins/losses and upsets from ALL matchups
     fullMu.forEach(m => {
       if (!m.is_playoffs) return;
@@ -2018,10 +2023,10 @@ function renderPlayoffPerformance() {
       if (stats[winnerMgr] && winnerPts > stats[winnerMgr].bestWeek) stats[winnerMgr].bestWeek = winnerPts;
       if (stats[loserMgr] && loserPts > stats[loserMgr].bestWeek) stats[loserMgr].bestWeek = loserPts;
 
-      // Check upset (lower seed beat higher seed)
-      const winnerSt = fullSt.find(t => t.team_key === (m.winner_team_key === m.team1.team_key ? m.team1.team_key : m.team2.team_key));
-      const loserSt = fullSt.find(t => t.team_key === (m.winner_team_key === m.team1.team_key ? m.team2.team_key : m.team1.team_key));
-      if (winnerSt && loserSt && winnerSt.rank > loserSt.rank) {
+      // Check upset: winner had a worse seed (higher number) than loser
+      const winnerKey = m.winner_team_key === m.team1.team_key ? m.team1.team_key : m.team2.team_key;
+      const loserKey = m.winner_team_key === m.team1.team_key ? m.team2.team_key : m.team1.team_key;
+      if (seedMap[winnerKey] > seedMap[loserKey]) {
         if (stats[winnerMgr]) stats[winnerMgr].upsets++;
       }
     });
@@ -2047,44 +2052,31 @@ function renderPlayoffPerformance() {
   html += '<div class="records-chapter-sub">When it matters most \u2014 who shows up and who folds?</div>';
   html += '</div>';
 
-  html += '<div class="playoff-perf-grid">';
+  // Column headers
+  html += '<div class="drought-row" style="background:none;border:none;padding:4px 14px;opacity:0.5">';
+  html += '<div class="drought-row-rank"></div>';
+  html += '<div class="drought-row-name" style="font-size:9px;letter-spacing:2px">FRANCHISE</div>';
+  html += '<div style="min-width:60px;text-align:center;font-family:\'IBM Plex Mono\',monospace;font-size:8px;letter-spacing:1.5px;color:var(--bone-muted)">WIN%</div>';
+  html += '<div style="min-width:70px;text-align:center;font-family:\'IBM Plex Mono\',monospace;font-size:8px;letter-spacing:1.5px;color:var(--bone-muted)">RECORD</div>';
+  html += '<div style="min-width:40px;text-align:center;font-family:\'IBM Plex Mono\',monospace;font-size:8px;letter-spacing:1.5px;color:var(--bone-muted)">APPS</div>';
+  html += '<div style="min-width:50px;text-align:center;font-family:\'IBM Plex Mono\',monospace;font-size:8px;letter-spacing:1.5px;color:var(--bone-muted)">UPSETS</div>';
+  html += '<div style="min-width:55px;text-align:center;font-family:\'IBM Plex Mono\',monospace;font-size:8px;letter-spacing:1.5px;color:var(--bone-muted)">BEST WK</div>';
+  html += '</div>';
+
+  html += '<div class="luck-list">';
   results.forEach((r, i) => {
-    const trophies = '\ud83c\udfc6'.repeat(r.titles);
-    const runnerIcons = '\ud83e\udd48'.repeat(r.runnerUps);
+    const trophies = '\ud83c\udfc6'.repeat(r.titles) + '\ud83e\udd48'.repeat(r.runnerUps);
     const pctColor = r.winPct >= 0.600 ? '#c9a84c' : r.winPct >= 0.500 ? '#4ade80' : r.winPct >= 0.400 ? 'var(--bone)' : 'rgba(248,113,113,0.8)';
     const pctLabel = r.totalGames > 0 ? (r.winPct * 100).toFixed(0) + '%' : '\u2014';
-    const borderColor = i === 0 ? 'rgba(201,168,76,0.3)' : i === 1 ? 'rgba(192,192,192,0.2)' : i === 2 ? 'rgba(180,130,70,0.2)' : 'rgba(255,255,255,0.04)';
 
-    html += `<div class="playoff-perf-card" style="border-color:${borderColor}">
-      <div class="playoff-perf-rank">${i+1}</div>
-      <div class="playoff-perf-name">${r.teamName}</div>
-      <div class="playoff-perf-trophies">${trophies}${runnerIcons}</div>
-      <div class="playoff-perf-stats">
-        <div class="playoff-perf-stat">
-          <span class="playoff-perf-stat-val" style="color:${pctColor}">${pctLabel}</span>
-          <span class="playoff-perf-stat-lbl">WIN%</span>
-        </div>
-        <div class="playoff-perf-stat">
-          <span class="playoff-perf-stat-val">${r.wins}W\u2013${r.losses}L</span>
-          <span class="playoff-perf-stat-lbl">RECORD</span>
-        </div>
-        <div class="playoff-perf-stat">
-          <span class="playoff-perf-stat-val">${r.appearances}</span>
-          <span class="playoff-perf-stat-lbl">APPS</span>
-        </div>
-        <div class="playoff-perf-stat">
-          <span class="playoff-perf-stat-val">${r.avgSeed.toFixed(1)}</span>
-          <span class="playoff-perf-stat-lbl">AVG SEED</span>
-        </div>
-        <div class="playoff-perf-stat">
-          <span class="playoff-perf-stat-val">${r.upsets}</span>
-          <span class="playoff-perf-stat-lbl">UPSETS</span>
-        </div>
-        <div class="playoff-perf-stat">
-          <span class="playoff-perf-stat-val">${r.bestWeek > 0 ? r.bestWeek.toFixed(1) : '\u2014'}</span>
-          <span class="playoff-perf-stat-lbl">BEST WK</span>
-        </div>
-      </div>
+    html += `<div class="drought-row${i < 3 ? ' drought-row--top' : ''}">
+      <div class="drought-row-rank">${i + 1}</div>
+      <div class="drought-row-name">${r.teamName} ${trophies}</div>
+      <div style="min-width:60px;text-align:center;font-family:'IBM Plex Mono',monospace;font-size:14px;font-weight:600;color:${pctColor}">${pctLabel}</div>
+      <div style="min-width:70px;text-align:center;font-family:'IBM Plex Mono',monospace;font-size:13px;color:var(--bone)">${r.wins}W\u2013${r.losses}L</div>
+      <div style="min-width:40px;text-align:center;font-family:'IBM Plex Mono',monospace;font-size:13px;color:var(--bone-dim)">${r.appearances}</div>
+      <div style="min-width:50px;text-align:center;font-family:'IBM Plex Mono',monospace;font-size:13px;color:${r.upsets > 0 ? '#c9a84c' : 'var(--bone-dim)'}">${r.upsets}</div>
+      <div style="min-width:55px;text-align:center;font-family:'IBM Plex Mono',monospace;font-size:13px;color:var(--bone-dim)">${r.bestWeek > 0 ? r.bestWeek.toFixed(1) : '\u2014'}</div>
     </div>`;
   });
   html += '</div>';
