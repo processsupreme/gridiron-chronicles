@@ -1966,6 +1966,16 @@ body::before {
   .records-headlines { grid-template-columns:1fr; }
   .records-dual { grid-template-columns:1fr; }
   .drought-row-last { display:none; }
+  .drought-row { flex-wrap:wrap; gap:4px 8px; padding:10px 12px; }
+  .drought-row-name { min-width:0; flex:1 1 auto; font-size:13px; }
+  .drought-row-bar { flex-basis:100%; order:10; margin-top:2px; }
+  .drought-row-tag { min-width:auto; font-size:10px; }
+  .drought-row-rank { min-width:20px; font-size:12px; }
+  .oddities-grid { grid-template-columns:1fr; }
+  .playoff-perf-card { flex-wrap:wrap; }
+  .playoff-perf-stats { width:100%; justify-content:space-between; margin-top:6px; }
+  .records-nav { gap:3px; }
+  .records-nav-link { font-size:9px; padding:5px 8px; letter-spacing:1px; }
 
   /* ── MODAL ──────────────────────── */
   .modal { max-height:92vh; }

@@ -2106,17 +2106,6 @@ function renderPlayoffPerformance() {
   html += '<div class="records-chapter-sub">When it matters most \u2014 who shows up and who folds?</div>';
   html += '</div>';
 
-  // Column headers
-  html += '<div class="drought-row" style="background:none;border:none;padding:4px 14px;opacity:0.5">';
-  html += '<div class="drought-row-rank"></div>';
-  html += '<div class="drought-row-name" style="font-size:9px;letter-spacing:2px">FRANCHISE</div>';
-  html += '<div style="min-width:60px;text-align:center;font-family:\'IBM Plex Mono\',monospace;font-size:8px;letter-spacing:1.5px;color:var(--bone-muted)">WIN%</div>';
-  html += '<div style="min-width:70px;text-align:center;font-family:\'IBM Plex Mono\',monospace;font-size:8px;letter-spacing:1.5px;color:var(--bone-muted)">RECORD</div>';
-  html += '<div style="min-width:40px;text-align:center;font-family:\'IBM Plex Mono\',monospace;font-size:8px;letter-spacing:1.5px;color:var(--bone-muted)">APPS</div>';
-  html += '<div style="min-width:50px;text-align:center;font-family:\'IBM Plex Mono\',monospace;font-size:8px;letter-spacing:1.5px;color:var(--bone-muted)">UPSETS</div>';
-  html += '<div style="min-width:55px;text-align:center;font-family:\'IBM Plex Mono\',monospace;font-size:8px;letter-spacing:1.5px;color:var(--bone-muted)">BEST WK</div>';
-  html += '</div>';
-
   html += '<div class="luck-list">';
   results.forEach((r, i) => {
     const trophies = '\ud83c\udfc6'.repeat(r.titles) + '\ud83e\udd48'.repeat(r.runnerUps);
@@ -2126,11 +2115,8 @@ function renderPlayoffPerformance() {
     html += `<div class="drought-row${i < 3 ? ' drought-row--top' : ''}">
       <div class="drought-row-rank">${i + 1}</div>
       <div class="drought-row-name">${r.teamName} ${trophies}</div>
-      <div style="min-width:60px;text-align:center;font-family:'IBM Plex Mono',monospace;font-size:14px;font-weight:600;color:${pctColor}">${pctLabel}</div>
-      <div style="min-width:70px;text-align:center;font-family:'IBM Plex Mono',monospace;font-size:13px;color:var(--bone)">${r.wins}W\u2013${r.losses}L</div>
-      <div style="min-width:40px;text-align:center;font-family:'IBM Plex Mono',monospace;font-size:13px;color:var(--bone-dim)">${r.appearances}</div>
-      <div style="min-width:50px;text-align:center;font-family:'IBM Plex Mono',monospace;font-size:13px;color:${r.upsets > 0 ? '#c9a84c' : 'var(--bone-dim)'}">${r.upsets}</div>
-      <div style="min-width:55px;text-align:center;font-family:'IBM Plex Mono',monospace;font-size:13px;color:var(--bone-dim)">${r.bestWeek > 0 ? r.bestWeek.toFixed(1) : '\u2014'}</div>
+      <div class="drought-row-tag" style="color:${pctColor};font-weight:600;font-size:14px">${pctLabel}</div>
+      <div class="drought-row-last">${r.wins}W\u2013${r.losses}L \u00b7 ${r.appearances} apps \u00b7 ${r.upsets} upsets</div>
     </div>`;
   });
   html += '</div>';
@@ -2216,7 +2202,7 @@ function renderCloseGames() {
       <div class="drought-row-bar">
         <div style="width:${barWidth}%;height:100%;background:${r.winPct >= 0.5 ? 'rgba(74,222,128,0.4)' : 'rgba(248,113,113,0.4)'};border-radius:4px;transition:width 0.3s"></div>
       </div>
-      <div class="drought-row-tag" style="color:${pctColor};min-width:55px">${(r.winPct*100).toFixed(0)}%</div>
+      <div class="drought-row-tag" style="color:${pctColor}">${(r.winPct*100).toFixed(0)}%</div>
       <div class="drought-row-last">${r.closeWins}W\u2013${r.closeLosses}L (${r.total} games)</div>
     </div>`;
   });
@@ -2302,7 +2288,7 @@ function renderBlowoutDealers() {
         <div style="width:${dealPct}%;height:100%;background:rgba(201,168,76,0.4);border-radius:4px 0 0 4px"></div>
         <div style="width:${100 - dealPct}%;height:100%;background:rgba(248,113,113,0.3);border-radius:0 4px 4px 0"></div>
       </div>
-      <div class="drought-row-tag" style="color:${color};min-width:55px">${tag}</div>
+      <div class="drought-row-tag" style="color:${color}">${tag}</div>
       <div class="drought-row-last">${r.dealt} dealt \u00b7 ${r.received} received \u00b7 max +${r.biggestWin.toFixed(1)}</div>
     </div>`;
   });
@@ -2354,7 +2340,7 @@ function renderSOS() {
       <div class="drought-row-bar">
         <div style="width:${barWidth}%;height:100%;background:${isHard ? 'rgba(248,113,113,0.4)' : isEasy ? 'rgba(74,222,128,0.3)' : 'rgba(232,220,200,0.15)'};border-radius:4px;transition:width 0.3s"></div>
       </div>
-      <div class="drought-row-tag" style="color:${color};min-width:50px">${r.avgPA.toFixed(1)}</div>
+      <div class="drought-row-tag" style="color:${color}">${r.avgPA.toFixed(1)}</div>
       <div class="drought-row-last">PF/PA diff: <span style="color:${deltaColor}">${deltaStr}</span> ppg</div>
     </div>`;
   });
@@ -2404,7 +2390,7 @@ function renderConsistency() {
       <div class="drought-row-bar">
         <div style="width:${barWidth}%;height:100%;background:${isConsistent ? 'rgba(74,222,128,0.4)' : isVolatile ? 'rgba(248,113,113,0.4)' : 'rgba(232,220,200,0.15)'};border-radius:4px;transition:width 0.3s"></div>
       </div>
-      <div class="drought-row-tag" style="color:${color};min-width:70px">${tag}</div>
+      <div class="drought-row-tag" style="color:${color}">${tag}</div>
       <div class="drought-row-last">\u00b1${r.stdDev.toFixed(1)} pts \u00b7 ${r.boom} booms \u00b7 ${r.bust} busts</div>
     </div>`;
   });
@@ -2457,7 +2443,7 @@ function renderBestSeasons() {
     html += `<div class="drought-row${i < 3 ? ' drought-row--top' : ''}" style="${borderColor}">
       <div class="drought-row-rank">${i+1}</div>
       <div class="drought-row-name">${r.teamName}${champBadge}</div>
-      <div class="drought-row-tag" style="color:var(--bone);min-width:55px">${record}</div>
+      <div class="drought-row-tag" style="color:var(--bone)">${record}</div>
       <div class="drought-row-last">${r.year} \u00b7 ${r.pf.toFixed(0)} PF \u00b7 #${r.rank} finish${playoffTag}</div>
     </div>`;
   });
@@ -2652,7 +2638,7 @@ function renderLuckFactor() {
       <div class="drought-row-bar">
         <div style="width:${barWidth}%;height:100%;background:${barColor};border-radius:4px;transition:width 0.3s"></div>
       </div>
-      <div class="drought-row-tag" style="color:${labelColor};min-width:70px">${deltaStr} W</div>
+      <div class="drought-row-tag" style="color:${labelColor}">${deltaStr} W</div>
       <div class="drought-row-last" style="min-width:100px">${r.actualWins}W actual / ${r.expectedWins.toFixed(0)}W exp.</div>
     </div>`;
   });
