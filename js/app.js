@@ -380,7 +380,6 @@ function renderAll() {
   renderSOS();
   renderConsistency();
   renderBestSeasons();
-  renderOddities();
   renderLuckFactor();
   renderDrought();
   renderRecordsNav();
@@ -2684,7 +2683,6 @@ function renderRecordsNav() {
     { id: 'records-sos', label: 'Schedule' },
     { id: 'records-consistency', label: 'Consistency' },
     { id: 'records-bestseason', label: 'Best Seasons' },
-    { id: 'records-oddities', label: 'Strange' },
     { id: 'records-luck', label: 'Luck' },
     { id: 'records-drought', label: 'Drought' },
   ];
