@@ -47,7 +47,7 @@ function applyLeagueFilters(rawSeasons) {
         }
         return true;
       });
-      return { ...s, standings: filteredStandings, matchups: filteredMatchups };
+      return { ...s, standings: filteredStandings, matchups: filteredMatchups, allStandings: s.standings };
     });
 }
 
@@ -1541,11 +1541,12 @@ function showManagerModal(nickname, highlightYear) {
         const standing = s.standings.find(t => (t.managers[0]||'')===nickname);
         if (!standing) return;
         const isChamp = s.champion && getMgrFromTeamKey(s.champion.team_key, s)===nickname;
-        // Best PF in season
-        const bestPF = [...s.standings].sort((a,b)=>b.points_for-a.points_for)[0];
+        // Best PF in season — compare against ALL teams, not just filtered
+        const allSt = s.allStandings || s.standings;
+        const bestPF = [...allSt].sort((a,b)=>b.points_for-a.points_for)[0];
         const isBestPF = bestPF && (bestPF.managers[0]||'')===nickname;
         // Worst PF
-        const worstPF = [...s.standings].sort((a,b)=>a.points_for-b.points_for)[0];
+        const worstPF = [...allSt].sort((a,b)=>a.points_for-b.points_for)[0];
         const isWorstPF = worstPF && (worstPF.managers[0]||'')===nickname;
         const badges = [];
         if (isChamp) badges.push('\ud83c\udfc6 Champion');
@@ -1785,7 +1786,8 @@ function showSeasonModal(year) {
 
   // Regular-season order (for season awards context)
   const regularSeasonStandings = [...s.standings].sort((a,b) => a.rank - b.rank);
-  const byRecord = [...s.standings].sort((a,b) => {
+  const allSt = s.allStandings || s.standings;
+  const byRecord = [...allSt].sort((a,b) => {
     const gpA = (a.wins || 0) + (a.losses || 0) + (a.ties || 0);
     const gpB = (b.wins || 0) + (b.losses || 0) + (b.ties || 0);
     const pctA = gpA ? ((a.wins || 0) + 0.5 * (a.ties || 0)) / gpA : 0;
@@ -1796,9 +1798,9 @@ function showSeasonModal(year) {
   const bestRecord = byRecord[0];
   const worstRecord = byRecord[byRecord.length - 1];
 
-  // MVP = most total points (reg season)
-  const mvpEntries = Object.entries(teamTotals).sort((a,b) => b[1] - a[1]);
-  const mvp = mvpEntries[0];
+  // MVP = most total points (reg season) — compare against ALL teams
+  const mvpSorted = [...allSt].sort((a,b) => b.points_for - a.points_for);
+  const mvp = mvpSorted[0] ? [mvpSorted[0].team_name, mvpSorted[0].points_for] : null;
 
   let awardsHTML = '';
   awardsHTML += '<div class="season-awards-grid">';
