@@ -413,8 +413,7 @@ function renderChampions() {
   [...SEASONS].reverse().forEach(s => {
     if (!s.champion) return;
     const finals = getSeasonFinalData(s);
-    const mgr = getMgrFromTeamKey(s.champion.team_key, s) || '';
-    if (!mgr || !ALLOWED_MANAGERS.has(mgr)) return;
+    const mgr = getMgrFromTeamKey(s.champion.team_key, s) || s.champion.team_name || '';
     const hasRing = RING_YEAR_SET.has(s.season);
     const champScore = finals.champScore;
     const runnerScore = finals.runnerScore;
@@ -445,7 +444,10 @@ function renderChampions() {
       '<div class="champ-manager">' + mgr + '</div>' +
       scoreHTML;
 
-    card.onclick = () => showManagerModal(mgr);
+    if (ALLOWED_MANAGERS.has(mgr)) {
+      card.onclick = () => showManagerModal(mgr);
+      card.style.cursor = 'pointer';
+    }
     grid.appendChild(card);
   });
 }
