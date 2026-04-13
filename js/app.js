@@ -1999,31 +1999,64 @@ function renderPlayoffPerformance() {
     if (champMgr && stats[champMgr]) stats[champMgr].titles++;
     if (runnerMgr && stats[runnerMgr]) stats[runnerMgr].runnerUps++;
 
-    // Compute true seeding from regular season record (not post-playoff rank)
+    // Trace championship bracket by working backwards from the final
+    const playoffWeeks = [...new Set(fullMu.filter(m => m.is_playoffs).map(m => m.week))].sort((a, b) => a - b);
+    if (playoffWeeks.length < 3) return;
+    const [wk1, wk2, wk3] = playoffWeeks;
+    const top6Games = (wk) => fullMu.filter(m => m.is_playoffs && m.week === wk && bracketKeys.has(m.team1.team_key) && bracketKeys.has(m.team2.team_key));
+
+    // Identify championship game from final week
+    const finalGames = top6Games(wk3);
+    const champGame = finalGames.find(m => m.is_championship) ||
+      finalGames.find(m => m.team1.team_key === s.champion?.team_key || m.team2.team_key === s.champion?.team_key);
+    const thirdPlaceGame = finalGames.find(m => m !== champGame);
+
+    // Collect the 4 semi-finalist team keys (from finals + 3rd place)
+    const semiFinalTeams = new Set();
+    [champGame, thirdPlaceGame].forEach(g => {
+      if (!g) return;
+      semiFinalTeams.add(g.team1.team_key);
+      semiFinalTeams.add(g.team2.team_key);
+    });
+
+    // Identify semi-final games (week 2 games involving semi-finalists)
+    const realSemis = top6Games(wk2).filter(m => semiFinalTeams.has(m.team1.team_key) || semiFinalTeams.has(m.team2.team_key));
+
+    // Collect all quarter-finalists from semis
+    const qfTeams = new Set(semiFinalTeams);
+    realSemis.forEach(m => { qfTeams.add(m.team1.team_key); qfTeams.add(m.team2.team_key); });
+
+    // Identify round 1 games (week 1 games involving quarter-finalists)
+    const realRd1 = top6Games(wk1).filter(m => qfTeams.has(m.team1.team_key) || qfTeams.has(m.team2.team_key));
+
+    // Compute true seeding from regular season record for upset detection
     const seeding = [...fullSt].sort((a, b) => b.wins - a.wins || b.points_for - a.points_for);
     const seedMap = {};
     seeding.forEach((t, i) => { seedMap[t.team_key] = i + 1; });
 
-    // Track playoff wins/losses and upsets from ALL matchups
-    fullMu.forEach(m => {
-      if (!m.is_playoffs) return;
-      if (!bracketKeys.has(m.team1.team_key) || !bracketKeys.has(m.team2.team_key)) return;
+    // All real championship bracket games
+    const allChampGames = [...(champGame ? [champGame] : []), ...(thirdPlaceGame ? [thirdPlaceGame] : []), ...realSemis, ...realRd1];
+    // Deduplicate by week+teams
+    const seen = new Set();
+    allChampGames.filter(m => {
+      const k = m.week + ':' + [m.team1.team_key, m.team2.team_key].sort().join(':');
+      if (seen.has(k)) return false;
+      seen.add(k);
+      return true;
+    }).forEach(m => {
       if (!m.winner_team_key) return;
       const mgr1 = getMgrFromTeamKeyFull(m.team1.team_key, fullSt);
       const mgr2 = getMgrFromTeamKeyFull(m.team2.team_key, fullSt);
-
       const winnerMgr = m.winner_team_key === m.team1.team_key ? mgr1 : mgr2;
       const loserMgr = m.winner_team_key === m.team1.team_key ? mgr2 : mgr1;
       if (stats[winnerMgr]) stats[winnerMgr].wins++;
       if (stats[loserMgr]) stats[loserMgr].losses++;
 
-      // Track best playoff week (only for allowed managers)
       const winnerPts = m.winner_team_key === m.team1.team_key ? m.team1.points : m.team2.points;
       const loserPts = m.winner_team_key === m.team1.team_key ? m.team2.points : m.team1.points;
       if (stats[winnerMgr] && winnerPts > stats[winnerMgr].bestWeek) stats[winnerMgr].bestWeek = winnerPts;
       if (stats[loserMgr] && loserPts > stats[loserMgr].bestWeek) stats[loserMgr].bestWeek = loserPts;
 
-      // Check upset: winner had a worse seed (higher number) than loser
       const winnerKey = m.winner_team_key === m.team1.team_key ? m.team1.team_key : m.team2.team_key;
       const loserKey = m.winner_team_key === m.team1.team_key ? m.team2.team_key : m.team1.team_key;
       if (seedMap[winnerKey] > seedMap[loserKey]) {
