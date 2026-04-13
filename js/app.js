@@ -332,10 +332,12 @@ function buildSparkline(yearlyStats, width, height, champYears) {
   });
   const min = Math.min(...vals), max = Math.max(...vals);
   const range = max - min || 0.1;
-  const step = width / (vals.length - 1);
+  const pad = 4;
+  const innerW = width - pad * 2;
+  const step = innerW / (vals.length - 1);
   const coords = vals.map((v, i) => ({
-    x: parseFloat((i * step).toFixed(1)),
-    y: parseFloat((height - ((v - min) / range) * (height - 4) - 2).toFixed(1)),
+    x: parseFloat((pad + i * step).toFixed(1)),
+    y: parseFloat((height - ((v - min) / range) * (height - 6) - 3).toFixed(1)),
   }));
   const points = coords.map(c => c.x + ',' + c.y).join(' ');
   const lastVal = vals[vals.length - 1];
