@@ -1,4 +1,4 @@
-var SHELL_VERSION = 'bkgffl-shell-v1';
+var SHELL_VERSION = 'bkgffl-shell-v2';
 var DATA_VERSION = 'bkgffl-data-v1';
 var FONTS_CACHE = 'bkgffl-fonts-v1';
 
