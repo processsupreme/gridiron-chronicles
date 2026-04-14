@@ -2253,8 +2253,11 @@ function renderBlowoutDealers() {
 
   const results = Object.entries(stats)
     .filter(([, d]) => d.dealt + d.received > 0)
-    .map(([mgr, d]) => ({ mgr, teamName: MANAGERS_MAP[mgr].teamName, ...d, ratio: d.dealt / (d.received || 1) }))
-    .sort((a, b) => b.dealt !== a.dealt ? b.dealt - a.dealt : a.received - b.received);
+    .map(([mgr, d]) => {
+      const net = d.dealt - d.received;
+      return { mgr, teamName: MANAGERS_MAP[mgr].teamName, ...d, net };
+    })
+    .sort((a, b) => b.net !== a.net ? b.net - a.net : b.dealt - a.dealt);
 
   let html = '<div class="records-chapter-header">';
   html += '<div class="records-chapter-label">Chapter</div>';
@@ -2266,10 +2269,10 @@ function renderBlowoutDealers() {
   results.forEach((r, i) => {
     const total = r.dealt + r.received;
     const dealPct = total > 0 ? (r.dealt / total) * 100 : 50;
-    const isDominant = r.dealt > r.received * 1.5;
-    const isVictim = r.received > r.dealt * 1.5;
-    const color = isDominant ? '#c9a84c' : isVictim ? '#f87171' : 'var(--bone)';
-    const tag = isDominant ? 'BULLY' : isVictim ? 'VICTIM' : '';
+    const isBully = r.net >= 10;
+    const isVictim = r.net <= -10;
+    const color = isBully ? '#c9a84c' : isVictim ? '#f87171' : 'var(--bone)';
+    const tag = isBully ? 'BULLY' : isVictim ? 'VICTIM' : '';
 
     html += `<div class="drought-row${i < 3 ? ' drought-row--top' : ''}">
       <div class="drought-row-rank">${i + 1}</div>
