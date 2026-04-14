@@ -493,7 +493,7 @@ body::before {
 .rank-num {
   font-family:'IBM Plex Mono', monospace; font-weight:600;
   font-size:clamp(18px,4.5vw,24px);
-  color:var(--bone-faint); width:40px; line-height:1;
+  color:var(--bone-faint); min-width:28px; line-height:1;
 }
 .rank-num.r1 { color:#c9a84c; font-size:clamp(24px,6vw,32px); font-weight:700; }
 .rank-num.r2 { color:rgba(192,192,210,0.7); font-size:clamp(20px,5vw,28px); }
@@ -1847,11 +1847,12 @@ body::before {
   }
 
   /* ── STANDINGS TABLE ───────────── */
+  .power-table { table-layout:auto; }
   .power-table th:nth-child(3), .power-table td:nth-child(3),
   .power-table th:nth-child(5), .power-table td:nth-child(5) { display:none; }
-  .power-table th, .power-table td { padding:8px 8px; font-size:10px; }
-  .power-table th:first-child, .power-table td:first-child { width:32px; }
-  .power-table th:nth-child(2), .power-table td:nth-child(2) { width:auto; }
+  .power-table th, .power-table td { padding:8px 6px; font-size:10px; white-space:nowrap; }
+  .power-table th:first-child, .power-table td:first-child { width:28px; min-width:28px; }
+  .power-table th:nth-child(2), .power-table td:nth-child(2) { white-space:normal; word-break:break-word; max-width:120px; }
 
   /* ── SEASONS PAGE ──────────────── */
   .season-row {

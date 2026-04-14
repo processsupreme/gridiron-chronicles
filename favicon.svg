@@ -1,6 +1,4 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32">
   <rect width="32" height="32" rx="6" fill="#722F37"/>
-  <ellipse cx="16" cy="16" rx="9" ry="6" fill="#8B4513" stroke="#5C2D0A" stroke-width="0.5" transform="rotate(-40 16 16)"/>
-  <path d="M12.5 12.5 L19.5 19.5" stroke="#E3DAC9" stroke-width="0.8" stroke-linecap="round"/>
-  <path d="M13.5 14.8 L15.5 12.8 M15 16 L17 14 M16.5 17.2 L18.5 15.2" stroke="#E3DAC9" stroke-width="0.6" stroke-linecap="round"/>
+  <text x="16" y="22" text-anchor="middle" font-family="sans-serif" font-weight="900" font-size="15" fill="#E3DAC9">BK</text>
 </svg>
