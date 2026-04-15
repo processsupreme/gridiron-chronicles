@@ -19,7 +19,7 @@
 <link rel="apple-touch-icon" href="icons/icon-192.png">
 <title>BKGFFL — The BKGFFL Ledger</title>
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,400&family=DM+Sans:wght@300;400;500;600;700&family=IBM+Plex+Mono:wght@300;400;500;600&family=Bebas+Neue&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="css/styles.css?v=9">
+<link rel="stylesheet" href="css/styles.css?v=10">
 </head>
 <body>
 
@@ -29,19 +29,12 @@
   <div class="landing-grain"></div>
   <div class="landing-vignette"></div>
   <div class="landing-inner">
-    <div class="landing-title">BKGFFL</div>
-    <div class="landing-subtitle">COMPLETE LEAGUE LEDGER</div>
-    <div class="landing-est">EST. 2014</div>
-    <button class="landing-cta" id="landing-cta">VIEW THE LEDGER</button>
-  </div>
-  <div class="landing-stats" id="landing-stats">
-    <span><strong id="ls-seasons">12</strong> SEASONS</span>
-    <span class="landing-dot"></span>
-    <span><strong id="ls-managers">12</strong> MANAGERS</span>
-    <span class="landing-dot"></span>
-    <span><strong id="ls-matchups">849</strong> MATCHUPS</span>
-    <span class="landing-dot"></span>
-    <span><strong id="ls-champions">6</strong> CHAMPIONS</span>
+    <div class="landing-eyebrow">BKGFFL</div>
+    <div class="landing-title">Complete League Ledger</div>
+    <div class="landing-supporting">A 12 year record of wins, losses, and regret.</div>
+    <div class="landing-est">Est. 2014 · 12 Seasons of History</div>
+    <button class="landing-cta" id="landing-cta">ENTER THE LEAGUE</button>
+    <div class="landing-micro">12 Managers. 849 Matchups. 1 Standard.</div>
   </div>
 </div>
 
@@ -87,7 +80,8 @@
 </header>
 
 <nav class="nav" id="desktopNav">
-  <button class="nav-btn active" onclick="showTab('champions',this)" aria-label="View Champions">◆ Champions</button>
+  <button class="nav-btn active" onclick="showTab('home',this)" aria-label="View Home">◈ Home</button>
+  <button class="nav-btn" onclick="showTab('champions',this)" aria-label="View Champions">◆ Champions</button>
   <button class="nav-btn" onclick="showTab('power',this)" aria-label="View Standings">▲ Standings</button>
   <button class="nav-btn" onclick="showTab('records',this)" aria-label="View Records">◉ Records</button>
   <button class="nav-btn" onclick="showTab('seasons',this)" aria-label="View Seasons">▸ Seasons</button>
@@ -96,7 +90,42 @@
 </nav>
 
 <main>
-<section id="tab-champions" class="section active" data-view="champions">
+<section id="tab-home" class="section active" data-view="home">
+  <div class="home-snapshot">
+    <div class="home-section-header">
+      <h2 class="home-section-title">League Snapshot</h2>
+      <p class="home-section-sub">The story right now.</p>
+    </div>
+    <div class="snapshot-cards" id="snapshot-cards"></div>
+  </div>
+  <div class="home-archive">
+    <div class="home-section-header">
+      <h2 class="home-section-title">Explore the Archive</h2>
+      <p class="home-section-sub">Every page tells a different version of the story.</p>
+    </div>
+    <div class="archive-cards" id="archive-cards"></div>
+  </div>
+  <div class="home-quickhits">
+    <div class="home-section-header">
+      <h2 class="home-section-title">Quick Hits</h2>
+      <p class="home-section-sub">A few numbers worth remembering.</p>
+    </div>
+    <div class="quickhits-list" id="quickhits-list"></div>
+  </div>
+  <div class="home-truths">
+    <div class="home-section-header">
+      <h2 class="home-section-title">League Truths</h2>
+    </div>
+    <div class="truths-list" id="truths-list"></div>
+  </div>
+  <div class="home-footer">
+    <div class="home-footer-name">BKGFFL</div>
+    <div class="home-footer-desc">Complete League Ledger</div>
+    <div class="home-footer-since">Since 2014</div>
+  </div>
+</section>
+
+<section id="tab-champions" class="section" data-view="champions">
   <div class="section-header">
     <span class="section-title">HALL OF CHAMPIONS</span>
     <div class="dynasty-callout" id="dynasty-callout"></div>
@@ -139,7 +168,7 @@
 <div class="footnote" id="footnote"></div>
 </div>
 
-<script src="js/app.js?v=9" defer></script>
+<script src="js/app.js?v=10" defer></script>
 <script>
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', function() {

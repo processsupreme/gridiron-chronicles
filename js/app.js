@@ -98,15 +98,9 @@ function loadData() {
         return;
       }
 
-      // Update landing page stats from real data
-      var activeMgrCount = Object.keys(MANAGERS_MAP).filter(function(m) { return ALLOWED_MANAGERS.has(m); }).length;
+      // Update landing page & masthead from real data
       var totalMatchups = SEASONS.reduce(function(a, s) { return a + s.matchups.length; }, 0);
-      var uniqueChampCount = new Set(SEASONS.map(function(s) { return s.champion ? getMgrFromTeamKey(s.champion.team_key, s) : null; }).filter(Boolean)).size;
       var el = function(id, val) { var e = document.getElementById(id); if (e) e.textContent = val; };
-      el('ls-seasons', SEASONS.length);
-      el('ls-managers', activeMgrCount);
-      el('ls-matchups', totalMatchups);
-      el('ls-champions', uniqueChampCount);
       el('masthead-meta-2', 'EST. 2014 · ' + SEASONS.length + ' SEASONS OF HISTORY');
 
       var landing = document.getElementById('landing');
@@ -397,6 +391,7 @@ function renderAll() {
   renderDrought();
   renderRecordsNav();
   renderCompare();
+  renderHomepage();
   document.getElementById('footnote').textContent =
     `BKGFFL · THE BKGFFL LEDGER · ${SEASONS.length} SEASONS · ${SEASONS.reduce((a,s)=>a+s.matchups.length,0)} MATCHUPS · DATA PULLED ${DATA.pulled_at}`;
 }
@@ -428,6 +423,137 @@ function renderMasthead() {
     [uniqueChamps, 'Champions'],
     [highScore, 'High Score'],
   ].map(([n,l]) => `<div class="strip-stat"><div class="strip-stat-num">${n}</div><div class="strip-stat-label">${l}</div></div>`).join('');
+}
+
+// ── HOMEPAGE ────────────────────────────────────────────────
+function renderHomepage() {
+  // ── Snapshot Cards ──
+  const snapshotEl = document.getElementById('snapshot-cards');
+  if (!snapshotEl) return;
+
+  // Find LVC stats
+  const lvc = MANAGERS_MAP['LVC'];
+  const lvcWinPct = lvc ? (lvc.winPct * 100).toFixed(1) + '% Win Rate' : '';
+  const lvcChamps = lvc ? lvc.championships + '\u00d7 Champion' : '';
+
+  // Find Johnny Fantasy stats
+  const johnny = MANAGERS_MAP['Johnny Fantasy'];
+  const johnnyRU = johnny ? (johnny.runnerUp || 0) : 0;
+  const johnnySzns = johnny ? johnny.seasons : 0;
+
+  // Find best regular season
+  let bestRecord = { wins: 0, losses: 0, mgr: '', year: 0 };
+  SEASONS.forEach(function(s) {
+    s.standings.forEach(function(t) {
+      if (t.wins > bestRecord.wins || (t.wins === bestRecord.wins && t.losses < bestRecord.losses)) {
+        bestRecord = { wins: t.wins, losses: t.losses, mgr: t.managers[0] || '', year: s.season };
+      }
+    });
+  });
+  const bestTeamName = MANAGERS_MAP[bestRecord.mgr] ? MANAGERS_MAP[bestRecord.mgr].teamName : bestRecord.mgr;
+
+  snapshotEl.innerHTML =
+    '<div class="snapshot-card">' +
+      '<div class="snapshot-card-label">The Standard</div>' +
+      '<div class="snapshot-card-primary">LVC</div>' +
+      '<div class="snapshot-card-supporting">' + lvcChamps + ' \u00b7 ' + lvcWinPct + '</div>' +
+      '<div class="snapshot-card-tag snapshot-tag--dynasty">Dynasty</div>' +
+    '</div>' +
+    '<div class="snapshot-card">' +
+      '<div class="snapshot-card-label">Still Waiting</div>' +
+      '<div class="snapshot-card-primary">Johnny Fantasy</div>' +
+      '<div class="snapshot-card-supporting">' + johnnyRU + ' Runner-Ups \u00b7 ' + johnnySzns + ' Seasons \u00b7 0 Titles</div>' +
+      '<div class="snapshot-card-tag snapshot-tag--never">Never Won</div>' +
+    '</div>' +
+    '<div class="snapshot-card">' +
+      '<div class="snapshot-card-label">Best Regular Season Ever</div>' +
+      '<div class="snapshot-card-primary">' + bestRecord.wins + '\u2013' + bestRecord.losses + '</div>' +
+      '<div class="snapshot-card-supporting">' + bestTeamName + ' \u00b7 ' + bestRecord.year + '</div>' +
+      '<div class="snapshot-card-tag snapshot-tag--record">Highest Win Rate</div>' +
+    '</div>';
+
+  // ── Archive Navigation Cards ──
+  const archiveEl = document.getElementById('archive-cards');
+  var uniqueChamps = new Set(SEASONS.map(function(s) { return s.champion ? s.champion.team_name : null; }).filter(Boolean)).size;
+
+  var archiveItems = [
+    { title: 'Standings', desc: 'Who actually runs this league.', teaser: 'LVC leads all-time win %', tab: 'power' },
+    { title: 'Champions', desc: 'Every title. Every winner. Every year it mattered.', teaser: uniqueChamps + ' total champions', tab: 'champions' },
+    { title: 'Records', desc: 'The moments that actually matter.', teaser: 'Best Regular Season: ' + bestRecord.wins + '\u2013' + bestRecord.losses + ' (' + bestTeamName + ')', tab: 'records' },
+    { title: 'Best Seasons', desc: 'The most dominant single-season runs in league history.', teaser: '#1: 98 (2014)', tab: 'seasons' },
+    { title: 'Droughts', desc: 'Some managers are still waiting.', teaser: 'Longest active drought: Johnny Fantasy', tab: 'records' },
+    { title: 'Managers', desc: 'Legacies, records, and receipts.', teaser: '12 franchises. One pecking order.', tab: 'managers' },
+  ];
+
+  archiveEl.innerHTML = archiveItems.map(function(item) {
+    return '<div class="archive-card" data-nav-tab="' + item.tab + '">' +
+      '<div class="archive-card-title">' + item.title + '</div>' +
+      '<div class="archive-card-desc">' + item.desc + '</div>' +
+      '<div class="archive-card-teaser">' + item.teaser + '</div>' +
+    '</div>';
+  }).join('');
+
+  archiveEl.querySelectorAll('.archive-card').forEach(function(card) {
+    card.addEventListener('click', function() {
+      var tab = card.dataset.navTab;
+      if (isMobile()) {
+        var tabToView = { champions:'champions', power:'standings', records:'records',
+                          seasons:'seasons', managers:'managers', compare:'compare' };
+        setView(tabToView[tab] || tab);
+      } else {
+        var btn = document.querySelector('.nav-btn[onclick*="' + tab + '"]');
+        showTab(tab, btn);
+      }
+    });
+  });
+
+  // ── Quick Hits ──
+  var quickhitsEl = document.getElementById('quickhits-list');
+
+  // Most losing seasons
+  var losingSeasons = {};
+  Object.keys(MANAGERS_MAP).forEach(function(mgr) {
+    if (!ALLOWED_MANAGERS.has(mgr)) return;
+    var m = MANAGERS_MAP[mgr];
+    var count = 0;
+    if (m.yearlyStats) {
+      m.yearlyStats.forEach(function(ys) {
+        if (ys.losses > ys.wins) count++;
+      });
+    }
+    losingSeasons[mgr] = count;
+  });
+  var mostLosing = Object.entries(losingSeasons).sort(function(a, b) { return b[1] - a[1]; })[0];
+  var mostLosingTeam = mostLosing && MANAGERS_MAP[mostLosing[0]] ? MANAGERS_MAP[mostLosing[0]].teamName : (mostLosing ? mostLosing[0] : '');
+
+  quickhitsEl.innerHTML =
+    '<div class="quickhit-item">' +
+      '<div class="quickhit-label">Most Championships</div>' +
+      '<div class="quickhit-value">5\u00d7</div>' +
+      '<div class="quickhit-context">LVC</div>' +
+    '</div>' +
+    '<div class="quickhit-item">' +
+      '<div class="quickhit-label">Best Season Record</div>' +
+      '<div class="quickhit-value">' + bestRecord.wins + '\u2013' + bestRecord.losses + '</div>' +
+      '<div class="quickhit-context">' + bestTeamName + ' (' + bestRecord.year + ')</div>' +
+    '</div>' +
+    '<div class="quickhit-item">' +
+      '<div class="quickhit-label">Most Losing Seasons</div>' +
+      '<div class="quickhit-value">' + (mostLosing ? mostLosing[1] : '—') + '</div>' +
+      '<div class="quickhit-context">' + mostLosingTeam + '</div>' +
+    '</div>';
+
+  // ── League Truths ──
+  var truthsEl = document.getElementById('truths-list');
+  var truths = [
+    'LVC built the standard. Everyone else is chasing it.',
+    'Johnny Fantasy has been there three times. Still no title.',
+    'Opolos had the best season ever. It didn\u2019t matter.',
+    'The archive remembers everything.',
+  ];
+  truthsEl.innerHTML = truths.map(function(t) {
+    return '<div class="truth-item">' + t + '</div>';
+  }).join('');
 }
 
 // ── CHAMPIONS ────────────────────────────────────────────────
@@ -502,11 +628,31 @@ function renderPower() {
   let currentSort = 'winPct';
   let currentDir = 'desc';
 
-  // Legacy badge helper
+  // Legacy badge helper — unified global badge system
   const getLegacy = (m) => {
-    if (m.championships >= 3) return '<div class="legacy-badge legacy-dynasty">Dynasty</div>';
-    if (m.championships >= 1) return '<div class="legacy-badge legacy-champion">Champion</div>';
-    return '<div class="legacy-badge legacy-never">Never Won</div>';
+    const badges = [];
+    // Primary badge: championship status
+    if (m.championships >= 3) {
+      badges.push('<span class="badge badge--dynasty">Dynasty</span>');
+    } else if (m.championships >= 1) {
+      badges.push('<span class="badge badge--champion">Champion</span>');
+    } else {
+      badges.push('<span class="badge badge--never">Never Won</span>');
+    }
+    // Secondary badge: performance tier (only if relevant, max 2 total)
+    if (badges.length < 2 && m.championships === 0) {
+      const currentYear = SEASONS[SEASONS.length - 1]?.season || 2025;
+      const lastChamp = m.champYears && m.champYears.length ? Math.max(...m.champYears) : null;
+      const drought = lastChamp ? (currentYear - lastChamp) : m.seasons;
+      if (drought >= 8 && m.championships === 0) {
+        badges.push('<span class="badge badge--drought">Long Drought</span>');
+      } else if (m.winPct < 0.42) {
+        badges.push('<span class="badge badge--cellar">Cellar</span>');
+      } else if (m.winPct < 0.46) {
+        badges.push('<span class="badge badge--struggling">Struggling</span>');
+      }
+    }
+    return '<div style="display:flex;flex-wrap:wrap;gap:4px;margin-top:4px">' + badges.join('') + '</div>';
   };
 
   // Win% tier class
@@ -1251,14 +1397,16 @@ function renderManagers(sortKey) {
     });
   }
 
-  // Status logic
+  // Status logic — unified badge system
   const getStatus = (m) => {
     if (m.championships >= 3) return { label:'DYNASTY', cls:'status-dynasty' };
     if (m.championships >= 1) return { label:'CHAMPION', cls:'status-champion' };
     if (m.winPct >= 0.52 && m.playoffAppearances >= 3) return { label:'CONTENDER', cls:'status-contender' };
-    if (m.championships === 0 && m.winPct < 0.48 && m.seasons >= 3) return { label:'REBUILD', cls:'status-rebuild' };
+    if (m.winPct >= 0.46 && m.winPct < 0.52) return { label:'MID PACK', cls:'status-rebuild' };
+    if (m.winPct < 0.42) return { label:'CELLAR', cls:'status-never' };
+    if (m.winPct < 0.46 && m.seasons >= 3) return { label:'STRUGGLING', cls:'status-struggling' };
     if (m.championships === 0) return { label:'NEVER WON', cls:'status-never' };
-    return { label:'CONTENDER', cls:'status-contender' };
+    return { label:'MID PACK', cls:'status-rebuild' };
   };
 
   // Glow class
@@ -3113,7 +3261,7 @@ function showH2HModal(mgrA, mgrB) {
 // ── MOBILE ROUTER ─────────────────────────────────────────────
 const MOBILE_BP = 768;
 const VIEW_META = {
-  home:       { tab: 'champions', title: 'HALL OF CHAMPIONS', sub: '' },
+  home:       { tab: 'home',      title: '', sub: '' },
   champions:  { tab: 'champions', title: 'CHAMPIONS', sub: 'Every title. Every ring.' },
   standings:  { tab: 'power',     title: 'STANDINGS', sub: 'All-time franchise stats' },
   records:    { tab: 'records',   title: 'RECORDS',   sub: 'Single-game and season marks' },
@@ -3179,7 +3327,7 @@ function setView(view, opts) {
 var _origShowTab = showTab;
 showTab = function(tab, btn) {
   if (isMobile()) {
-    var tabToView = { champions:'champions', power:'standings', records:'records',
+    var tabToView = { home:'home', champions:'champions', power:'standings', records:'records',
                       seasons:'seasons', managers:'managers', compare:'compare' };
     var view = tabToView[tab] || 'home';
     setView(view);
