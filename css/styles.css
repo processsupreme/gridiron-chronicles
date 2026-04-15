@@ -1781,6 +1781,27 @@ body::before {
   padding:calc(24px + env(safe-area-inset-top, 0px)) 16px 16px;
   border-bottom:1px solid var(--wine-border);
   background:linear-gradient(180deg, rgba(114,47,55,0.06) 0%, transparent 100%);
+  position:relative;
+}
+.mph-back {
+  position:absolute;
+  left:14px;
+  top:calc(24px + env(safe-area-inset-top, 0px));
+  background:none;
+  border:1px solid var(--wine-border);
+  border-radius:8px;
+  color:var(--bone-dim);
+  font-size:18px;
+  padding:6px 12px;
+  cursor:pointer;
+  -webkit-tap-highlight-color:transparent;
+  transition:color 0.15s, border-color 0.15s;
+  line-height:1;
+}
+.mph-back:hover,
+.mph-back:active {
+  color:var(--bone);
+  border-color:var(--wine-border-h);
 }
 .mph-kicker {
   font-family:'IBM Plex Mono', monospace;

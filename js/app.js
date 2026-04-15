@@ -3385,6 +3385,14 @@ showTab = function(tab, btn) {
       setView(link.dataset.nav);
     });
   });
+
+  // Mobile back button → Home
+  var backBtn = document.getElementById('mphBack');
+  if (backBtn) {
+    backBtn.addEventListener('click', function() {
+      setView('home');
+    });
+  }
 })();
 
 window.addEventListener('popstate', function(e) {
