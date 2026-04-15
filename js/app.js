@@ -481,8 +481,8 @@ function renderHomepage() {
     { title: 'Champions', desc: 'Every title. Every winner. Every year it mattered.', teaser: uniqueChamps + ' total champions', tab: 'champions' },
     { title: 'Records', desc: 'The moments that actually matter.', teaser: 'Best Regular Season: ' + bestRecord.wins + '\u2013' + bestRecord.losses + ' (' + bestTeamName + ')', tab: 'records' },
     { title: 'Best Seasons', desc: 'The most dominant single-season runs in league history.', teaser: '#1: 98 (2014)', tab: 'seasons' },
-    { title: 'Droughts', desc: 'Some managers are still waiting.', teaser: 'Longest active drought: Johnny Fantasy', tab: 'records' },
     { title: 'Managers', desc: 'Legacies, records, and receipts.', teaser: '12 franchises. One pecking order.', tab: 'managers' },
+    { title: 'Compare', desc: 'Settle it with the numbers.', teaser: 'Pick two. Find out who really owns the rivalry.', tab: 'compare' },
   ];
 
   archiveEl.innerHTML = archiveItems.map(function(item) {
