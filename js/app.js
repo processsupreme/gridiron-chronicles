@@ -107,13 +107,23 @@ function loadData() {
       var app = document.getElementById('app');
       app.style.display = 'block';
       app.style.opacity = '0';
+      // Respect reduced-motion: hold the video on the first frame
+      try {
+        var v = document.getElementById('landing-video');
+        if (v && window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+          v.pause();
+        }
+      } catch (e) {}
+
       function enterSite() {
         landing.classList.add('is-leaving');
-        // Let the corridor camera-push read, then cross-fade into the app
+        // Let the camera-push read, then cross-fade into the app
         app.style.transition = 'opacity 0.6s ease 0.4s';
         app.style.opacity = '1';
         setTimeout(function() {
           landing.style.display = 'none';
+          var v = document.getElementById('landing-video');
+          if (v) { try { v.pause(); v.removeAttribute('src'); v.load(); } catch (e) {} }
           window.scrollTo(0, 0);
           if (typeof initMobileRouter === 'function') initMobileRouter();
           setTimeout(function() {

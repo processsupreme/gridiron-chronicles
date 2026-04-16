@@ -1,5 +1,5 @@
-var SHELL_VERSION = 'bkgffl-shell-v9';
-var DATA_VERSION = 'bkgffl-data-v1';
+var SHELL_VERSION = 'bkgffl-shell-v10';
+var DATA_VERSION = 'bkgffl-data-v2';
 var FONTS_CACHE = 'bkgffl-fonts-v1';
 
 var SHELL_ASSETS = [
@@ -12,6 +12,7 @@ var SHELL_ASSETS = [
 ];
 
 var DATA_ASSETS = [
+  '/assets/videos/hall-intro.mp4',
   '/data/league_data.json',
   '/rings/ring_2014.png',
   '/rings/ring_2015.png',
