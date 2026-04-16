@@ -1855,7 +1855,7 @@ body::before {
   .masthead-logo { font-size:64px !important; }
   .masthead-meta-1 { font-size:11px; letter-spacing:0.2em; }
   .masthead-meta-2 { font-size:10px; margin-bottom:24px; }
-  .league-stats-strip { grid-template-columns:repeat(2, 1fr); }
+  .league-stats-strip { display:none; }
   .strip-stat { padding:12px 8px; }
   .strip-stat-num { font-size:24px; }
 
@@ -2292,29 +2292,53 @@ body::before {
   gap:clamp(12px,2vw,20px);
 }
 .quickhit-item {
-  text-align:center;
-  padding:clamp(16px,2vw,24px);
+  position:relative;
+  background:var(--card);
+  border:1px solid var(--wine-border);
+  border-radius:var(--radius);
+  padding:clamp(22px,3vw,32px) clamp(20px,2.5vw,28px);
+  text-align:left;
+  transition:border-color 0.2s ease, box-shadow 0.2s ease, transform 0.15s ease;
+  overflow:hidden;
+}
+.quickhit-item:hover {
+  border-color:var(--wine-border-h);
+  box-shadow:var(--shadow);
+  transform:translateY(-1px);
+}
+.quickhit-rule {
+  position:absolute;
+  top:0;
+  left:0;
+  right:0;
+  height:2px;
+  background:linear-gradient(90deg, var(--wine) 0%, rgba(201,168,76,0.4) 100%);
 }
 .quickhit-label {
   font-family:'IBM Plex Mono', monospace;
   font-size:10px;
-  letter-spacing:2px;
+  letter-spacing:2.5px;
   color:var(--bone-muted);
   text-transform:uppercase;
-  margin-bottom:10px;
+  margin-bottom:14px;
 }
 .quickhit-value {
   font-family:'Playfair Display', serif;
   font-weight:700;
-  font-size:clamp(20px,3vw,28px);
+  font-size:clamp(28px,4vw,40px);
   color:var(--bone);
-  line-height:1.1;
+  line-height:1;
+  letter-spacing:-0.01em;
 }
 .quickhit-context {
   font-family:'IBM Plex Mono', monospace;
   font-size:11px;
-  color:var(--bone-dim);
-  margin-top:6px;
+  letter-spacing:1px;
+  color:var(--wine);
+  text-transform:uppercase;
+  margin-top:12px;
+  padding-top:12px;
+  border-top:1px solid var(--wine-border);
 }
 
 /* ── League Truths Section ───── */

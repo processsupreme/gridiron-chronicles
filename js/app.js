@@ -387,7 +387,6 @@ function renderAll() {
   renderBlowoutDealers();
   renderCloseGames();
   renderBestSeasons();
-  renderLuckFactor();
   renderDrought();
   renderRecordsNav();
   renderCompare();
@@ -452,6 +451,30 @@ function renderHomepage() {
   });
   const bestTeamName = MANAGERS_MAP[bestRecord.mgr] ? MANAGERS_MAP[bestRecord.mgr].teamName : bestRecord.mgr;
 
+  // Longest regular-season winning streak (within a single season)
+  let bestStreak = { len: 0, mgr: '', year: 0 };
+  SEASONS.forEach(function(s) {
+    const fullMu = s.allMatchups || s.matchups;
+    const fullSt = s.allStandings || s.standings;
+    const run = {};
+    [...fullMu].filter(function(m) { return !m.is_playoffs; })
+      .sort(function(a, b) { return a.week - b.week; })
+      .forEach(function(m) {
+        const t1mgr = getMgrFromTeamKeyFull(m.team1.team_key, fullSt);
+        const t2mgr = getMgrFromTeamKeyFull(m.team2.team_key, fullSt);
+        if (!t1mgr || !t2mgr) return;
+        const t1Won = m.winner_team_key === m.team1.team_key;
+        [{ mgr: t1mgr, won: t1Won }, { mgr: t2mgr, won: !t1Won }].forEach(function(e) {
+          if (!ALLOWED_MANAGERS.has(e.mgr)) return;
+          run[e.mgr] = e.won ? (run[e.mgr] || 0) + 1 : 0;
+          if (run[e.mgr] > bestStreak.len) {
+            bestStreak = { len: run[e.mgr], mgr: e.mgr, year: s.season };
+          }
+        });
+      });
+  });
+  const streakTeamName = MANAGERS_MAP[bestStreak.mgr] ? MANAGERS_MAP[bestStreak.mgr].teamName : bestStreak.mgr;
+
   snapshotEl.innerHTML =
     '<div class="snapshot-card">' +
       '<div class="snapshot-card-label">The Standard</div>' +
@@ -470,6 +493,12 @@ function renderHomepage() {
       '<div class="snapshot-card-primary">' + bestRecord.wins + '\u2013' + bestRecord.losses + '</div>' +
       '<div class="snapshot-card-supporting">' + bestTeamName + ' \u00b7 ' + bestRecord.year + '</div>' +
       '<div class="snapshot-card-tag snapshot-tag--record">Highest Win Rate</div>' +
+    '</div>' +
+    '<div class="snapshot-card">' +
+      '<div class="snapshot-card-label">Longest Regular Season Win Streak</div>' +
+      '<div class="snapshot-card-primary">' + bestStreak.len + ' \u2014 0</div>' +
+      '<div class="snapshot-card-supporting">' + streakTeamName + ' \u00b7 ' + bestStreak.year + '</div>' +
+      '<div class="snapshot-card-tag snapshot-tag--record">Win Streak</div>' +
     '</div>';
 
   // ── Archive Navigation Cards ──
@@ -479,8 +508,8 @@ function renderHomepage() {
   var archiveItems = [
     { title: 'Standings', desc: 'Who actually runs this league.', teaser: 'LVC leads all-time win %', tab: 'power' },
     { title: 'Champions', desc: 'Every title. Every winner. Every year it mattered.', teaser: uniqueChamps + ' total champions', tab: 'champions' },
-    { title: 'Records', desc: 'The moments that actually matter.', teaser: 'Best Regular Season: ' + bestRecord.wins + '\u2013' + bestRecord.losses + ' (' + bestTeamName + ')', tab: 'records' },
-    { title: 'Best Seasons', desc: 'The most dominant single-season runs in league history.', teaser: '#1: 98 (2014)', tab: 'seasons' },
+    { title: 'Season', desc: 'The most dominant single-season runs in league history.', teaser: '#1: 98 (2014)', tab: 'seasons' },
+    { title: 'Record Book', desc: 'The moments that actually matter.', teaser: 'Best Regular Season: ' + bestRecord.wins + '\u2013' + bestRecord.losses + ' (' + bestTeamName + ')', tab: 'records' },
     { title: 'Managers', desc: 'Legacies, records, and receipts.', teaser: '12 franchises. One pecking order.', tab: 'managers' },
     { title: 'Compare', desc: 'Settle it with the numbers.', teaser: 'Pick two. Find out who really owns the rivalry.', tab: 'compare' },
   ];
@@ -528,32 +557,23 @@ function renderHomepage() {
 
   quickhitsEl.innerHTML =
     '<div class="quickhit-item">' +
+      '<div class="quickhit-rule"></div>' +
       '<div class="quickhit-label">Most Championships</div>' +
       '<div class="quickhit-value">5\u00d7</div>' +
       '<div class="quickhit-context">LVC</div>' +
     '</div>' +
     '<div class="quickhit-item">' +
+      '<div class="quickhit-rule"></div>' +
       '<div class="quickhit-label">Best Season Record</div>' +
       '<div class="quickhit-value">' + bestRecord.wins + '\u2013' + bestRecord.losses + '</div>' +
       '<div class="quickhit-context">' + bestTeamName + ' (' + bestRecord.year + ')</div>' +
     '</div>' +
     '<div class="quickhit-item">' +
+      '<div class="quickhit-rule"></div>' +
       '<div class="quickhit-label">Most Losing Seasons</div>' +
-      '<div class="quickhit-value">' + (mostLosing ? mostLosing[1] : '—') + '</div>' +
+      '<div class="quickhit-value">' + (mostLosing ? mostLosing[1] : '\u2014') + '</div>' +
       '<div class="quickhit-context">' + mostLosingTeam + '</div>' +
     '</div>';
-
-  // ── League Truths ──
-  var truthsEl = document.getElementById('truths-list');
-  var truths = [
-    'LVC built the standard. Everyone else is chasing it.',
-    'Johnny Fantasy has been there three times. Still no title.',
-    'Opolos had the best season ever. It didn\u2019t matter.',
-    'The archive remembers everything.',
-  ];
-  truthsEl.innerHTML = truths.map(function(t) {
-    return '<div class="truth-item">' + t + '</div>';
-  }).join('');
 }
 
 // ── CHAMPIONS ────────────────────────────────────────────────
@@ -1075,7 +1095,6 @@ function renderRecords() {
   // ══════ PLAYOFFS (first section after headlines) ══════
   html += '<div class="records-category">';
   html += '<div class="records-cat-header"><div class="records-cat-icon">🏆</div><div class="records-cat-title">Playoff Records</div><div class="records-cat-desc">When it matters most</div></div>';
-  html += '<div class="records-dual">';
 
   // Most playoff wins
   const pWinsSorted = Object.entries(playoffWins).sort((a,b) => b[1] - a[1]);
@@ -1091,20 +1110,7 @@ function renderRecords() {
     </div>`;
   });
   html += '</div></div>';
-
-  // Top playoff single-game scores
-  html += '<div><div style="font-family:\'IBM Plex Mono\',monospace;font-size:9px;letter-spacing:2px;color:var(--wine);margin-bottom:6px;padding-left:12px">TOP PLAYOFF PERFORMANCES</div>';
-  html += '<div class="records-leaderboard">';
-  realPlayoffScores.slice(0, 7).forEach((s, i) => {
-    html += `<div class="records-lb-row ${i===0?'gold':''}">
-      <span class="lb-rank ${i===0?'r1':i<=2?'r2':''}">${i+1}</span>
-      <span class="lb-name">${s.team}</span>
-      <span class="lb-context">${s.year} Wk${s.week}</span>
-      <span class="lb-value green">${s.pts.toFixed(1)}</span>
-    </div>`;
-  });
-  html += '</div></div>';
-  html += '</div></div>';
+  html += '</div>';
 
   // ══════ TOP 10: HIGHEST SINGLE-GAME SCORES ══════
   html += '<div class="records-category">';
@@ -2566,7 +2572,12 @@ function renderBestSeasons() {
   });
 
   allSeasons.sort((a, b) => b.composite - a.composite);
-  const top12 = allSeasons.slice(0, 12);
+  // Opolos (B-waite) is pinned to rank 12 regardless of composite score.
+  const opolosMgr = 'B-waite';
+  const nonOpolos = allSeasons.filter(r => r.mgr !== opolosMgr);
+  const opolosBest = allSeasons.find(r => r.mgr === opolosMgr);
+  const top12 = nonOpolos.slice(0, 11);
+  if (opolosBest) top12.push(opolosBest);
 
   let html = '<div class="records-chapter-header">';
   html += '<div class="records-chapter-label">Chapter</div>';
@@ -2866,7 +2877,6 @@ function renderRecordsNav() {
     { id: 'records-blowouts', label: 'The Shed' },
     { id: 'records-close', label: 'Close Games' },
     { id: 'records-bestseason', label: 'Best Seasons' },
-    { id: 'records-luck', label: 'Luck' },
     { id: 'records-drought', label: 'Drought' },
   ];
   nav.innerHTML = chapters.map(c =>
