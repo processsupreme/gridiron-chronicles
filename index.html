@@ -19,22 +19,50 @@
 <link rel="apple-touch-icon" href="icons/icon-192.png">
 <title>BKGFFL — The BKGFFL Ledger</title>
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,400&family=DM+Sans:wght@300;400;500;600;700&family=IBM+Plex+Mono:wght@300;400;500;600&family=Bebas+Neue&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="css/styles.css?v=12">
+<link rel="stylesheet" href="css/styles.css?v=13">
 </head>
 <body>
 
 <a href="#tab-champions" class="skip-link">Skip to content</a>
 
 <div id="landing" class="landing" role="banner">
-  <div class="landing-grain"></div>
+  <div class="hall" aria-hidden="true">
+    <div class="hall-wall hall-wall--left"></div>
+    <div class="hall-wall hall-wall--right"></div>
+    <div class="hall-ceiling"></div>
+    <div class="hall-floor"></div>
+    <div class="hall-rail hall-rail--left"></div>
+    <div class="hall-rail hall-rail--right"></div>
+    <div class="hall-floor-seam"></div>
+    <div class="hall-endwall">
+      <div class="hall-endwall-glow"></div>
+      <div class="hall-endwall-crest">BKGFFL</div>
+    </div>
+    <div class="hall-lightshaft"></div>
+    <div class="hall-banners">
+      <div class="banner" data-side="l" data-i="5" style="--sway:.2s"><span class="banner-year">2015</span><span class="banner-team">Scott Stars</span></div>
+      <div class="banner" data-side="r" data-i="5" style="--sway:0s"><span class="banner-year">2014</span><span class="banner-team">98</span></div>
+      <div class="banner" data-side="l" data-i="4" style="--sway:.7s"><span class="banner-year">2017</span><span class="banner-team">The Greek</span></div>
+      <div class="banner" data-side="r" data-i="4" style="--sway:.4s"><span class="banner-year">2016</span><span class="banner-team">LVC</span></div>
+      <div class="banner" data-side="l" data-i="3" style="--sway:.3s"><span class="banner-year">2019</span><span class="banner-team">Joco</span></div>
+      <div class="banner" data-side="r" data-i="3" style="--sway:.9s"><span class="banner-year">2018</span><span class="banner-team">LVC</span></div>
+      <div class="banner" data-side="l" data-i="2" style="--sway:.5s"><span class="banner-year">2021</span><span class="banner-team">98</span></div>
+      <div class="banner" data-side="r" data-i="2" style="--sway:.1s"><span class="banner-year">2020</span><span class="banner-team">LVC</span></div>
+      <div class="banner" data-side="l" data-i="1" style="--sway:.8s"><span class="banner-year">2023</span><span class="banner-team">Ohio City Cons</span></div>
+      <div class="banner" data-side="r" data-i="1" style="--sway:.6s"><span class="banner-year">2022</span><span class="banner-team">Team Beef</span></div>
+      <div class="banner" data-side="l" data-i="0" style="--sway:1.1s"><span class="banner-year">2025</span><span class="banner-team">LVC</span></div>
+      <div class="banner" data-side="r" data-i="0" style="--sway:.35s"><span class="banner-year">2024</span><span class="banner-team">LVC</span></div>
+    </div>
+    <div class="hall-haze"></div>
+  </div>
   <div class="landing-vignette"></div>
+  <div class="landing-grain"></div>
   <div class="landing-inner">
     <div class="landing-eyebrow">BKGFFL</div>
-    <div class="landing-title">Complete League Ledger</div>
-    <div class="landing-supporting">A 12 year record of wins, losses, and regret.</div>
+    <h1 class="landing-title">Complete League Ledger</h1>
+    <p class="landing-supporting">12 seasons of wins, collapses, bad trades, and disputed greatness.</p>
     <div class="landing-est">Est. 2014 · 12 Seasons of History</div>
-    <button class="landing-cta" id="landing-cta">ENTER THE LEAGUE</button>
-    <div class="landing-micro">12 Managers. 849 Matchups. 1 Standard.</div>
+    <button class="landing-cta" id="landing-cta">Enter the Hall</button>
   </div>
 </div>
 
@@ -163,7 +191,7 @@
 <div class="footnote" id="footnote"></div>
 </div>
 
-<script src="js/app.js?v=12" defer></script>
+<script src="js/app.js?v=13" defer></script>
 <script>
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', function() {

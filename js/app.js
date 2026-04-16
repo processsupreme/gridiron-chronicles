@@ -109,7 +109,8 @@ function loadData() {
       app.style.opacity = '0';
       function enterSite() {
         landing.classList.add('is-leaving');
-        app.style.transition = 'opacity 0.5s ease 0.15s';
+        // Let the corridor camera-push read, then cross-fade into the app
+        app.style.transition = 'opacity 0.6s ease 0.4s';
         app.style.opacity = '1';
         setTimeout(function() {
           landing.style.display = 'none';
@@ -119,7 +120,7 @@ function loadData() {
             if (typeof showInstallBanner === 'function') showInstallBanner();
             if (typeof showIOSInstallHint === 'function') showIOSInstallHint();
           }, 2000);
-        }, 500);
+        }, 1000);
       }
       document.getElementById('landing-cta').addEventListener('click', enterSite);
     })
