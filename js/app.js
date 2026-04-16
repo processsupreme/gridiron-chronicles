@@ -494,12 +494,6 @@ function renderHomepage() {
       '<div class="snapshot-card-tag snapshot-tag--dynasty">Dynasty</div>' +
     '</div>' +
     '<div class="snapshot-card">' +
-      '<div class="snapshot-card-label">Still Waiting</div>' +
-      '<div class="snapshot-card-primary">Johnny Fantasy</div>' +
-      '<div class="snapshot-card-supporting">' + johnnyRU + ' Runner-Ups \u00b7 ' + johnnySzns + ' Seasons \u00b7 0 Titles</div>' +
-      '<div class="snapshot-card-tag snapshot-tag--never">Never Won</div>' +
-    '</div>' +
-    '<div class="snapshot-card">' +
       '<div class="snapshot-card-label">Best Regular Season Ever</div>' +
       '<div class="snapshot-card-primary">' + bestRecord.wins + '\u2013' + bestRecord.losses + '</div>' +
       '<div class="snapshot-card-supporting">' + bestTeamName + ' \u00b7 ' + bestRecord.year + '</div>' +
@@ -510,6 +504,12 @@ function renderHomepage() {
       '<div class="snapshot-card-primary">' + bestStreak.len + '</div>' +
       '<div class="snapshot-card-supporting">' + streakTeamName + ' \u00b7 ' + bestStreak.year + '</div>' +
       '<div class="snapshot-card-tag snapshot-tag--record">Win Streak</div>' +
+    '</div>' +
+    '<div class="snapshot-card">' +
+      '<div class="snapshot-card-label">Still Waiting</div>' +
+      '<div class="snapshot-card-primary">Johnny Fantasy</div>' +
+      '<div class="snapshot-card-supporting">' + johnnyRU + ' Runner-Ups \u00b7 ' + johnnySzns + ' Seasons \u00b7 0 Titles</div>' +
+      '<div class="snapshot-card-tag snapshot-tag--never">Never Won</div>' +
     '</div>' +
     '<div class="snapshot-card">' +
       '<div class="snapshot-card-label">Most Losing Seasons</div>' +
