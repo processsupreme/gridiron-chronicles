@@ -497,9 +497,15 @@ function renderHomepage() {
     '</div>' +
     '<div class="snapshot-card">' +
       '<div class="snapshot-card-label">Longest Regular Season Win Streak</div>' +
-      '<div class="snapshot-card-primary">' + bestStreak.len + ' \u2014 0</div>' +
+      '<div class="snapshot-card-primary">' + bestStreak.len + '</div>' +
       '<div class="snapshot-card-supporting">' + streakTeamName + ' \u00b7 ' + bestStreak.year + '</div>' +
       '<div class="snapshot-card-tag snapshot-tag--record">Win Streak</div>' +
+    '</div>' +
+    '<div class="snapshot-card">' +
+      '<div class="snapshot-card-label">Most Losing Seasons</div>' +
+      '<div class="snapshot-card-primary">8 of 12</div>' +
+      '<div class="snapshot-card-supporting">Ohio City Cons</div>' +
+      '<div class="snapshot-card-tag snapshot-tag--never">The Struggle</div>' +
     '</div>';
 
   // ── Archive Navigation Cards ──
@@ -509,7 +515,7 @@ function renderHomepage() {
   var archiveItems = [
     { title: 'Standings', desc: 'Who actually runs this league.', teaser: 'LVC leads all-time win %', tab: 'power' },
     { title: 'Champions', desc: 'Every title. Every winner. Every year it mattered.', teaser: uniqueChamps + ' total champions', tab: 'champions' },
-    { title: 'Season', desc: 'The most dominant single-season runs in league history.', teaser: '#1: 98 (2014)', tab: 'seasons' },
+    { title: 'Seasons', desc: 'The most dominant single-season runs in league history.', teaser: '#1: 98 (2014)', tab: 'seasons' },
     { title: 'Record Book', desc: 'The moments that actually matter.', teaser: 'Best Regular Season: ' + bestRecord.wins + '\u2013' + bestRecord.losses + ' (' + bestTeamName + ')', tab: 'records' },
     { title: 'Managers', desc: 'Legacies, records, and receipts.', teaser: '12 franchises. One pecking order.', tab: 'managers' },
     { title: 'Compare', desc: 'Settle it with the numbers.', teaser: 'Pick two. Find out who really owns the rivalry.', tab: 'compare' },
