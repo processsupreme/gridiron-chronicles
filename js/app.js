@@ -553,44 +553,6 @@ function renderHomepage() {
     });
   });
 
-  // ── Quick Hits ──
-  var quickhitsEl = document.getElementById('quickhits-list');
-
-  // Most losing seasons
-  var losingSeasons = {};
-  Object.keys(MANAGERS_MAP).forEach(function(mgr) {
-    if (!ALLOWED_MANAGERS.has(mgr)) return;
-    var m = MANAGERS_MAP[mgr];
-    var count = 0;
-    if (m.yearlyStats) {
-      m.yearlyStats.forEach(function(ys) {
-        if (ys.losses > ys.wins) count++;
-      });
-    }
-    losingSeasons[mgr] = count;
-  });
-  var mostLosing = Object.entries(losingSeasons).sort(function(a, b) { return b[1] - a[1]; })[0];
-  var mostLosingTeam = mostLosing && MANAGERS_MAP[mostLosing[0]] ? MANAGERS_MAP[mostLosing[0]].teamName : (mostLosing ? mostLosing[0] : '');
-
-  quickhitsEl.innerHTML =
-    '<div class="quickhit-item">' +
-      '<div class="quickhit-rule"></div>' +
-      '<div class="quickhit-label">Most Championships</div>' +
-      '<div class="quickhit-value">5\u00d7</div>' +
-      '<div class="quickhit-context">LVC</div>' +
-    '</div>' +
-    '<div class="quickhit-item">' +
-      '<div class="quickhit-rule"></div>' +
-      '<div class="quickhit-label">Best Season Record</div>' +
-      '<div class="quickhit-value">' + bestRecord.wins + '\u2013' + bestRecord.losses + '</div>' +
-      '<div class="quickhit-context">' + bestTeamName + ' (' + bestRecord.year + ')</div>' +
-    '</div>' +
-    '<div class="quickhit-item">' +
-      '<div class="quickhit-rule"></div>' +
-      '<div class="quickhit-label">Most Losing Seasons</div>' +
-      '<div class="quickhit-value">' + (mostLosing ? mostLosing[1] : '\u2014') + '</div>' +
-      '<div class="quickhit-context">' + mostLosingTeam + '</div>' +
-    '</div>';
 }
 
 // ── CHAMPIONS ────────────────────────────────────────────────
