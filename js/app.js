@@ -511,17 +511,62 @@ function renderHomepage() {
       });
     });
 
-    // Playoff wins (championship bracket only, no consolation)
-    fullMu.forEach(function(m) {
-      if (!isTruePlayoffGame(m, s)) return;
-      if (!m.winner_team_key) return;
-      const winMgr = m.winner_team_key === m.team1.team_key
-        ? getMgrFromTeamKeyFull(m.team1.team_key, fullSt)
-        : getMgrFromTeamKeyFull(m.team2.team_key, fullSt);
-      if (winMgr && ALLOWED_MANAGERS.has(winMgr)) {
-        playoffWinCounts[winMgr] = (playoffWinCounts[winMgr] || 0) + 1;
+    // Playoff wins — CHAMPIONSHIP BRACKET ONLY.
+    // League rule: once you lose, any subsequent (consolation or 3rd-place)
+    // win does NOT count. Trace the bracket backward from the final:
+    //   finals → semis → round 1. Anything outside that chain is consolation.
+    (function() {
+      const bracketKeys = new Set();
+      fullSt.forEach(function(t) { if (t.rank <= 6) bracketKeys.add(t.team_key); });
+      const poWeeks = [...new Set(fullMu.filter(function(m) { return m.is_playoffs; })
+        .map(function(m) { return m.week; }))].sort(function(a,b){ return a-b; });
+      if (poWeeks.length < 3) return;
+      const wk1 = poWeeks[0], wk2 = poWeeks[1], wk3 = poWeeks[2];
+      const top6Games = function(wk) {
+        return fullMu.filter(function(m) {
+          return m.is_playoffs && m.week === wk
+            && bracketKeys.has(m.team1.team_key)
+            && bracketKeys.has(m.team2.team_key);
+        });
+      };
+      const finalGames = top6Games(wk3);
+      const champKey = s.champion ? s.champion.team_key : null;
+      const champGame = finalGames.find(function(m) { return m.is_championship; })
+        || finalGames.find(function(m) {
+          return champKey && (m.team1.team_key === champKey || m.team2.team_key === champKey);
+        })
+        || null;
+
+      const semiTeams = new Set();
+      if (champGame) {
+        semiTeams.add(champGame.team1.team_key);
+        semiTeams.add(champGame.team2.team_key);
       }
-    });
+      const realSemis = top6Games(wk2).filter(function(m) {
+        return semiTeams.has(m.team1.team_key) || semiTeams.has(m.team2.team_key);
+      });
+      const qfTeams = new Set(semiTeams);
+      realSemis.forEach(function(m) {
+        qfTeams.add(m.team1.team_key);
+        qfTeams.add(m.team2.team_key);
+      });
+      const realRd1 = top6Games(wk1).filter(function(m) {
+        return qfTeams.has(m.team1.team_key) || qfTeams.has(m.team2.team_key);
+      });
+
+      const bracketGames = (champGame ? [champGame] : []).concat(realSemis, realRd1);
+      const seen = new Set();
+      bracketGames.forEach(function(m) {
+        const key = m.week + ':' + [m.team1.team_key, m.team2.team_key].sort().join(':');
+        if (seen.has(key)) return;
+        seen.add(key);
+        if (!m.winner_team_key) return;
+        const winMgr = getMgrFromTeamKeyFull(m.winner_team_key, fullSt);
+        if (winMgr && ALLOWED_MANAGERS.has(winMgr)) {
+          playoffWinCounts[winMgr] = (playoffWinCounts[winMgr] || 0) + 1;
+        }
+      });
+    })();
   });
   const streakTeamName = MANAGERS_MAP[bestStreak.mgr] ? MANAGERS_MAP[bestStreak.mgr].teamName : bestStreak.mgr;
   const worstStreakTeam = MANAGERS_MAP[worstStreak.mgr] ? MANAGERS_MAP[worstStreak.mgr].teamName : worstStreak.mgr;
@@ -645,8 +690,6 @@ function renderHomepage() {
     '<div class="snapshot-card snapshot-card--byes">' +
       '<div class="snapshot-card-label">Playoff Wins \u00b7 All-Time</div>' +
       '<div class="bye-list">' + playoffWinRowsHTML + '</div>' +
-      '<div class="snapshot-card-supporting">' + totalPOWins + ' total wins \u00b7 ' + playoffWinLeaders.length + ' franchises</div>' +
-      '<div class="snapshot-card-tag snapshot-tag--dynasty">Bracket Wins</div>' +
     '</div>' +
     '<div class="snapshot-card snapshot-card--byes">' +
       '<div class="snapshot-card-label">Playoff Byes \u00b7 All-Time</div>' +
