@@ -2305,6 +2305,49 @@ body::before {
   border:1px solid rgba(232,220,200,0.1);
 }
 
+/* Playoff Byes list card — spans the full snapshot row */
+.snapshot-card--byes {
+  grid-column:1 / -1;
+}
+.bye-list {
+  display:grid;
+  grid-template-columns:repeat(auto-fill, minmax(180px, 1fr));
+  gap:clamp(6px,1vw,10px);
+  margin:clamp(12px,2vw,18px) 0 clamp(10px,1.5vw,14px);
+}
+.bye-row {
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:12px;
+  padding:10px 14px;
+  background:rgba(201,168,76,0.04);
+  border:1px solid var(--wine-border);
+  border-radius:6px;
+  transition:border-color 0.2s ease, background 0.2s ease;
+}
+.bye-row:hover {
+  border-color:var(--wine-border-h);
+  background:rgba(201,168,76,0.07);
+}
+.bye-team {
+  font-family:'Playfair Display', serif;
+  font-weight:600;
+  font-size:clamp(13px,1.4vw,15px);
+  color:var(--bone);
+  line-height:1.2;
+  white-space:nowrap;
+  overflow:hidden;
+  text-overflow:ellipsis;
+}
+.bye-count {
+  font-family:'IBM Plex Mono', monospace;
+  font-weight:600;
+  font-size:clamp(13px,1.4vw,15px);
+  color:var(--green);
+  flex-shrink:0;
+}
+
 /* ── Archive Section ─────────── */
 .home-archive {
   max-width:1200px;

@@ -491,6 +491,22 @@ function renderHomepage() {
   });
   const streakTeamName = MANAGERS_MAP[bestStreak.mgr] ? MANAGERS_MAP[bestStreak.mgr].teamName : bestStreak.mgr;
 
+  // Playoff bye leaders — every franchise with at least one top-2 finish
+  const byeLeaders = Object.values(MANAGERS_MAP)
+    .filter(function(m) { return ALLOWED_MANAGERS.has(m.nickname) && (m.playoffByes || 0) > 0; })
+    .sort(function(a, b) {
+      var d = (b.playoffByes || 0) - (a.playoffByes || 0);
+      if (d !== 0) return d;
+      return b.championships - a.championships;
+    });
+  var totalByes = byeLeaders.reduce(function(s, m) { return s + (m.playoffByes || 0); }, 0);
+  var byesRowsHTML = byeLeaders.map(function(m) {
+    return '<div class="bye-row">' +
+      '<span class="bye-team">' + m.teamName + '</span>' +
+      '<span class="bye-count">' + m.playoffByes + '</span>' +
+    '</div>';
+  }).join('');
+
   snapshotEl.innerHTML =
     '<div class="snapshot-card">' +
       '<div class="snapshot-card-label">The Standard</div>' +
@@ -516,11 +532,11 @@ function renderHomepage() {
       '<div class="snapshot-card-supporting">' + johnnyRU + ' Runner-Ups \u00b7 ' + johnnySzns + ' Seasons \u00b7 0 Titles</div>' +
       '<div class="snapshot-card-tag snapshot-tag--never">Never Won</div>' +
     '</div>' +
-    '<div class="snapshot-card">' +
-      '<div class="snapshot-card-label">Most Losing Seasons</div>' +
-      '<div class="snapshot-card-primary">8 of 12</div>' +
-      '<div class="snapshot-card-supporting">Ohio City Cons</div>' +
-      '<div class="snapshot-card-tag snapshot-tag--never">The Struggle</div>' +
+    '<div class="snapshot-card snapshot-card--byes">' +
+      '<div class="snapshot-card-label">Playoff Byes \u00b7 All-Time</div>' +
+      '<div class="bye-list">' + byesRowsHTML + '</div>' +
+      '<div class="snapshot-card-supporting">' + totalByes + ' total byes \u00b7 ' + byeLeaders.length + ' franchises</div>' +
+      '<div class="snapshot-card-tag snapshot-tag--dynasty">Top-2 Seeds</div>' +
     '</div>';
 
   // ── Archive Navigation Cards ──
