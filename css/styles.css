@@ -1940,12 +1940,18 @@ body::before {
   }
 
   /* ── STANDINGS TABLE ───────────── */
+  /* Hide W-L (3), Titles (5), Byes (7), 10+W (8) on mobile —
+     those four live in the manager profile modal on small screens
+     so the five remaining columns keep breathing room. */
   .power-table { table-layout:auto; }
   .power-table th:nth-child(3), .power-table td:nth-child(3),
-  .power-table th:nth-child(5), .power-table td:nth-child(5) { display:none; }
+  .power-table th:nth-child(5), .power-table td:nth-child(5),
+  .power-table th:nth-child(7), .power-table td:nth-child(7),
+  .power-table th:nth-child(8), .power-table td:nth-child(8) { display:none; }
   .power-table th, .power-table td { padding:8px 6px; font-size:10px; white-space:nowrap; }
   .power-table th:first-child, .power-table td:first-child { width:28px; min-width:28px; }
-  .power-table th:nth-child(2), .power-table td:nth-child(2) { white-space:normal; word-break:break-word; max-width:120px; }
+  .power-table th:nth-child(2), .power-table td:nth-child(2) { white-space:normal; word-break:normal; overflow-wrap:anywhere; max-width:160px; }
+  .power-table td:nth-child(2) .badge { white-space:nowrap; }
 
   /* ── SEASONS PAGE ──────────────── */
   .season-row {
