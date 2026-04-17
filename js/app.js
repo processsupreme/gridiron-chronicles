@@ -657,6 +657,11 @@ function renderChampions() {
     if (ALLOWED_MANAGERS.has(mgr)) {
       card.onclick = () => showManagerModal(mgr);
       card.style.cursor = 'pointer';
+    } else {
+      // Retired franchise (e.g. Scott Stars 2015) — no manager profile to open,
+      // but the season recap is still worth seeing.
+      card.onclick = () => showSeasonModal(s.season);
+      card.style.cursor = 'pointer';
     }
     grid.appendChild(card);
   });
@@ -1837,18 +1842,22 @@ function buildH2HForManager(nickname) {
 function showSeasonModal(year) {
   const s = SEASONS.find(x => x.season === year);
   if (!s) return;
+  // Season recaps use the full, unfiltered 12-team data — retired
+  // franchises (e.g. Scott Stars 2015) still belong in the history.
+  const seasonSt = s.allStandings || s.standings;
+  const seasonMu = s.allMatchups || s.matchups;
   const finals = getSeasonFinalData(s);
-  const mgr = s.champion ? getMgrFromTeamKey(s.champion.team_key, s) || '' : '';
+  const mgr = s.champion ? getMgrFromTeamKeyFull(s.champion.team_key, seasonSt) || '' : '';
   const championRecord = finals.champTeam || null;
     const ringImg = RING_IMAGES[String(s.season)] || RING_IMAGES['2023'];
 
   // ── PLAYOFF BRACKET (championship bracket only, no consolation) ──
   const playoffTeamCount = s.num_teams >= 12 ? 6 : 4;
-  const regularSeasonSeeded = [...s.standings].sort((a,b) => a.rank - b.rank);
+  const regularSeasonSeeded = [...seasonSt].sort((a,b) => a.rank - b.rank);
   const playoffSeeds = regularSeasonSeeded.slice(0, playoffTeamCount);
   const seedByKey = new Map(playoffSeeds.map((t, idx) => [t.team_key, idx + 1]));
   const realPlayoffKeys = new Set(playoffSeeds.map(t => t.team_key));
-  const playoffMatchups = s.matchups
+  const playoffMatchups = seasonMu
     .filter(m =>
       m.is_playoffs &&
       realPlayoffKeys.has(m.team1.team_key) &&
@@ -1975,8 +1984,8 @@ function showSeasonModal(year) {
       ) || null;
       if (!champ && semis.length === 2) {
         const winnerArr = semis.map(g => winnerKeyOf(g));
-        const t1 = s.standings.find(t => t.team_key === winnerArr[0]);
-        const t2 = s.standings.find(t => t.team_key === winnerArr[1]);
+        const t1 = seasonSt.find(t => t.team_key === winnerArr[0]);
+        const t2 = seasonSt.find(t => t.team_key === winnerArr[1]);
         if (t1 && t2) {
           champ = {
             week: wk2,
@@ -1992,7 +2001,7 @@ function showSeasonModal(year) {
   }
 
   // ── SEASON AWARDS ──
-  const seasonFullMu = s.allMatchups || s.matchups;
+  const seasonFullMu = seasonMu;
   const regSeason = seasonFullMu.filter(m => !m.is_playoffs);
   let allScores = [];
   let allMargins = [];
@@ -2026,8 +2035,8 @@ function showSeasonModal(year) {
   const nailbiter = closestGames[0];
 
   // Regular-season order (for season awards context)
-  const regularSeasonStandings = [...s.standings].sort((a,b) => a.rank - b.rank);
-  const allSt = s.allStandings || s.standings;
+  const regularSeasonStandings = [...seasonSt].sort((a,b) => a.rank - b.rank);
+  const allSt = seasonSt;
   const byRecord = [...allSt].sort((a,b) => {
     const gpA = (a.wins || 0) + (a.losses || 0) + (a.ties || 0);
     const gpB = (b.wins || 0) + (b.losses || 0) + (b.ties || 0);
