@@ -467,12 +467,17 @@ function renderHomepage() {
   });
   const bestTeamName = MANAGERS_MAP[bestRecord.mgr] ? MANAGERS_MAP[bestRecord.mgr].teamName : bestRecord.mgr;
 
-  // Longest regular-season winning streak (within a single season)
+  // Longest regular-season win and losing streaks (within a single season),
+  // plus highest single-game score by an allowed franchise, plus playoff wins.
   let bestStreak = { len: 0, mgr: '', year: 0 };
+  let worstStreak = { len: 0, mgr: '', year: 0 };
+  let topGame = { pts: 0, mgr: '', year: 0, week: 0 };
+  const playoffWinCounts = {};
   SEASONS.forEach(function(s) {
     const fullMu = s.allMatchups || s.matchups;
     const fullSt = s.allStandings || s.standings;
-    const run = {};
+    const winRun = {};
+    const lossRun = {};
     [...fullMu].filter(function(m) { return !m.is_playoffs; })
       .sort(function(a, b) { return a.week - b.week; })
       .forEach(function(m) {
@@ -482,14 +487,59 @@ function renderHomepage() {
         const t1Won = m.winner_team_key === m.team1.team_key;
         [{ mgr: t1mgr, won: t1Won }, { mgr: t2mgr, won: !t1Won }].forEach(function(e) {
           if (!ALLOWED_MANAGERS.has(e.mgr)) return;
-          run[e.mgr] = e.won ? (run[e.mgr] || 0) + 1 : 0;
-          if (run[e.mgr] > bestStreak.len) {
-            bestStreak = { len: run[e.mgr], mgr: e.mgr, year: s.season };
+          if (e.won) {
+            winRun[e.mgr] = (winRun[e.mgr] || 0) + 1;
+            lossRun[e.mgr] = 0;
+            if (winRun[e.mgr] > bestStreak.len) bestStreak = { len: winRun[e.mgr], mgr: e.mgr, year: s.season };
+          } else {
+            lossRun[e.mgr] = (lossRun[e.mgr] || 0) + 1;
+            winRun[e.mgr] = 0;
+            if (lossRun[e.mgr] > worstStreak.len) worstStreak = { len: lossRun[e.mgr], mgr: e.mgr, year: s.season };
           }
         });
       });
+
+    // Highest single-game score (reg season + real playoff games, no consolation)
+    fullMu.forEach(function(m) {
+      if (!isNonConsolationGame(m, s)) return;
+      [m.team1, m.team2].forEach(function(t) {
+        const mgr = getMgrFromTeamKeyFull(t.team_key, fullSt);
+        if (!mgr || !ALLOWED_MANAGERS.has(mgr)) return;
+        if (t.points > topGame.pts) {
+          topGame = { pts: t.points, mgr: mgr, year: s.season, week: m.week };
+        }
+      });
+    });
+
+    // Playoff wins (championship bracket only, no consolation)
+    fullMu.forEach(function(m) {
+      if (!isTruePlayoffGame(m, s)) return;
+      if (!m.winner_team_key) return;
+      const winMgr = m.winner_team_key === m.team1.team_key
+        ? getMgrFromTeamKeyFull(m.team1.team_key, fullSt)
+        : getMgrFromTeamKeyFull(m.team2.team_key, fullSt);
+      if (winMgr && ALLOWED_MANAGERS.has(winMgr)) {
+        playoffWinCounts[winMgr] = (playoffWinCounts[winMgr] || 0) + 1;
+      }
+    });
   });
   const streakTeamName = MANAGERS_MAP[bestStreak.mgr] ? MANAGERS_MAP[bestStreak.mgr].teamName : bestStreak.mgr;
+  const worstStreakTeam = MANAGERS_MAP[worstStreak.mgr] ? MANAGERS_MAP[worstStreak.mgr].teamName : worstStreak.mgr;
+  const topGameTeam = MANAGERS_MAP[topGame.mgr] ? MANAGERS_MAP[topGame.mgr].teamName : topGame.mgr;
+
+  // Highest regular-season points-for in a single season (single franchise)
+  let topSeasonPF = { pts: 0, mgr: '', year: 0, wins: 0, losses: 0 };
+  SEASONS.forEach(function(s) {
+    const fullSt = s.allStandings || s.standings;
+    fullSt.forEach(function(t) {
+      const mgr = (t.managers && t.managers[0]) || null;
+      if (!mgr || !ALLOWED_MANAGERS.has(mgr)) return;
+      if (t.points_for > topSeasonPF.pts) {
+        topSeasonPF = { pts: t.points_for, mgr: mgr, year: s.season, wins: t.wins, losses: t.losses };
+      }
+    });
+  });
+  const topSeasonPFTeam = MANAGERS_MAP[topSeasonPF.mgr] ? MANAGERS_MAP[topSeasonPF.mgr].teamName : topSeasonPF.mgr;
 
   // Playoff bye leaders — every franchise with at least one top-2 finish
   const byeLeaders = Object.values(MANAGERS_MAP)
@@ -523,6 +573,22 @@ function renderHomepage() {
     '</div>';
   }).join('');
 
+  // Playoff wins per franchise (championship bracket only, no consolation)
+  const playoffWinLeaders = Object.entries(playoffWinCounts)
+    .map(function(e) { return { mgr: e[0], teamName: (MANAGERS_MAP[e[0]] && MANAGERS_MAP[e[0]].teamName) || e[0], wins: e[1] }; })
+    .sort(function(a, b) {
+      var d = b.wins - a.wins;
+      if (d !== 0) return d;
+      return (MANAGERS_MAP[b.mgr].championships || 0) - (MANAGERS_MAP[a.mgr].championships || 0);
+    });
+  var totalPOWins = playoffWinLeaders.reduce(function(s, m) { return s + m.wins; }, 0);
+  var playoffWinRowsHTML = playoffWinLeaders.map(function(m) {
+    return '<div class="bye-row">' +
+      '<span class="bye-team">' + m.teamName + '</span>' +
+      '<span class="bye-count">' + m.wins + '</span>' +
+    '</div>';
+  }).join('');
+
   snapshotEl.innerHTML =
     '<div class="snapshot-card">' +
       '<div class="snapshot-card-label">The Standard</div>' +
@@ -537,10 +603,28 @@ function renderHomepage() {
       '<div class="snapshot-card-tag snapshot-tag--rate">Highest Win Rate</div>' +
     '</div>' +
     '<div class="snapshot-card">' +
+      '<div class="snapshot-card-label">Most Points in a Season</div>' +
+      '<div class="snapshot-card-primary">' + topSeasonPF.pts.toFixed(1) + '</div>' +
+      '<div class="snapshot-card-supporting">' + topSeasonPFTeam + ' \u00b7 ' + topSeasonPF.year + ' \u00b7 ' + topSeasonPF.wins + '\u2013' + topSeasonPF.losses + '</div>' +
+      '<div class="snapshot-card-tag snapshot-tag--rate">Season PF</div>' +
+    '</div>' +
+    '<div class="snapshot-card">' +
+      '<div class="snapshot-card-label">Most Points in a Single Game</div>' +
+      '<div class="snapshot-card-primary">' + topGame.pts.toFixed(1) + '</div>' +
+      '<div class="snapshot-card-supporting">' + topGameTeam + ' \u00b7 Wk ' + topGame.week + ', ' + topGame.year + '</div>' +
+      '<div class="snapshot-card-tag snapshot-tag--rate">Game High</div>' +
+    '</div>' +
+    '<div class="snapshot-card">' +
       '<div class="snapshot-card-label">Longest Regular Season Win Streak</div>' +
       '<div class="snapshot-card-primary">' + bestStreak.len + '</div>' +
       '<div class="snapshot-card-supporting">' + streakTeamName + ' \u00b7 ' + bestStreak.year + '</div>' +
       '<div class="snapshot-card-tag snapshot-tag--streak">Win Streak</div>' +
+    '</div>' +
+    '<div class="snapshot-card">' +
+      '<div class="snapshot-card-label">Longest Regular Season Losing Streak</div>' +
+      '<div class="snapshot-card-primary">' + worstStreak.len + '</div>' +
+      '<div class="snapshot-card-supporting">' + worstStreakTeam + ' \u00b7 ' + worstStreak.year + '</div>' +
+      '<div class="snapshot-card-tag snapshot-tag--never">Losing Streak</div>' +
     '</div>' +
     '<div class="snapshot-card snapshot-card--byes">' +
       '<div class="snapshot-card-label">Playoff Byes \u00b7 All-Time</div>' +
@@ -553,6 +637,12 @@ function renderHomepage() {
       '<div class="bye-list">' + tenWinRowsHTML + '</div>' +
       '<div class="snapshot-card-supporting">' + totalTenWin + ' total seasons \u00b7 ' + tenWinLeaders.length + ' franchises</div>' +
       '<div class="snapshot-card-tag snapshot-tag--digits">Double Digits</div>' +
+    '</div>' +
+    '<div class="snapshot-card snapshot-card--byes">' +
+      '<div class="snapshot-card-label">Playoff Wins \u00b7 All-Time</div>' +
+      '<div class="bye-list">' + playoffWinRowsHTML + '</div>' +
+      '<div class="snapshot-card-supporting">' + totalPOWins + ' total wins \u00b7 ' + playoffWinLeaders.length + ' franchises</div>' +
+      '<div class="snapshot-card-tag snapshot-tag--dynasty">Bracket Wins</div>' +
     '</div>' +
     '<div class="snapshot-card">' +
       '<div class="snapshot-card-label">Still Waiting</div>' +
