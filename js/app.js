@@ -585,9 +585,13 @@ function renderHomepage() {
     '</div>';
   }).join('');
 
-  // Playoff wins per franchise (championship bracket only, no consolation)
-  const playoffWinLeaders = Object.entries(playoffWinCounts)
-    .map(function(e) { return { mgr: e[0], teamName: (MANAGERS_MAP[e[0]] && MANAGERS_MAP[e[0]].teamName) || e[0], wins: e[1] }; })
+  // Playoff wins per franchise (championship bracket only, no consolation).
+  // Include every allowed franchise so teams with 0 wins (e.g. Edmund Fitz) still appear.
+  const playoffWinLeaders = Object.values(MANAGERS_MAP)
+    .filter(function(m) { return ALLOWED_MANAGERS.has(m.nickname); })
+    .map(function(m) {
+      return { mgr: m.nickname, teamName: m.teamName, wins: playoffWinCounts[m.nickname] || 0 };
+    })
     .sort(function(a, b) {
       var d = b.wins - a.wins;
       if (d !== 0) return d;
