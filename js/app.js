@@ -156,6 +156,7 @@ function processData() {
           nickname: mgr, teamNames: new Set(), wins: 0, losses: 0, ties: 0,
           pointsFor: 0, pointsAgainst: 0, seasons: 0,
           championships: 0, champYears: [], runnerUp: 0, playoffAppearances: 0,
+          playoffByes: 0, tenWinSeasons: 0,
           highScore: 0, highScoreWeek: 0, highScoreYear: 0,
           lowScore: 9999, lowScoreWeek: 0, lowScoreYear: 0,
           weeklyScores: [], yearlyStats: [],
@@ -190,12 +191,16 @@ function processData() {
       if (ruMgr && MANAGERS_MAP[ruMgr]) MANAGERS_MAP[ruMgr].runnerUp++;
     }
 
-    // Playoff appearances = top 6 finishers by standings rank (reliable source of truth)
+    // Playoff appearances = top 6 finishers by standings rank (reliable source of truth).
+    // Playoff byes = top 2 seeds (6-team bracket gives seeds 1-2 a first-round bye).
+    // 10+ win seasons = regular-season win total of 10 or more.
     fullStandings.forEach(t => {
-      if (t.rank <= 6) {
-        const mgr = t.managers[0] || null;
-        if (mgr && MANAGERS_MAP[mgr]) MANAGERS_MAP[mgr].playoffAppearances++;
-      }
+      const mgr = t.managers[0] || null;
+      if (!mgr || !MANAGERS_MAP[mgr]) return;
+      const mm = MANAGERS_MAP[mgr];
+      if (t.rank <= 6) mm.playoffAppearances++;
+      if (t.rank <= 2) mm.playoffByes++;
+      if (t.wins >= 10) mm.tenWinSeasons++;
     });
 
     // Weekly high/low from ALL matchups (not filtered) so game counts are accurate
@@ -689,6 +694,8 @@ function renderPower() {
       <td><span class="${wpClass}" style="font-family:'IBM Plex Mono',monospace;font-size:14px;${isDead?'color:var(--bone-dim)':''}">${(m.winPct*100).toFixed(1)}%</span></td>
       <td>${getTitles(m.championships, isDead)}</td>
       <td><span style="font-family:'IBM Plex Mono',monospace;font-size:13px;${dimStyle}">${m.playoffAppearances}</span></td>
+      <td><span style="font-family:'IBM Plex Mono',monospace;font-size:13px;${dimStyle}">${m.playoffByes || 0}</span></td>
+      <td><span style="font-family:'IBM Plex Mono',monospace;font-size:13px;${dimStyle}">${m.tenWinSeasons || 0}</span></td>
       <td><span style="font-family:'IBM Plex Mono',monospace;font-size:13px;${dimStyle}">${m.avgPts.toFixed(1)}</span></td>
     `;
     tr.onclick = () => showManagerModal(m.nickname);
@@ -1631,10 +1638,16 @@ function showManagerModal(nickname, highlightYear) {
         const pfPa = tg > 0 ? (m.avgPts - m.pointsAgainst/tg) : 0;
         const pfPaStr = (pfPa >= 0 ? '+' : '') + pfPa.toFixed(1);
         const pfPaColor = pfPa >= 0 ? 'var(--green)' : '#e74c3c';
+        const byes = m.playoffByes || 0;
+        const tenW = m.tenWinSeasons || 0;
         return '<div class="stat-grid-3" style="margin-bottom:20px">' +
           '<div class="stat-box"><div class="stat-box-label">Consistency</div><div class="stat-box-num" style="font-size:18px;color:' + consistColor + '">' + consistLabel + '</div><div class="stat-box-sub">\u00b1' + stdDev.toFixed(1) + ' pts/wk</div></div>' +
           '<div class="stat-box"><div class="stat-box-label">Avg Opp Score</div><div class="stat-box-num" style="font-size:18px">' + avgPA + '</div><div class="stat-box-sub">PF/PA diff: <span style="color:' + pfPaColor + '">' + pfPaStr + '</span></div></div>' +
           '<div class="stat-box"><div class="stat-box-label">Playoff Rate</div><div class="stat-box-num" style="font-size:18px">' + (m.seasons > 0 ? (m.playoffAppearances/m.seasons*100).toFixed(0) + '%' : '\u2014') + '</div><div class="stat-box-sub">' + m.playoffAppearances + ' of ' + m.seasons + ' seasons</div></div>' +
+        '</div>' +
+        '<div class="stat-grid-2" style="margin-bottom:20px">' +
+          '<div class="stat-box"><div class="stat-box-label">Playoff Byes</div><div class="stat-box-num" style="font-size:22px">' + byes + '</div><div class="stat-box-sub">Top-2 seed finishes</div></div>' +
+          '<div class="stat-box"><div class="stat-box-label">10+ Win Seasons</div><div class="stat-box-num" style="font-size:22px">' + tenW + '</div><div class="stat-box-sub">Double-digit regular season</div></div>' +
         '</div>';
       })()}
     `;
