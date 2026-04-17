@@ -507,6 +507,22 @@ function renderHomepage() {
     '</div>';
   }).join('');
 
+  // 10+ win season leaders — every franchise with at least one double-digit regular season
+  const tenWinLeaders = Object.values(MANAGERS_MAP)
+    .filter(function(m) { return ALLOWED_MANAGERS.has(m.nickname) && (m.tenWinSeasons || 0) > 0; })
+    .sort(function(a, b) {
+      var d = (b.tenWinSeasons || 0) - (a.tenWinSeasons || 0);
+      if (d !== 0) return d;
+      return b.championships - a.championships;
+    });
+  var totalTenWin = tenWinLeaders.reduce(function(s, m) { return s + (m.tenWinSeasons || 0); }, 0);
+  var tenWinRowsHTML = tenWinLeaders.map(function(m) {
+    return '<div class="bye-row">' +
+      '<span class="bye-team">' + m.teamName + '</span>' +
+      '<span class="bye-count">' + m.tenWinSeasons + '</span>' +
+    '</div>';
+  }).join('');
+
   snapshotEl.innerHTML =
     '<div class="snapshot-card">' +
       '<div class="snapshot-card-label">The Standard</div>' +
@@ -526,17 +542,23 @@ function renderHomepage() {
       '<div class="snapshot-card-supporting">' + streakTeamName + ' \u00b7 ' + bestStreak.year + '</div>' +
       '<div class="snapshot-card-tag snapshot-tag--record">Win Streak</div>' +
     '</div>' +
-    '<div class="snapshot-card">' +
-      '<div class="snapshot-card-label">Still Waiting</div>' +
-      '<div class="snapshot-card-primary">Johnny Fantasy</div>' +
-      '<div class="snapshot-card-supporting">' + johnnyRU + ' Runner-Ups \u00b7 ' + johnnySzns + ' Seasons \u00b7 0 Titles</div>' +
-      '<div class="snapshot-card-tag snapshot-tag--never">Never Won</div>' +
-    '</div>' +
     '<div class="snapshot-card snapshot-card--byes">' +
       '<div class="snapshot-card-label">Playoff Byes \u00b7 All-Time</div>' +
       '<div class="bye-list">' + byesRowsHTML + '</div>' +
       '<div class="snapshot-card-supporting">' + totalByes + ' total byes \u00b7 ' + byeLeaders.length + ' franchises</div>' +
       '<div class="snapshot-card-tag snapshot-tag--dynasty">Top-2 Seeds</div>' +
+    '</div>' +
+    '<div class="snapshot-card snapshot-card--byes">' +
+      '<div class="snapshot-card-label">10+ Win Seasons \u00b7 All-Time</div>' +
+      '<div class="bye-list">' + tenWinRowsHTML + '</div>' +
+      '<div class="snapshot-card-supporting">' + totalTenWin + ' total seasons \u00b7 ' + tenWinLeaders.length + ' franchises</div>' +
+      '<div class="snapshot-card-tag snapshot-tag--record">Double Digits</div>' +
+    '</div>' +
+    '<div class="snapshot-card">' +
+      '<div class="snapshot-card-label">Still Waiting</div>' +
+      '<div class="snapshot-card-primary">Johnny Fantasy</div>' +
+      '<div class="snapshot-card-supporting">' + johnnyRU + ' Runner-Ups \u00b7 ' + johnnySzns + ' Seasons \u00b7 0 Titles</div>' +
+      '<div class="snapshot-card-tag snapshot-tag--never">Never Won</div>' +
     '</div>';
 
   // ── Archive Navigation Cards ──
