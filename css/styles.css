@@ -2272,6 +2272,14 @@ body::before {
   line-height:1.1;
   margin-bottom:8px;
 }
+/* For long numeric values (e.g. 1809.96, 206.5) — smaller, mono-feel,
+   keeps the card composition balanced. */
+.snapshot-card-primary--num {
+  font-family:'IBM Plex Mono', monospace;
+  font-weight:600;
+  font-size:clamp(20px,2.6vw,28px);
+  letter-spacing:-0.01em;
+}
 .snapshot-card-supporting {
   font-family:'IBM Plex Mono', monospace;
   font-size:clamp(11px,1.2vw,13px);

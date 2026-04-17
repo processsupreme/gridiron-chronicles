@@ -527,15 +527,27 @@ function renderHomepage() {
   const worstStreakTeam = MANAGERS_MAP[worstStreak.mgr] ? MANAGERS_MAP[worstStreak.mgr].teamName : worstStreak.mgr;
   const topGameTeam = MANAGERS_MAP[topGame.mgr] ? MANAGERS_MAP[topGame.mgr].teamName : topGame.mgr;
 
-  // Highest regular-season points-for in a single season (single franchise)
+  // Most points in a single regular season (single franchise, reg-season only)
   let topSeasonPF = { pts: 0, mgr: '', year: 0, wins: 0, losses: 0 };
   SEASONS.forEach(function(s) {
+    const fullMu = s.allMatchups || s.matchups;
     const fullSt = s.allStandings || s.standings;
-    fullSt.forEach(function(t) {
-      const mgr = (t.managers && t.managers[0]) || null;
-      if (!mgr || !ALLOWED_MANAGERS.has(mgr)) return;
-      if (t.points_for > topSeasonPF.pts) {
-        topSeasonPF = { pts: t.points_for, mgr: mgr, year: s.season, wins: t.wins, losses: t.losses };
+    const regPF = {};
+    fullMu.forEach(function(m) {
+      if (m.is_playoffs) return;
+      [m.team1, m.team2].forEach(function(t) {
+        const mgr = getMgrFromTeamKeyFull(t.team_key, fullSt);
+        if (!mgr || !ALLOWED_MANAGERS.has(mgr)) return;
+        regPF[mgr] = (regPF[mgr] || 0) + (t.points || 0);
+      });
+    });
+    Object.keys(regPF).forEach(function(mgr) {
+      if (regPF[mgr] > topSeasonPF.pts) {
+        const stRow = fullSt.find(function(t) { return (t.managers && t.managers[0]) === mgr; });
+        topSeasonPF = {
+          pts: regPF[mgr], mgr: mgr, year: s.season,
+          wins: stRow ? stRow.wins : 0, losses: stRow ? stRow.losses : 0,
+        };
       }
     });
   });
@@ -603,14 +615,14 @@ function renderHomepage() {
       '<div class="snapshot-card-tag snapshot-tag--rate">Highest Win Rate</div>' +
     '</div>' +
     '<div class="snapshot-card">' +
-      '<div class="snapshot-card-label">Most Points in a Season</div>' +
-      '<div class="snapshot-card-primary">' + topSeasonPF.pts.toFixed(1) + '</div>' +
+      '<div class="snapshot-card-label">Most Points in a Regular Season</div>' +
+      '<div class="snapshot-card-primary snapshot-card-primary--num">' + topSeasonPF.pts.toFixed(1) + '</div>' +
       '<div class="snapshot-card-supporting">' + topSeasonPFTeam + ' \u00b7 ' + topSeasonPF.year + ' \u00b7 ' + topSeasonPF.wins + '\u2013' + topSeasonPF.losses + '</div>' +
       '<div class="snapshot-card-tag snapshot-tag--rate">Season PF</div>' +
     '</div>' +
     '<div class="snapshot-card">' +
       '<div class="snapshot-card-label">Most Points in a Single Game</div>' +
-      '<div class="snapshot-card-primary">' + topGame.pts.toFixed(1) + '</div>' +
+      '<div class="snapshot-card-primary snapshot-card-primary--num">' + topGame.pts.toFixed(1) + '</div>' +
       '<div class="snapshot-card-supporting">' + topGameTeam + ' \u00b7 Wk ' + topGame.week + ', ' + topGame.year + '</div>' +
       '<div class="snapshot-card-tag snapshot-tag--rate">Game High</div>' +
     '</div>' +
