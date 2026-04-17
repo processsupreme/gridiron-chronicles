@@ -156,7 +156,7 @@ function processData() {
           nickname: mgr, teamNames: new Set(), wins: 0, losses: 0, ties: 0,
           pointsFor: 0, pointsAgainst: 0, seasons: 0,
           championships: 0, champYears: [], runnerUp: 0, playoffAppearances: 0,
-          playoffByes: 0, tenWinSeasons: 0,
+          playoffByes: 0, tenWinSeasons: 0, playoffWins: 0,
           highScore: 0, highScoreWeek: 0, highScoreYear: 0,
           lowScore: 9999, lowScoreWeek: 0, lowScoreYear: 0,
           weeklyScores: [], yearlyStats: [],
@@ -217,6 +217,16 @@ function processData() {
       if (t.rank <= 6) mm.playoffAppearances++;
       if (byeTeamKeys.has(t.team_key)) mm.playoffByes++;
       if (t.wins >= 10) mm.tenWinSeasons++;
+    });
+
+    // Playoff wins — ONLY games on the championship chain (final + semis + R1).
+    // Consolation and 3rd/5th/7th-place games do not count, per league rule.
+    const chainKeys = getChampionshipChainGameKeys(s);
+    (s.allMatchups || s.matchups).forEach(m => {
+      if (!chainKeys.has(_gameKeyFor(m))) return;
+      if (!m.winner_team_key) return;
+      const winMgr = getMgrFromTeamKeyFull(m.winner_team_key, fullStandings);
+      if (winMgr && MANAGERS_MAP[winMgr]) MANAGERS_MAP[winMgr].playoffWins++;
     });
 
     // Weekly high/low from ALL matchups (not filtered) so game counts are accurate
@@ -537,11 +547,11 @@ function renderHomepage() {
   const bestTeamName = MANAGERS_MAP[bestRecord.mgr] ? MANAGERS_MAP[bestRecord.mgr].teamName : bestRecord.mgr;
 
   // Longest regular-season win and losing streaks (within a single season),
-  // plus highest single-game score by an allowed franchise, plus playoff wins.
+  // plus highest single-game score by an allowed franchise.
+  // (Playoff wins are already aggregated in processData -> MANAGERS_MAP.)
   let bestStreak = { len: 0, mgr: '', year: 0 };
   let worstStreak = { len: 0, mgr: '', year: 0 };
   let topGame = { pts: 0, mgr: '', year: 0, week: 0 };
-  const playoffWinCounts = {};
   SEASONS.forEach(function(s) {
     const fullMu = s.allMatchups || s.matchups;
     const fullSt = s.allStandings || s.standings;
@@ -579,63 +589,6 @@ function renderHomepage() {
         }
       });
     });
-
-    // Playoff wins — CHAMPIONSHIP BRACKET ONLY.
-    // League rule: once you lose, any subsequent (consolation or 3rd-place)
-    // win does NOT count. Trace the bracket backward from the final:
-    //   finals → semis → round 1. Anything outside that chain is consolation.
-    (function() {
-      const bracketKeys = new Set();
-      fullSt.forEach(function(t) { if (t.rank <= 6) bracketKeys.add(t.team_key); });
-      const poWeeks = [...new Set(fullMu.filter(function(m) { return m.is_playoffs; })
-        .map(function(m) { return m.week; }))].sort(function(a,b){ return a-b; });
-      if (poWeeks.length < 3) return;
-      const wk1 = poWeeks[0], wk2 = poWeeks[1], wk3 = poWeeks[2];
-      const top6Games = function(wk) {
-        return fullMu.filter(function(m) {
-          return m.is_playoffs && m.week === wk
-            && bracketKeys.has(m.team1.team_key)
-            && bracketKeys.has(m.team2.team_key);
-        });
-      };
-      const finalGames = top6Games(wk3);
-      const champKey = s.champion ? s.champion.team_key : null;
-      const champGame = finalGames.find(function(m) { return m.is_championship; })
-        || finalGames.find(function(m) {
-          return champKey && (m.team1.team_key === champKey || m.team2.team_key === champKey);
-        })
-        || null;
-
-      const semiTeams = new Set();
-      if (champGame) {
-        semiTeams.add(champGame.team1.team_key);
-        semiTeams.add(champGame.team2.team_key);
-      }
-      const realSemis = top6Games(wk2).filter(function(m) {
-        return semiTeams.has(m.team1.team_key) || semiTeams.has(m.team2.team_key);
-      });
-      const qfTeams = new Set(semiTeams);
-      realSemis.forEach(function(m) {
-        qfTeams.add(m.team1.team_key);
-        qfTeams.add(m.team2.team_key);
-      });
-      const realRd1 = top6Games(wk1).filter(function(m) {
-        return qfTeams.has(m.team1.team_key) || qfTeams.has(m.team2.team_key);
-      });
-
-      const bracketGames = (champGame ? [champGame] : []).concat(realSemis, realRd1);
-      const seen = new Set();
-      bracketGames.forEach(function(m) {
-        const key = m.week + ':' + [m.team1.team_key, m.team2.team_key].sort().join(':');
-        if (seen.has(key)) return;
-        seen.add(key);
-        if (!m.winner_team_key) return;
-        const winMgr = getMgrFromTeamKeyFull(m.winner_team_key, fullSt);
-        if (winMgr && ALLOWED_MANAGERS.has(winMgr)) {
-          playoffWinCounts[winMgr] = (playoffWinCounts[winMgr] || 0) + 1;
-        }
-      });
-    })();
   });
   const streakTeamName = MANAGERS_MAP[bestStreak.mgr] ? MANAGERS_MAP[bestStreak.mgr].teamName : bestStreak.mgr;
   const worstStreakTeam = MANAGERS_MAP[worstStreak.mgr] ? MANAGERS_MAP[worstStreak.mgr].teamName : worstStreak.mgr;
@@ -699,19 +652,16 @@ function renderHomepage() {
     '</div>';
   }).join('');
 
-  // Playoff wins per franchise (championship bracket only, no consolation).
+  // Playoff wins per franchise — read from MANAGERS_MAP (populated in processData).
   // Include every allowed franchise so teams with 0 wins (e.g. Edmund Fitz) still appear.
   const playoffWinLeaders = Object.values(MANAGERS_MAP)
     .filter(function(m) { return ALLOWED_MANAGERS.has(m.nickname); })
-    .map(function(m) {
-      return { mgr: m.nickname, teamName: m.teamName, wins: playoffWinCounts[m.nickname] || 0 };
-    })
+    .map(function(m) { return { mgr: m.nickname, teamName: m.teamName, wins: m.playoffWins || 0 }; })
     .sort(function(a, b) {
       var d = b.wins - a.wins;
       if (d !== 0) return d;
       return (MANAGERS_MAP[b.mgr].championships || 0) - (MANAGERS_MAP[a.mgr].championships || 0);
     });
-  var totalPOWins = playoffWinLeaders.reduce(function(s, m) { return s + m.wins; }, 0);
   var playoffWinRowsHTML = playoffWinLeaders.map(function(m) {
     return '<div class="bye-row">' +
       '<span class="bye-team">' + m.teamName + '</span>' +
@@ -1901,12 +1851,14 @@ function showManagerModal(nickname, highlightYear) {
         const pfPaColor = pfPa >= 0 ? 'var(--green)' : '#e74c3c';
         const byes = m.playoffByes || 0;
         const tenW = m.tenWinSeasons || 0;
+        const poWins = m.playoffWins || 0;
         return '<div class="stat-grid-3" style="margin-bottom:20px">' +
           '<div class="stat-box"><div class="stat-box-label">Consistency</div><div class="stat-box-num" style="font-size:18px;color:' + consistColor + '">' + consistLabel + '</div><div class="stat-box-sub">\u00b1' + stdDev.toFixed(1) + ' pts/wk</div></div>' +
           '<div class="stat-box"><div class="stat-box-label">Avg Opp Score</div><div class="stat-box-num" style="font-size:18px">' + avgPA + '</div><div class="stat-box-sub">PF/PA diff: <span style="color:' + pfPaColor + '">' + pfPaStr + '</span></div></div>' +
           '<div class="stat-box"><div class="stat-box-label">Playoff Rate</div><div class="stat-box-num" style="font-size:18px">' + (m.seasons > 0 ? (m.playoffAppearances/m.seasons*100).toFixed(0) + '%' : '\u2014') + '</div><div class="stat-box-sub">' + m.playoffAppearances + ' of ' + m.seasons + ' seasons</div></div>' +
         '</div>' +
-        '<div class="stat-grid-2" style="margin-bottom:20px">' +
+        '<div class="stat-grid-3" style="margin-bottom:20px">' +
+          '<div class="stat-box"><div class="stat-box-label">Playoff Wins</div><div class="stat-box-num" style="font-size:22px">' + poWins + '</div><div class="stat-box-sub">Championship bracket only</div></div>' +
           '<div class="stat-box"><div class="stat-box-label">Playoff Byes</div><div class="stat-box-num" style="font-size:22px">' + byes + '</div><div class="stat-box-sub">Top-2 seed finishes</div></div>' +
           '<div class="stat-box"><div class="stat-box-label">10+ Win Seasons</div><div class="stat-box-num" style="font-size:22px">' + tenW + '</div><div class="stat-box-sub">Double-digit regular season</div></div>' +
         '</div>';
