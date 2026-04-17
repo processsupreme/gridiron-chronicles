@@ -192,14 +192,30 @@ function processData() {
     }
 
     // Playoff appearances = top 6 finishers by standings rank (reliable source of truth).
-    // Playoff byes = top 2 seeds (6-team bracket gives seeds 1-2 a first-round bye).
+    // Playoff byes = top 2 REGULAR-SEASON seeds — record first (wins + 0.5·ties),
+    // points for as tiebreaker. NOT top 2 by final rank: playoff outcomes
+    // reshuffle those (e.g. 2024 Opolos had a bye at 12-2 but finished rank 3
+    // after losing in the semis; 2022 Johnny Fantasy 9-4-1 had a bye over
+    // Joco 9-5-0 despite Joco's higher PF, because JF's record was better).
     // 10+ win seasons = regular-season win total of 10 or more.
+    const seedRecord = (t) => (t.wins || 0) + 0.5 * (t.ties || 0);
+    const byeTeamKeys = new Set(
+      [...fullStandings]
+        .filter(t => t.rank <= 6)
+        .sort((a, b) => {
+          const r = seedRecord(b) - seedRecord(a);
+          if (r !== 0) return r;
+          return (b.points_for || 0) - (a.points_for || 0);
+        })
+        .slice(0, 2)
+        .map(t => t.team_key)
+    );
     fullStandings.forEach(t => {
       const mgr = t.managers[0] || null;
       if (!mgr || !MANAGERS_MAP[mgr]) return;
       const mm = MANAGERS_MAP[mgr];
       if (t.rank <= 6) mm.playoffAppearances++;
-      if (t.rank <= 2) mm.playoffByes++;
+      if (byeTeamKeys.has(t.team_key)) mm.playoffByes++;
       if (t.wins >= 10) mm.tenWinSeasons++;
     });
 
@@ -257,8 +273,11 @@ function getMgrFromTeamName(teamName, season) {
 }
 
 // ── SHARED PLAYOFF HELPERS ──────────────────────────────────
-// BKGFFL rule: top 6 seeds (by standings rank) are the championship bracket.
-// Seeds 7+ play consolation games during playoff weeks — those are NOT playoffs.
+// BKGFFL rule: top 6 seeds make the playoffs. Seeds 1-2 get a bye; seeds 3-6
+// play Round 1; the 4 R1 survivors play semis vs the byes; finalists play for
+// the title. That's the ENTIRE playoffs (5 games total). Everything else —
+// consolation games among seeds 7-12, and 3rd/5th/7th-place placement games —
+// is consolation and does NOT count for any franchise, ever.
 
 /** Returns a Set of team_keys for the top-6 championship bracket in a given season. */
 function getChampionshipBracketKeys(season) {
@@ -267,13 +286,63 @@ function getChampionshipBracketKeys(season) {
   return keys;
 }
 
-/** Returns true only if this is a real championship-bracket playoff game:
- *  - is_playoffs flag is true
- *  - BOTH teams finished in the top 6 that season (i.e., not consolation) */
+/** Returns a stable game key (week + sorted team keys) — for dedup across the app. */
+function _gameKeyFor(matchup) {
+  const pair = [matchup.team1.team_key, matchup.team2.team_key].sort();
+  return matchup.week + ':' + pair[0] + ':' + pair[1];
+}
+
+/** Per-season cache of the 5 championship-chain game keys (final + semis + R1).
+ *  EXCLUDES 3rd-place, 5th-place, and 7th-place "placement" games even when
+ *  those games involve top-6 teams. */
+const _champChainCache = new Map();
+function getChampionshipChainGameKeys(season) {
+  const cacheKey = season.league_key || season.season;
+  if (_champChainCache.has(cacheKey)) return _champChainCache.get(cacheKey);
+
+  const fullMu = season.allMatchups || season.matchups;
+  const bracketKeys = getChampionshipBracketKeys(season);
+  const poWeeks = [...new Set(fullMu.filter(m => m.is_playoffs).map(m => m.week))].sort((a,b)=>a-b);
+  const result = new Set();
+
+  if (poWeeks.length >= 3) {
+    const wk1 = poWeeks[0], wk2 = poWeeks[1], wk3 = poWeeks[2];
+    const top6Games = (wk) => fullMu.filter(m =>
+      m.is_playoffs && m.week === wk &&
+      bracketKeys.has(m.team1.team_key) && bracketKeys.has(m.team2.team_key));
+
+    const finalGames = top6Games(wk3);
+    const champKey = season.champion ? season.champion.team_key : null;
+    const champGame = finalGames.find(m => m.is_championship)
+      || finalGames.find(m => champKey && (m.team1.team_key === champKey || m.team2.team_key === champKey))
+      || null;
+
+    if (champGame) {
+      result.add(_gameKeyFor(champGame));
+      const semiTeams = new Set([champGame.team1.team_key, champGame.team2.team_key]);
+      const realSemis = top6Games(wk2).filter(m =>
+        semiTeams.has(m.team1.team_key) || semiTeams.has(m.team2.team_key));
+      const qfTeams = new Set(semiTeams);
+      realSemis.forEach(m => {
+        result.add(_gameKeyFor(m));
+        qfTeams.add(m.team1.team_key);
+        qfTeams.add(m.team2.team_key);
+      });
+      top6Games(wk1)
+        .filter(m => qfTeams.has(m.team1.team_key) || qfTeams.has(m.team2.team_key))
+        .forEach(m => result.add(_gameKeyFor(m)));
+    }
+  }
+
+  _champChainCache.set(cacheKey, result);
+  return result;
+}
+
+/** Returns true only if this game is in the true championship chain:
+ *  final, semis, or R1. 3rd-place and 5th-place games return false. */
 function isTruePlayoffGame(matchup, season) {
   if (!matchup.is_playoffs) return false;
-  const bracketKeys = getChampionshipBracketKeys(season);
-  return bracketKeys.has(matchup.team1.team_key) && bracketKeys.has(matchup.team2.team_key);
+  return getChampionshipChainGameKeys(season).has(_gameKeyFor(matchup));
 }
 
 /** Returns true if a game is NOT a consolation game.
@@ -2002,8 +2071,21 @@ function showSeasonModal(year) {
 
   // ── PLAYOFF BRACKET (championship bracket only, no consolation) ──
   const playoffTeamCount = s.num_teams >= 12 ? 6 : 4;
-  const regularSeasonSeeded = [...seasonSt].sort((a,b) => a.rank - b.rank);
-  const playoffSeeds = regularSeasonSeeded.slice(0, playoffTeamCount);
+  // Qualifiers = top N by final rank. Bracket seeds = regular-season record
+  // (wins + 0.5·ties DESC), points for as tiebreaker. Final rank reshuffles
+  // by playoff outcome — e.g. 2024 Opolos was 12-2 (true #1 seed, bye) but
+  // finished rank 3 after losing in the semis, which would mis-identify
+  // LVC/Greek as the bye seeds. Ties must be half-counted because seasons
+  // like 2022 had tied games (Greek 10-3-1, Johnny Fantasy 9-4-1).
+  const playoffQualifiers = [...seasonSt]
+    .sort((a,b) => a.rank - b.rank)
+    .slice(0, playoffTeamCount);
+  const seedRecord = (t) => (t.wins || 0) + 0.5 * (t.ties || 0);
+  const playoffSeeds = [...playoffQualifiers].sort((a,b) => {
+    const r = seedRecord(b) - seedRecord(a);
+    if (r !== 0) return r;
+    return (b.points_for || 0) - (a.points_for || 0);
+  });
   const seedByKey = new Map(playoffSeeds.map((t, idx) => [t.team_key, idx + 1]));
   const realPlayoffKeys = new Set(playoffSeeds.map(t => t.team_key));
   const playoffMatchups = seasonMu
@@ -2374,37 +2456,36 @@ function renderPlayoffPerformance() {
     const [wk1, wk2, wk3] = playoffWeeks;
     const top6Games = (wk) => fullMu.filter(m => m.is_playoffs && m.week === wk && bracketKeys.has(m.team1.team_key) && bracketKeys.has(m.team2.team_key));
 
-    // Identify championship game from final week
+    // Identify championship game from final week. Do NOT include 3rd-place
+    // or any other placement game — they are consolation, not playoffs.
     const finalGames = top6Games(wk3);
     const champGame = finalGames.find(m => m.is_championship) ||
       finalGames.find(m => m.team1.team_key === s.champion?.team_key || m.team2.team_key === s.champion?.team_key);
-    const thirdPlaceGame = finalGames.find(m => m !== champGame);
 
-    // Collect the 4 semi-finalist team keys (from finals + 3rd place)
+    // Semi-finalists = the two teams in the final. (The other two semi losers
+    // play the 3rd-place game, but that is consolation and excluded.)
     const semiFinalTeams = new Set();
-    [champGame, thirdPlaceGame].forEach(g => {
-      if (!g) return;
-      semiFinalTeams.add(g.team1.team_key);
-      semiFinalTeams.add(g.team2.team_key);
-    });
+    if (champGame) { semiFinalTeams.add(champGame.team1.team_key); semiFinalTeams.add(champGame.team2.team_key); }
 
-    // Identify semi-final games (week 2 games involving semi-finalists)
+    // Real semis = wk2 top-6 games that sent a team into the final.
     const realSemis = top6Games(wk2).filter(m => semiFinalTeams.has(m.team1.team_key) || semiFinalTeams.has(m.team2.team_key));
 
     // Collect all quarter-finalists from semis
     const qfTeams = new Set(semiFinalTeams);
     realSemis.forEach(m => { qfTeams.add(m.team1.team_key); qfTeams.add(m.team2.team_key); });
 
-    // Identify round 1 games (week 1 games involving quarter-finalists)
+    // Real R1 = wk1 top-6 games where at least one team advanced to the semis.
     const realRd1 = top6Games(wk1).filter(m => qfTeams.has(m.team1.team_key) || qfTeams.has(m.team2.team_key));
 
-    // Compute true seeding from regular season record for upset detection
-    const seeding = [...fullSt].sort((a, b) => b.wins - a.wins || b.points_for - a.points_for);
+    // True regular-season seeding for upset detection: record (wins + 0.5·ties),
+    // points for as tiebreaker. Matches the league's bye-seed rule.
+    const seedingRecord = (t) => (t.wins || 0) + 0.5 * (t.ties || 0);
+    const seeding = [...fullSt].sort((a, b) => seedingRecord(b) - seedingRecord(a) || (b.points_for || 0) - (a.points_for || 0));
     const seedMap = {};
     seeding.forEach((t, i) => { seedMap[t.team_key] = i + 1; });
 
-    // All real championship bracket games
-    const allChampGames = [...(champGame ? [champGame] : []), ...(thirdPlaceGame ? [thirdPlaceGame] : []), ...realSemis, ...realRd1];
+    // All real championship-chain games (final + semis + R1). No 3rd-place.
+    const allChampGames = [...(champGame ? [champGame] : []), ...realSemis, ...realRd1];
     // Deduplicate by week+teams
     const seen = new Set();
     allChampGames.filter(m => {
