@@ -171,7 +171,16 @@ function processData() {
       m.pointsAgainst += t.points_against;
       m.seasons++;
       const totalGames = t.wins + t.losses + t.ties;
-      m.yearlyStats.push({ year: s.season, wins: t.wins, losses: t.losses, winPct: totalGames > 0 ? t.wins / totalGames : 0, rank: t.rank, pf: t.points_for });
+      // Canonical fields (wins/losses/ties/winPct/pf) are patched after the
+      // championship-chain pass below to include real playoff games.
+      m.yearlyStats.push({
+        year: s.season,
+        regWins: t.wins, regLosses: t.losses, regTies: t.ties,
+        chainWins: 0, chainLosses: 0, chainTies: 0,
+        wins: t.wins, losses: t.losses, ties: t.ties,
+        winPct: totalGames > 0 ? t.wins / totalGames : 0,
+        rank: t.rank, pf: t.points_for, pa: t.points_against,
+      });
 
       // Playoff appearances counted from actual matchup data below
     });
@@ -219,14 +228,48 @@ function processData() {
       if (t.wins >= 10) mm.tenWinSeasons++;
     });
 
-    // Playoff wins — ONLY games on the championship chain (final + semis + R1).
-    // Consolation and 3rd/5th/7th-place games do not count, per league rule.
+    // ── CANONICAL RECORD: championship-chain playoff W/L/T ──
+    // League rule: a W/L counts iff the game is (a) regular season OR (b) on the
+    // championship chain — final + semis + R1 games that feed the semis.
+    // 3rd/5th/7th-place and all consolation-bracket games never count for anyone.
+    // Games vs retired franchises DO count when they meet those criteria.
+    // Reg-season W/L/T/PF/PA were already added above from Yahoo's standings
+    // (reg-season-only in BKGFFL). Here we add chain playoff games on top.
     const chainKeys = getChampionshipChainGameKeys(s);
-    (s.allMatchups || s.matchups).forEach(m => {
-      if (!chainKeys.has(_gameKeyFor(m))) return;
-      if (!m.winner_team_key) return;
-      const winMgr = getMgrFromTeamKeyFull(m.winner_team_key, fullStandings);
-      if (winMgr && MANAGERS_MAP[winMgr]) MANAGERS_MAP[winMgr].playoffWins++;
+    const perMgrChain = {}; // mgr -> {w,l,t}
+    (s.allMatchups || s.matchups).forEach(mu => {
+      if (!chainKeys.has(_gameKeyFor(mu))) return;
+      ['team1','team2'].forEach((side, idx) => {
+        const myT = mu[side];
+        const oppT = mu[idx === 0 ? 'team2' : 'team1'];
+        const mgr = getMgrFromTeamKeyFull(myT.team_key, fullStandings);
+        if (!mgr || !MANAGERS_MAP[mgr]) return;
+        const mm = MANAGERS_MAP[mgr];
+        const wk = mu.winner_team_key;
+        let res;
+        if (wk === myT.team_key) res = 'W';
+        else if (!wk && myT.points > 0 && oppT.points > 0 && myT.points === oppT.points) res = 'T';
+        else res = 'L';
+        if (res === 'W') { mm.wins++; mm.playoffWins++; }
+        else if (res === 'L') { mm.losses++; }
+        else { mm.ties++; }
+        mm.pointsFor += myT.points || 0;
+        mm.pointsAgainst += oppT.points || 0;
+        if (!perMgrChain[mgr]) perMgrChain[mgr] = { w:0, l:0, t:0 };
+        perMgrChain[mgr][res === 'W' ? 'w' : res === 'L' ? 'l' : 't']++;
+      });
+    });
+    // Back-patch yearlyStats with chain numbers so per-season rows sum to the all-time total.
+    Object.entries(perMgrChain).forEach(([mgr, cs]) => {
+      const mm = MANAGERS_MAP[mgr];
+      const ye = mm && mm.yearlyStats.find(y => y.year === s.season);
+      if (!ye) return;
+      ye.chainWins = cs.w; ye.chainLosses = cs.l; ye.chainTies = cs.t;
+      ye.wins = ye.regWins + cs.w;
+      ye.losses = ye.regLosses + cs.l;
+      ye.ties = ye.regTies + cs.t;
+      const tg = ye.wins + ye.losses + ye.ties;
+      ye.winPct = tg > 0 ? ye.wins / tg : 0;
     });
 
     // Weekly high/low from ALL matchups (not filtered) so game counts are accurate
@@ -1734,44 +1777,47 @@ function showManagerModal(nickname, highlightYear) {
   // State
   let filterFrom = SEASONS[0].season;
   let filterTo = SEASONS[SEASONS.length-1].season;
-  let includePlayoffs = true;
   let viewMode = 'seasons'; // 'seasons' | 'h2h' | 'awards'
   let h2hSort = 'winpct'; // 'winpct' | 'games' | 'alpha'
 
   function render() {
     // ── Filter matchups ──
+    // Canonical record rule: regular season + championship-chain playoff games only.
+    // 3rd/5th/7th-place and all consolation games never count. Games vs retired
+    // franchises DO count. Same rule applied in processData, so these numbers
+    // must match the Standings page record exactly.
     const filteredSeasons = SEASONS.filter(s => s.season >= filterFrom && s.season <= filterTo);
-    let totalW=0, totalL=0, totalPts=0, totalGames=0, highScore=0, lowScore=Infinity, highMeta='', lowMeta='';
+    let totalW=0, totalL=0, totalT=0, totalPts=0, totalGames=0, highScore=0, lowScore=Infinity, highMeta='', lowMeta='';
     const champYearsInRange = [];
-    const numPlayoff = 6;
 
     filteredSeasons.forEach(s => {
-      const standing = s.standings.find(t => (t.managers[0]||'')===nickname);
+      const fullSt = s.allStandings || s.standings;
+      const fullMu = s.allMatchups || s.matchups;
+      const standing = fullSt.find(t => (t.managers[0]||'')===nickname);
       if (!standing) return;
-      const isChamp = s.champion && getMgrFromTeamKey(s.champion.team_key, s)===nickname;
+      const isChamp = s.champion && getMgrFromTeamKeyFull(s.champion.team_key, fullSt)===nickname;
       if (isChamp) champYearsInRange.push(s.season);
 
-      // Determine real playoff team keys for this season
-      const realPlayoffKeys = new Set();
-      s.standings.forEach(t => { if (t.rank <= numPlayoff) realPlayoffKeys.add(t.team_key); });
+      const chainKeys = getChampionshipChainGameKeys(s);
 
-      s.matchups.forEach(mu => {
-        const t1m = getMgrFromTeamKey(mu.team1.team_key, s);
-        const t2m = getMgrFromTeamKey(mu.team2.team_key, s);
+      fullMu.forEach(mu => {
+        // Canonical rule: keep if regular season OR on the championship chain.
+        if (mu.is_playoffs && !chainKeys.has(_gameKeyFor(mu))) return;
+
+        const t1m = getMgrFromTeamKeyFull(mu.team1.team_key, fullSt);
+        const t2m = getMgrFromTeamKeyFull(mu.team2.team_key, fullSt);
         if (t1m !== nickname && t2m !== nickname) return;
 
-        // Playoff filter: if is_playoffs, only include if BOTH teams are real playoff (not consolation)
-        if (mu.is_playoffs) {
-          if (!includePlayoffs) return;
-          const t1Real = realPlayoffKeys.has(mu.team1.team_key);
-          const t2Real = realPlayoffKeys.has(mu.team2.team_key);
-          if (!t1Real || !t2Real) return; // skip consolation
-        }
+        const myT = t1m===nickname ? mu.team1 : mu.team2;
+        const oppT = t1m===nickname ? mu.team2 : mu.team1;
+        const myPts = myT.points;
+        const oppPts = oppT.points;
+        if (myPts <= 0 && oppPts <= 0) return;
 
-        const myPts = t1m===nickname ? mu.team1.points : mu.team2.points;
-        const myKey = t1m===nickname ? mu.team1.team_key : mu.team2.team_key;
-        const won = mu.winner_team_key === myKey;
-        if (won) totalW++; else totalL++;
+        const wk = mu.winner_team_key;
+        if (wk === myT.team_key) totalW++;
+        else if (!wk && myPts > 0 && oppPts > 0 && myPts === oppPts) totalT++;
+        else totalL++;
         totalPts += myPts;
         totalGames++;
         if (myPts > highScore) { highScore = myPts; highMeta = 'Wk '+mu.week+', '+s.season; }
@@ -1781,6 +1827,7 @@ function showManagerModal(nickname, highlightYear) {
 
     const winPct = totalGames > 0 ? (totalW/totalGames*100).toFixed(1) : '0.0';
     const avgPts = totalGames > 0 ? (totalPts/totalGames).toFixed(1) : '0.0';
+    const recordStr = totalT > 0 ? (totalW + 'W–' + totalL + 'L–' + totalT + 'T') : (totalW + 'W–' + totalL + 'L');
     if (lowScore === Infinity) { lowScore = 0; lowMeta = '\u2014'; }
 
     // ── Trophy line ──
@@ -1812,10 +1859,6 @@ function showManagerModal(nickname, highlightYear) {
           <label class="mgr-filter-label">To</label>
           <select class="mgr-filter-select" id="mgr-f-to">${toOpts}</select>
         </div>
-        <div class="mgr-filter-group">
-          <label class="mgr-filter-label">Playoffs</label>
-          <button class="mgr-filter-toggle ${includePlayoffs?'active':''}" id="mgr-f-playoffs">${includePlayoffs?'ON':'OFF'}</button>
-        </div>
         <div class="mgr-filter-tabs">
           <button class="mgr-view-tab ${viewMode==='seasons'?'active':''}" data-view="seasons">Seasons</button>
           <button class="mgr-view-tab ${viewMode==='h2h'?'active':''}" data-view="h2h">H2H</button>
@@ -1827,7 +1870,7 @@ function showManagerModal(nickname, highlightYear) {
     // ── STAT CARDS ──
     const statsHTML = `
       <div class="stat-grid-3" style="margin-bottom:16px">
-        <div class="stat-box"><div class="stat-box-label">Record</div><div class="stat-box-num" style="font-size:clamp(22px,5vw,28px)">${winPct}%</div><div class="stat-box-sub">${totalW}W\u2013${totalL}L</div><div class="stat-box-sub" style="font-size:9px;color:var(--bone-muted);margin-top:2px">Lg avg: ${(window.LEAGUE_AVGS.winPct*100).toFixed(1)}%</div></div>
+        <div class="stat-box"><div class="stat-box-label">Record</div><div class="stat-box-num" style="font-size:clamp(22px,5vw,28px)">${winPct}%</div><div class="stat-box-sub">${recordStr}</div><div class="stat-box-sub" style="font-size:9px;color:var(--bone-muted);margin-top:2px">Lg avg: ${(window.LEAGUE_AVGS.winPct*100).toFixed(1)}%</div></div>
         <div class="stat-box"><div class="stat-box-label">Avg Pts</div><div class="stat-box-num" style="font-size:clamp(22px,5vw,28px)">${avgPts}</div><div class="stat-box-sub">${totalGames} games</div><div class="stat-box-sub" style="font-size:9px;color:var(--bone-muted);margin-top:2px">Lg avg: ${window.LEAGUE_AVGS.avgPts.toFixed(1)}</div></div>
         <div class="stat-box"><div class="stat-box-label">Titles</div><div class="stat-box-num" style="font-size:clamp(22px,5vw,28px);color:var(--wine)">${champYearsInRange.length}</div><div class="stat-box-sub">${champYearsInRange.join(', ')||'\u2014'}</div></div>
       </div>
@@ -1870,18 +1913,24 @@ function showManagerModal(nickname, highlightYear) {
     if (viewMode === 'seasons') {
       let rows = '';
       filteredSeasons.forEach(s => {
-        const standing = s.standings.find(t => (t.managers[0]||'')===nickname);
+        const fullSt = s.allStandings || s.standings;
+        const standing = fullSt.find(t => (t.managers[0]||'')===nickname);
         if (!standing) return;
-        const isChamp = s.champion && getMgrFromTeamKey(s.champion.team_key, s)===nickname;
-        const rank2 = s.standings.find(t => t.rank === 2);
+        const isChamp = s.champion && getMgrFromTeamKeyFull(s.champion.team_key, fullSt)===nickname;
+        const rank2 = fullSt.find(t => t.rank === 2);
         const isRU = rank2 && (rank2.managers[0] || '') === nickname;
         const isHl = highlightYear && s.season === highlightYear;
         const rowClass = isHl ? 'mgr-season-row mgr-season-hl' : isChamp ? 'mgr-season-row mgr-season-champ' : 'mgr-season-row';
         const badge = isChamp ? '<span class="mgr-season-badge mgr-badge-champ">\ud83c\udfc6 CHAMP</span>' : isRU ? '<span class="mgr-season-badge mgr-badge-ru">\ud83e\udd48 FINALS</span>' : '';
+        // Canonical per-season record = reg season + championship chain (from yearlyStats).
+        const ye = m.yearlyStats.find(y => y.year === s.season);
+        const recStr = ye
+          ? (ye.ties > 0 ? `${ye.wins}W\u2013${ye.losses}L\u2013${ye.ties}T` : `${ye.wins}W\u2013${ye.losses}L`)
+          : `${standing.wins}W\u2013${standing.losses}L`;
         rows += `<div class="${rowClass}" id="modal-yr-${s.season}">
           <span class="mgr-season-year">${s.season}</span>
           <span class="mgr-season-team">${standing.team_name}</span>
-          <span class="mgr-season-record">${standing.wins}W\u2013${standing.losses}L</span>
+          <span class="mgr-season-record">${recStr}</span>
           <span class="mgr-season-pts">${standing.points_for.toFixed(0)}</span>
           <span class="mgr-season-finish">#${standing.rank}</span>
           ${badge}
@@ -1902,20 +1951,22 @@ function showManagerModal(nickname, highlightYear) {
       mgrs.forEach(o => { h2h[o] = {w:0, l:0}; });
 
       filteredSeasons.forEach(s => {
-        const realPlayoffKeys = new Set();
-        s.standings.forEach(t => { if (t.rank <= numPlayoff) realPlayoffKeys.add(t.team_key); });
+        const fullSt = s.allStandings || s.standings;
+        const fullMu = s.allMatchups || s.matchups;
+        const chainKeys = getChampionshipChainGameKeys(s);
 
-        s.matchups.forEach(mu => {
-          const t1m = getMgrFromTeamKey(mu.team1.team_key, s);
-          const t2m = getMgrFromTeamKey(mu.team2.team_key, s);
-          if (mu.is_playoffs) {
-            if (!includePlayoffs) return;
-            if (!realPlayoffKeys.has(mu.team1.team_key) || !realPlayoffKeys.has(mu.team2.team_key)) return;
-          }
+        fullMu.forEach(mu => {
+          // Canonical rule: regular season OR championship chain only.
+          if (mu.is_playoffs && !chainKeys.has(_gameKeyFor(mu))) return;
+          const t1m = getMgrFromTeamKeyFull(mu.team1.team_key, fullSt);
+          const t2m = getMgrFromTeamKeyFull(mu.team2.team_key, fullSt);
+          const wk = mu.winner_team_key;
           if (t1m===nickname && h2h[t2m]) {
-            if (mu.winner_team_key===mu.team1.team_key) h2h[t2m].w++; else h2h[t2m].l++;
+            if (wk===mu.team1.team_key) h2h[t2m].w++;
+            else if (wk===mu.team2.team_key) h2h[t2m].l++;
           } else if (t2m===nickname && h2h[t1m]) {
-            if (mu.winner_team_key===mu.team2.team_key) h2h[t1m].w++; else h2h[t1m].l++;
+            if (wk===mu.team2.team_key) h2h[t1m].w++;
+            else if (wk===mu.team1.team_key) h2h[t1m].l++;
           }
         });
       });
@@ -1983,7 +2034,6 @@ function showManagerModal(nickname, highlightYear) {
     // ── BIND EVENTS ──
     document.getElementById('mgr-f-from').onchange = (e) => { filterFrom = +e.target.value; render(); };
     document.getElementById('mgr-f-to').onchange = (e) => { filterTo = +e.target.value; render(); };
-    document.getElementById('mgr-f-playoffs').onclick = () => { includePlayoffs = !includePlayoffs; render(); };
     document.querySelectorAll('.mgr-view-tab').forEach(btn => {
       btn.onclick = () => { viewMode = btn.dataset.view; render(); };
     });
