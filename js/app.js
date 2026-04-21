@@ -712,6 +712,33 @@ function renderHomepage() {
     '</div>';
   }).join('');
 
+  // Finals appearances = championships + runner-ups. Every allowed franchise is
+  // listed, including those with 0 so the leaderboard shows a complete field.
+  // Sorted by total finals desc, then championships as tiebreaker.
+  const finalsLeaders = Object.values(MANAGERS_MAP)
+    .filter(function(m) { return ALLOWED_MANAGERS.has(m.nickname); })
+    .map(function(m) {
+      return {
+        mgr: m.nickname,
+        teamName: m.teamName,
+        finals: (m.championships || 0) + (m.runnerUp || 0),
+        champs: m.championships || 0,
+      };
+    })
+    .sort(function(a, b) {
+      var d = b.finals - a.finals;
+      if (d !== 0) return d;
+      return b.champs - a.champs;
+    });
+  var totalFinals = finalsLeaders.reduce(function(s, m) { return s + m.finals; }, 0);
+  var finalsWithAppearance = finalsLeaders.filter(function(m) { return m.finals > 0; }).length;
+  var finalsRowsHTML = finalsLeaders.map(function(m) {
+    return '<div class="bye-row">' +
+      '<span class="bye-team">' + m.teamName + '</span>' +
+      '<span class="bye-count">' + m.finals + '</span>' +
+    '</div>';
+  }).join('');
+
   snapshotEl.innerHTML =
     '<div class="snapshot-card">' +
       '<div class="snapshot-card-label">The Standard</div>' +
@@ -758,6 +785,12 @@ function renderHomepage() {
       '<div class="bye-list">' + byesRowsHTML + '</div>' +
       '<div class="snapshot-card-supporting">' + totalByes + ' total byes \u00b7 ' + byeLeaders.length + ' franchises</div>' +
       '<div class="snapshot-card-tag snapshot-tag--seeds">Top-2 Seeds</div>' +
+    '</div>' +
+    '<div class="snapshot-card snapshot-card--byes">' +
+      '<div class="snapshot-card-label">Finals Appearances \u00b7 All-Time</div>' +
+      '<div class="bye-list">' + finalsRowsHTML + '</div>' +
+      '<div class="snapshot-card-supporting">' + totalFinals + ' total appearances \u00b7 ' + finalsWithAppearance + ' franchises</div>' +
+      '<div class="snapshot-card-tag snapshot-tag--rate">Champs + RUs</div>' +
     '</div>' +
     '<div class="snapshot-card snapshot-card--byes">' +
       '<div class="snapshot-card-label">10+ Win Seasons \u00b7 All-Time</div>' +
