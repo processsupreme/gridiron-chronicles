@@ -158,9 +158,64 @@
 
 <script src="js/app.js?v=43" defer></script>
 <script>
+// Register the service worker and watch for updates. When a new worker is
+// found, show a small bottom-anchored toast so the user can reload into
+// the new build with one tap — no need to close the app or re-add it.
 if ('serviceWorker' in navigator) {
-  window.addEventListener('load', function() {
-    navigator.serviceWorker.register('/sw.js');
+  window.addEventListener('load', function () {
+    navigator.serviceWorker.register('/sw.js').then(function (reg) {
+      // Poll for updates every 30 minutes while the app stays open.
+      setInterval(function () { reg.update().catch(function(){}); }, 30 * 60 * 1000);
+
+      function showUpdateToast(worker) {
+        if (document.getElementById('sw-update-toast')) return;
+        var toast = document.createElement('div');
+        toast.id = 'sw-update-toast';
+        toast.setAttribute('role', 'status');
+        toast.style.cssText = [
+          'position:fixed','left:50%','bottom:20px','transform:translateX(-50%)',
+          'z-index:99999','background:#722F37','color:#E3DAC9',
+          'border:1px solid rgba(232,220,200,0.2)','border-radius:999px',
+          'box-shadow:0 10px 30px rgba(0,0,0,0.45)',
+          'padding:10px 18px','font-family:"IBM Plex Mono",monospace',
+          'font-size:12px','letter-spacing:1.5px','text-transform:uppercase',
+          'display:flex','align-items:center','gap:14px','max-width:92vw'
+        ].join(';');
+        toast.innerHTML = '<span>New version ready</span>' +
+          '<button type="button" id="sw-update-btn" style="' +
+            'background:#F4A623;color:#0D0B0B;border:0;border-radius:999px;' +
+            'padding:6px 14px;font-family:inherit;font-size:11px;' +
+            'letter-spacing:1.5px;text-transform:uppercase;font-weight:700;' +
+            'cursor:pointer">Refresh</button>';
+        document.body.appendChild(toast);
+        document.getElementById('sw-update-btn').onclick = function () {
+          toast.style.opacity = '0.6';
+          if (worker) worker.postMessage({ type: 'SKIP_WAITING' });
+        };
+      }
+
+      // A new SW was found but is waiting because an old one controls the page.
+      if (reg.waiting) showUpdateToast(reg.waiting);
+
+      reg.addEventListener('updatefound', function () {
+        var nw = reg.installing;
+        if (!nw) return;
+        nw.addEventListener('statechange', function () {
+          if (nw.state === 'installed' && navigator.serviceWorker.controller) {
+            showUpdateToast(nw);
+          }
+        });
+      });
+
+      // When the new SW takes control (after skipWaiting), reload once so
+      // the page switches to the new assets. Guarded to avoid refresh loops.
+      var refreshing = false;
+      navigator.serviceWorker.addEventListener('controllerchange', function () {
+        if (refreshing) return;
+        refreshing = true;
+        window.location.reload();
+      });
+    }).catch(function(){});
   });
 }
 </script>
