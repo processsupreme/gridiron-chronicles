@@ -892,10 +892,15 @@ function renderChampions() {
         '<div class="champ-margin">' + marginStr + '</div>'
       : '';
 
+    const opponentName = finals.runnerTeam ? finals.runnerTeam.team_name : '';
+    const defeatedLine = opponentName
+      ? '<div class="champ-manager">defeated ' + opponentName + '</div>'
+      : '';
+
     card.innerHTML = ringHTML +
       '<div class="champ-year">' + s.season + '</div>' +
       '<div class="champ-name">' + s.champion.team_name + '</div>' +
-      '<div class="champ-manager">' + mgr + '</div>' +
+      defeatedLine +
       scoreHTML;
 
     if (ALLOWED_MANAGERS.has(mgr)) {
