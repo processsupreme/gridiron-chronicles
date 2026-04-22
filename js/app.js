@@ -1501,8 +1501,8 @@ function renderTimeline() {
       champCount[champMgr] = (champCount[champMgr] || 0) + 1;
       // Custom milestone overrides
       const customMilestones = {
-        '2018': { text: 'LVC becomes 2x champ', icon: '\ud83c\udfc6\ud83c\udfc6', type: 'repeat' },
-        '2021': { text: '98 becomes 2x champion', icon: '\ud83c\udfc6\ud83c\udfc6', type: 'repeat' },
+        '2018': { text: 'LVC becomes 2x champ', icon: '\ud83c\udfc6', type: 'repeat' },
+        '2021': { text: '98 becomes 2x champion', icon: '\ud83c\udfc6', type: 'repeat' },
         '2022': { text: 'Team Beef wins first title (Aided by Damar Hamlin Injury)', icon: '\ud83c\udfc6', type: 'champ' },
       };
       const custom = customMilestones[String(s.season)];
@@ -1511,7 +1511,7 @@ function renderTimeline() {
       } else if (champCount[champMgr] === 1) {
         milestones.push({ year: s.season, type: 'champ', text: (champTeam || champMgr) + ' wins first title', icon: '\ud83c\udfc6' });
       } else if (champCount[champMgr] === 2) {
-        milestones.push({ year: s.season, type: 'repeat', text: (champTeam || champMgr) + ' becomes 2x champ', icon: '\ud83c\udfc6\ud83c\udfc6' });
+        milestones.push({ year: s.season, type: 'repeat', text: (champTeam || champMgr) + ' becomes 2x champ', icon: '\ud83c\udfc6' });
       } else if (champCount[champMgr] >= 3) {
         milestones.push({ year: s.season, type: 'dynasty', text: (champTeam || champMgr) + ' \u2014 DYNASTY (' + champCount[champMgr] + 'x)', icon: '\ud83d\udc51' });
       }
