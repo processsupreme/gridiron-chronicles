@@ -1429,7 +1429,7 @@ function renderRecords() {
     .sort((a,b) => b.streak - a.streak);
 
   html += '<div class="records-category">';
-  html += '<div class="records-cat-header"><div class="records-cat-icon">📈</div><div class="records-cat-title">Streaks</div><div class="records-cat-desc">Longest runs of dominance and despair</div></div>';
+  html += '<div class="records-cat-header"><div class="records-cat-icon">📈</div><div class="records-cat-title">Streaks</div></div>';
   html += '<div class="records-dual">';
 
   // Win streaks
