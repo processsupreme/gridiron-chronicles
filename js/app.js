@@ -2338,7 +2338,7 @@ function showSeasonModal(year) {
     <div style="display:flex;align-items:flex-start;gap:20px">
       <div>
         <div style="font-family:'Playfair Display',serif;font-weight:900;font-size:clamp(48px,12vw,72px);color:var(--wine-bright);line-height:0.9">${year}</div>
-        <div style="font-family:'IBM Plex Mono',monospace;font-size:12px;color:var(--bone-muted);letter-spacing:3px;margin-top:14px">BKGFFL · SEASON ${year - 2012} OF 13</div>
+        <div style="font-family:'IBM Plex Mono',monospace;font-size:12px;color:var(--bone-muted);letter-spacing:3px;margin-top:14px">BKGFFL · SEASON ${year - SEASONS[0].season + 1} OF ${SEASONS.length}</div>
       </div>
     </div>
   `;
