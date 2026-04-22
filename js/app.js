@@ -783,19 +783,19 @@ function renderHomepage() {
     '<div class="snapshot-card snapshot-card--byes">' +
       '<div class="snapshot-card-label">Playoff Byes \u00b7 All-Time</div>' +
       '<div class="bye-list">' + byesRowsHTML + '</div>' +
-      '<div class="snapshot-card-supporting">' + totalByes + ' total byes \u00b7 ' + byeLeaders.length + ' franchises</div>' +
+      '<div class="snapshot-card-supporting">' + byeLeaders.length + ' franchises</div>' +
       '<div class="snapshot-card-tag snapshot-tag--seeds">Top-2 Seeds</div>' +
     '</div>' +
     '<div class="snapshot-card snapshot-card--byes">' +
       '<div class="snapshot-card-label">Finals Appearances \u00b7 All-Time</div>' +
       '<div class="bye-list">' + finalsRowsHTML + '</div>' +
-      '<div class="snapshot-card-supporting">' + totalFinals + ' total appearances \u00b7 ' + finalsWithAppearance + ' franchises</div>' +
+      '<div class="snapshot-card-supporting">' + finalsWithAppearance + ' franchises</div>' +
       '<div class="snapshot-card-tag snapshot-tag--rate">Champs + RUs</div>' +
     '</div>' +
     '<div class="snapshot-card snapshot-card--byes">' +
       '<div class="snapshot-card-label">10+ Win Seasons \u00b7 All-Time</div>' +
       '<div class="bye-list">' + tenWinRowsHTML + '</div>' +
-      '<div class="snapshot-card-supporting">' + totalTenWin + ' total seasons \u00b7 ' + tenWinLeaders.length + ' franchises</div>' +
+      '<div class="snapshot-card-supporting">' + tenWinLeaders.length + ' franchises</div>' +
       '<div class="snapshot-card-tag snapshot-tag--digits">Double Digits</div>' +
     '</div>' +
     '<div class="snapshot-card">' +
