@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#0D0B0B">
+<title>Install · The BKGFFL Ledger</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=DM+Sans:wght@400;500;700&family=IBM+Plex+Mono:wght@400;500&family=Bebas+Neue&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --wine:        #722F37;
+    --wine-bright: #9A4048;
+    --bone:        #E3DAC9;
+    --bone-dim:    #A89F91;
+    --bone-muted:  #5A554D;
+    --yellow:      #F4A623;
+    --black:       #0D0B0B;
+    --card:        #141111;
+    --card-elev:   #1E1A1A;
+    --border:      rgba(114,47,55,0.22);
+  }
+  *, *::before, *::after { box-sizing:border-box; margin:0; padding:0; }
+  html { scroll-behavior:smooth; -webkit-text-size-adjust:100%; }
+  body {
+    background:var(--black); color:var(--bone);
+    font-family:'DM Sans', system-ui, sans-serif;
+    font-size:16px; font-weight:400; line-height:1.5;
+    -webkit-font-smoothing:antialiased;
+    min-height:100vh;
+    padding:clamp(32px, 6vw, 80px) clamp(20px, 5vw, 60px);
+  }
+  .wrap { max-width:780px; margin:0 auto; }
+
+  /* Header */
+  .brand-eyebrow {
+    font-family:'IBM Plex Mono', monospace;
+    font-size:10px; letter-spacing:6px;
+    color:var(--wine-bright); text-transform:uppercase;
+    margin-bottom:14px;
+  }
+  h1 {
+    font-family:'Playfair Display', serif; font-weight:900;
+    font-size:clamp(36px, 7vw, 64px); line-height:1;
+    letter-spacing:0.005em;
+    font-variant-numeric:lining-nums tabular-nums;
+  }
+  h1 .yellow { color:var(--yellow); }
+  .lede {
+    font-family:'DM Sans', sans-serif; font-weight:400;
+    font-size:clamp(16px, 2.2vw, 20px); color:var(--bone-dim);
+    margin-top:20px; max-width:560px;
+  }
+  .tiny-meta {
+    font-family:'IBM Plex Mono', monospace;
+    font-size:10px; letter-spacing:3px;
+    color:var(--bone-muted); text-transform:uppercase;
+    margin-top:24px;
+  }
+
+  .divider {
+    height:1px; margin:clamp(40px, 7vw, 64px) 0;
+    background:linear-gradient(90deg, transparent, var(--border), transparent);
+    border:0;
+  }
+
+  /* Step cards */
+  .step {
+    display:grid;
+    grid-template-columns:1fr;
+    gap:clamp(20px, 4vw, 32px);
+    background:var(--card);
+    border:1px solid var(--border);
+    border-radius:16px;
+    padding:clamp(24px, 5vw, 40px);
+    margin-bottom:clamp(20px, 4vw, 32px);
+    box-shadow:0 1px 3px rgba(0,0,0,0.4), 0 8px 28px rgba(0,0,0,0.3);
+  }
+  @media (min-width:720px) {
+    .step { grid-template-columns:1fr 280px; align-items:center; }
+    .step.reverse > *:first-child { order:2; }
+  }
+
+  .step-copy { min-width:0; }
+  .step-num {
+    display:inline-flex; align-items:center; justify-content:center;
+    width:44px; height:44px; border-radius:12px;
+    background:rgba(244,166,35,0.12); border:1px solid rgba(244,166,35,0.3);
+    color:var(--yellow);
+    font-family:'Playfair Display', serif; font-weight:900;
+    font-size:22px; line-height:1;
+    margin-bottom:16px;
+    font-variant-numeric:lining-nums tabular-nums;
+  }
+  .step-title {
+    font-family:'Playfair Display', serif; font-weight:900;
+    font-size:clamp(22px, 3.5vw, 30px); line-height:1.15;
+    color:var(--bone);
+    margin-bottom:10px;
+  }
+  .step-title .yellow { color:var(--yellow); }
+  .step-desc {
+    font-size:15px; color:var(--bone-dim); line-height:1.55;
+    max-width:420px;
+  }
+  .step-note {
+    margin-top:14px; padding:10px 14px;
+    background:rgba(201,168,76,0.06);
+    border-left:3px solid var(--yellow);
+    border-radius:4px;
+    font-family:'IBM Plex Mono', monospace;
+    font-size:11px; letter-spacing:0.5px;
+    color:var(--bone-dim); line-height:1.5;
+  }
+
+  /* Screenshots */
+  .step-img-wrap {
+    display:flex; justify-content:center; align-items:center;
+    padding:8px;
+    background:linear-gradient(180deg, rgba(0,0,0,0.35) 0%, rgba(0,0,0,0.15) 100%);
+    border:1px solid rgba(0,0,0,0.5);
+    border-radius:22px;
+    box-shadow:inset 0 0 0 1px rgba(232,220,200,0.04);
+  }
+  .step-img {
+    width:100%; max-width:240px; height:auto;
+    display:block; border-radius:14px;
+    box-shadow:0 6px 20px rgba(0,0,0,0.5);
+  }
+
+  /* Done callout */
+  .done {
+    text-align:center;
+    padding:clamp(32px, 6vw, 48px) 24px;
+    background:linear-gradient(135deg, rgba(114,47,55,0.10) 0%, var(--card) 65%);
+    border:1px solid rgba(114,47,55,0.3);
+    border-radius:16px;
+    margin-top:clamp(24px, 5vw, 40px);
+  }
+  .done-eyebrow {
+    font-family:'IBM Plex Mono', monospace;
+    font-size:10px; letter-spacing:5px;
+    color:var(--wine-bright); text-transform:uppercase;
+    margin-bottom:14px;
+  }
+  .done-title {
+    font-family:'Playfair Display', serif; font-weight:900;
+    font-size:clamp(28px, 5vw, 44px); line-height:1;
+    color:var(--bone);
+  }
+  .done-title .yellow { color:var(--yellow); }
+  .done-desc {
+    font-size:15px; color:var(--bone-dim);
+    margin-top:14px; max-width:460px; margin-left:auto; margin-right:auto;
+    line-height:1.55;
+  }
+  .back-cta {
+    display:inline-block; margin-top:22px;
+    font-family:'IBM Plex Mono', monospace;
+    font-size:11px; letter-spacing:3px;
+    color:var(--yellow); text-decoration:none;
+    padding:12px 22px;
+    border:1px solid rgba(244,166,35,0.4);
+    border-radius:999px;
+    text-transform:uppercase;
+    transition:background 0.2s, border-color 0.2s;
+  }
+  .back-cta:hover { background:rgba(244,166,35,0.08); border-color:rgba(244,166,35,0.7); }
+
+  .footer {
+    margin-top:clamp(32px, 5vw, 48px);
+    text-align:center;
+    font-family:'IBM Plex Mono', monospace;
+    font-size:10px; letter-spacing:3px;
+    color:var(--bone-muted); text-transform:uppercase;
+  }
+</style>
+</head>
+<body>
+  <div class="wrap">
+    <header>
+      <div class="brand-eyebrow">The <span style="color:var(--yellow)">BKGFFL</span> Ledger</div>
+      <h1>Put <span class="yellow">BKGFFL</span> on Your Home Screen</h1>
+      <p class="lede">60 seconds. 5 taps. Then the Ledger lives on your phone like a real app — no more digging through text messages for the link.</p>
+      <div class="tiny-meta">iPhone · Safari or Chrome</div>
+    </header>
+
+    <hr class="divider">
+
+    <!-- STEP 1 -->
+    <div class="step">
+      <div class="step-copy">
+        <div class="step-num">1</div>
+        <div class="step-title">Tap the link in the text</div>
+        <p class="step-desc">Open the message from the commish and tap the <strong>BKGFFL — The BKGFFL Ledger</strong> link. It opens in your phone's browser.</p>
+      </div>
+      <div class="step-img-wrap">
+        <img class="step-img" src="assets/install/step-1-text.png" alt="Text message with BKGFFL link" loading="lazy">
+      </div>
+    </div>
+
+    <!-- STEP 2 -->
+    <div class="step reverse">
+      <div class="step-copy">
+        <div class="step-num">2</div>
+        <div class="step-title">Hit the <span class="yellow">Share</span> button</div>
+        <p class="step-desc">Top-right corner of the address bar — the square icon with the up-arrow. Tap it.</p>
+      </div>
+      <div class="step-img-wrap">
+        <img class="step-img" src="assets/install/step-2-share.png" alt="Ledger homepage open with share icon in top right" loading="lazy">
+      </div>
+    </div>
+
+    <!-- STEP 3 -->
+    <div class="step">
+      <div class="step-copy">
+        <div class="step-num">3</div>
+        <div class="step-title">Tap the down arrow (Chrome only)</div>
+        <p class="step-desc">The share menu pops up. On Chrome you'll see <strong>View More</strong> with a down-arrow ▾ in the bottom right of the top row. Tap it to expand the full menu.</p>
+        <div class="step-note">If you're using <strong>Safari</strong>, skip this step — scroll the menu and go straight to step 4.</div>
+      </div>
+      <div class="step-img-wrap">
+        <img class="step-img" src="assets/install/step-3-viewmore.png" alt="Share menu showing View More down-arrow" loading="lazy">
+      </div>
+    </div>
+
+    <!-- STEP 4 -->
+    <div class="step reverse">
+      <div class="step-copy">
+        <div class="step-num">4</div>
+        <div class="step-title">Tap <span class="yellow">Add to Home Screen</span></div>
+        <p class="step-desc">Scroll until you see it. The icon is a plus sign ⊕ inside a square. Tap it.</p>
+      </div>
+      <div class="step-img-wrap">
+        <img class="step-img" src="assets/install/step-4-addhome.png" alt="Expanded share sheet showing Add to Home Screen" loading="lazy">
+      </div>
+    </div>
+
+    <!-- STEP 5 -->
+    <div class="step">
+      <div class="step-copy">
+        <div class="step-num">5</div>
+        <div class="step-title">Tap <span class="yellow">Add</span></div>
+        <p class="step-desc">A little confirmation shows the name <strong>BKGFFL</strong> and the icon. Leave it as-is and hit <strong>Add</strong> in the top-right corner.</p>
+      </div>
+      <div class="step-img-wrap">
+        <img class="step-img" src="assets/install/step-5-add.png" alt="Add to Home Screen confirmation dialog" loading="lazy">
+      </div>
+    </div>
+
+    <!-- DONE -->
+    <div class="done">
+      <div class="done-eyebrow">You're In</div>
+      <div class="done-title">Check your <span class="yellow">home screen.</span></div>
+      <p class="done-desc">A wine-red <strong>BK</strong> icon is waiting. Tap it — the Ledger opens full-screen, no browser bars, just the receipts.</p>
+      <a class="back-cta" href="/">Open the Ledger</a>
+    </div>
+
+    <div class="footer">EST. 2014 · 12 Seasons of History</div>
+  </div>
+</body>
+</html>
