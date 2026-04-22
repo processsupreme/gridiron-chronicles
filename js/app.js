@@ -1759,8 +1759,8 @@ function renderManagers(sortKey) {
         const arrow = last.winPct > prev.winPct ? '\u25b2' : last.winPct < prev.winPct ? '\u25bc' : '\u25ac';
         const arrowColor = last.winPct > prev.winPct ? '#4ade80' : last.winPct < prev.winPct ? '#f87171' : 'var(--bone-dim)';
         const lastRecord = last.wins + 'W\u2013' + last.losses + 'L';
-        const playoffStr = last.rank <= 6 ? 'Playoff' : 'Missed';
-        const playoffColor = last.rank <= 6 ? 'var(--wine)' : 'var(--bone-muted)';
+        const playoffStr = last.rank <= 6 ? 'Made Playoffs' : 'Missed Playoffs';
+        const playoffColor = last.rank <= 6 ? 'var(--yellow)' : 'var(--wine-bright)';
         return '<div style="padding:0 ' + 'clamp(14px,3vw,18px)' + ' 6px;font-family:\'IBM Plex Mono\',monospace;font-size:10px;color:var(--bone-dim);letter-spacing:0.5px">' +
           '<span style="color:' + arrowColor + '">' + arrow + '</span> ' +
           last.year + ': ' + lastRecord + ' · #' + last.rank + ' · <span style="color:' + playoffColor + '">' + playoffStr + '</span>' +
