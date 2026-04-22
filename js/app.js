@@ -892,14 +892,17 @@ function renderChampions() {
         '<div class="champ-margin">' + marginStr + '</div>'
       : '';
 
-    const opponentName = finals.runnerTeam ? finals.runnerTeam.team_name : '';
+    // Strip trailing parentheticals like "Make Joco Great Again (MJGA)" so the
+    // card doesn't blow out mobile widths. Safe: only MJGA matches today.
+    const stripParen = (n) => n ? n.replace(/\s*\([^)]*\)\s*$/, '') : '';
+    const opponentName = stripParen(finals.runnerTeam ? finals.runnerTeam.team_name : '');
     const defeatedLine = opponentName
       ? '<div class="champ-manager">defeated ' + opponentName + '</div>'
       : '';
 
     card.innerHTML = ringHTML +
       '<div class="champ-year">' + s.season + '</div>' +
-      '<div class="champ-name">' + s.champion.team_name + '</div>' +
+      '<div class="champ-name">' + stripParen(s.champion.team_name) + '</div>' +
       defeatedLine +
       scoreHTML;
 
