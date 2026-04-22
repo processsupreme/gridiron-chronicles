@@ -274,11 +274,12 @@ body::before {
   text-transform:uppercase; margin-bottom:12px;
 }
 .masthead-logo {
-  font-family:'Playfair Display', serif; font-weight:700;
-  font-size:clamp(96px,12vw,180px);
+  font-family:'Playfair Display', serif; font-weight:900;
+  font-size:clamp(40px,8.5vw,84px);
   color:var(--bone);
-  letter-spacing:0.04em;
-  line-height:0.9;
+  letter-spacing:0.005em;
+  line-height:1;
+  margin:0;
   position:relative; z-index:1;
 }
 .masthead-rule {
@@ -1926,7 +1927,6 @@ body::before {
 
   /* ── MASTHEAD ───────────────────── */
   .masthead { padding:32px var(--space-md) 16px; }
-  .masthead-logo { font-size:64px !important; }
   .masthead-meta-1 { font-size:11px; letter-spacing:0.2em; }
   .masthead-meta-2 { font-size:10px; margin-bottom:24px; }
   .league-stats-strip { display:none; }
