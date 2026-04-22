@@ -1929,7 +1929,7 @@ body::before {
   body.mobile-view .section-header { display:none; }
 
   /* ── MASTHEAD ───────────────────── */
-  .masthead { padding:32px var(--space-md) 16px; }
+  .masthead { padding:calc(72px + env(safe-area-inset-top, 0px)) var(--space-md) 16px; }
   .masthead-meta-1 { font-size:11px; letter-spacing:0.2em; }
   .masthead-meta-2 { font-size:10px; margin-bottom:24px; }
   .league-stats-strip { display:none; }
