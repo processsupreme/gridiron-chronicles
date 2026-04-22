@@ -982,7 +982,7 @@ function renderPower() {
       <td><span class="rank-num ${rankClass}">${isDead?'—':rank}</span></td>
       <td>
         <div class="manager-name-cell" style="${dimStyle}">${m.teamName}</div>
-        <div class="manager-team-cell">${m.nickname} \u00b7 ${m.seasons} yrs</div>
+        <div class="manager-team-cell">${m.seasons} yrs</div>
         ${!isDead ? getLegacy(m) : ''}
       </td>
       <td><span style="font-family:'IBM Plex Mono',monospace;font-size:13px;${dimStyle}">${record}</span></td>
