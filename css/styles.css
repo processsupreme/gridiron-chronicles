@@ -680,7 +680,6 @@ body::before {
   grid-column:1/-1;
   background:linear-gradient(135deg, rgba(114,47,55,0.08) 0%, var(--card) 60%);
   border-color:rgba(114,47,55,0.25);
-  display:grid; grid-template-columns:auto 1fr; gap:clamp(16px,4vw,28px); align-items:center;
 }
 .record-headline.featured .rh-value {
   font-size:clamp(48px,12vw,72px);
@@ -696,6 +695,10 @@ body::before {
 .rh-value {
   font-family:'Playfair Display', serif; font-weight:900;
   font-size:clamp(32px,8vw,48px); line-height:1;
+  /* Force lining + tabular figures so digits like 8/3/5 don't ride taller
+     than their neighbors (Playfair defaults to oldstyle numerals). */
+  font-variant-numeric:lining-nums tabular-nums;
+  font-feature-settings:"lnum" 1, "tnum" 1;
 }
 .rh-holder {
   font-family:'DM Sans', sans-serif; font-weight:700;

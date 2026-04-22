@@ -1296,17 +1296,14 @@ function renderRecords() {
 
   let html = '<div class="records-headlines">';
 
-  // Featured: Most Championships (full width)
+  // Featured: Most Championships (full width, same vertical stack as the other cards)
   if (champMgr) {
     html += `<div class="record-headline featured">
-      <div>
-        <div class="rh-eyebrow">Most Championships</div>
-        <div class="rh-value" style="color:var(--wine-bright)">${champMgr.championships}×</div>
-      </div>
-      <div>
-        <div class="rh-holder">${champMgr.teamName}</div>
-        <div class="rh-context">${champMgr.champYears.join(' · ')}</div>
-      </div>
+      <div class="record-headline-accent" style="background:var(--wine-bright)"></div>
+      <div class="rh-eyebrow">Most Championships</div>
+      <div class="rh-value" style="color:var(--wine-bright)">${champMgr.championships}×</div>
+      <div class="rh-holder">${champMgr.teamName}</div>
+      <div class="rh-context">${champMgr.champYears.join(' · ')}</div>
     </div>`;
   }
 
