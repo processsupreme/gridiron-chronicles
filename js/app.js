@@ -978,12 +978,23 @@ function renderPower() {
     const tr = document.createElement('tr');
     if (pedestalClass) tr.className = pedestalClass;
     if (isDead) { tr.style.opacity = '0.55'; tr.style.filter = 'grayscale(40%)'; }
+    const mobileDetail = !isDead ? `
+      <div class="mobile-detail">
+        <div class="mobile-detail-grid">
+          <div><span class="mobile-detail-label">Titles</span><span class="mobile-detail-value">${m.championships || 0}</span></div>
+          <div><span class="mobile-detail-label">Playoffs</span><span class="mobile-detail-value">${m.playoffAppearances || 0}</span></div>
+          <div><span class="mobile-detail-label">Byes</span><span class="mobile-detail-value">${m.playoffByes || 0}</span></div>
+          <div><span class="mobile-detail-label">10+W</span><span class="mobile-detail-value">${m.tenWinSeasons || 0}</span></div>
+        </div>
+      </div>` : '';
     tr.innerHTML = `
       <td><span class="rank-num ${rankClass}">${isDead?'—':rank}</span></td>
       <td>
+        <button type="button" class="mobile-expand-btn" aria-label="Show more stats" aria-expanded="false">▾</button>
         <div class="manager-name-cell" style="${dimStyle}">${m.teamName}</div>
         <div class="manager-team-cell">${m.seasons} yrs</div>
         ${!isDead ? getLegacy(m) : ''}
+        ${mobileDetail}
       </td>
       <td><span style="font-family:'IBM Plex Mono',monospace;font-size:13px;${dimStyle}">${record}</span></td>
       <td><span class="${wpClass}" style="font-family:'IBM Plex Mono',monospace;font-size:14px;${isDead?'color:var(--bone-dim)':''}">${(m.winPct*100).toFixed(1)}%</span></td>
@@ -994,6 +1005,16 @@ function renderPower() {
       <td><span style="font-family:'IBM Plex Mono',monospace;font-size:13px;${dimStyle}">${m.avgPts.toFixed(1)}</span></td>
     `;
     tr.onclick = () => showManagerModal(m.nickname);
+    // Chevron toggles inline expansion without firing the row's modal click.
+    const expandBtn = tr.querySelector('.mobile-expand-btn');
+    if (expandBtn) {
+      expandBtn.onclick = (e) => {
+        e.stopPropagation();
+        const expanded = tr.classList.toggle('expanded');
+        expandBtn.textContent = expanded ? '▴' : '▾';
+        expandBtn.setAttribute('aria-expanded', expanded ? 'true' : 'false');
+      };
+    }
     tbody.appendChild(tr);
   };
 

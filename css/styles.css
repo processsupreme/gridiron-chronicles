@@ -549,6 +549,8 @@ body::before {
 }
 .power-table td:first-child { border-radius:var(--radius-sm) 0 0 var(--radius-sm); }
 .power-table td:last-child { border-radius:0 var(--radius-sm) var(--radius-sm) 0; }
+/* Mobile-only chevron + expanded detail — hidden on desktop. */
+.mobile-expand-btn, .mobile-detail { display:none; }
 /* Pedestal rows — top 3 */
 .power-table tr.pedestal-1 {
   background:linear-gradient(90deg, rgba(201,168,76,0.08) 0%, var(--card) 60%);
@@ -1943,14 +1945,39 @@ body::before {
   }
 
   /* ── STANDINGS TABLE ───────────── */
-  /* Show all 9 columns on mobile, same as desktop. The wrapper scrolls
-     horizontally so the full table remains readable at compact sizes. */
-  .power-table-wrap { overflow-x:auto; -webkit-overflow-scrolling:touch; }
-  .power-table { table-layout:auto; min-width:720px; }
+  /* On mobile: show RANK, FRANCHISE, W-L, WIN%, PPG. Hide Titles (5),
+     Playoffs (6), Byes (7), 10+W (8) — those four are revealed inline
+     when the user taps the chevron to expand the row. */
+  .power-table { table-layout:auto; }
+  .power-table th:nth-child(5), .power-table td:nth-child(5),
+  .power-table th:nth-child(6), .power-table td:nth-child(6),
+  .power-table th:nth-child(7), .power-table td:nth-child(7),
+  .power-table th:nth-child(8), .power-table td:nth-child(8) { display:none; }
   .power-table th, .power-table td { padding:8px 6px; font-size:10px; white-space:nowrap; }
   .power-table th:first-child, .power-table td:first-child { width:28px; min-width:28px; }
-  .power-table th:nth-child(2), .power-table td:nth-child(2) { white-space:normal; word-break:normal; overflow-wrap:anywhere; max-width:160px; }
+  .power-table th:nth-child(2), .power-table td:nth-child(2) { white-space:normal; word-break:normal; overflow-wrap:anywhere; max-width:160px; position:relative; padding-right:32px; }
   .power-table td:nth-child(2) .badge { white-space:nowrap; }
+
+  /* Chevron + inline expanded detail (mobile only) */
+  .mobile-expand-btn {
+    display:inline-flex; align-items:center; justify-content:center;
+    position:absolute; top:4px; right:4px;
+    width:26px; height:26px; padding:0;
+    border:1px solid rgba(232,220,200,0.15);
+    background:rgba(232,220,200,0.04);
+    color:var(--bone-dim); cursor:pointer;
+    font-size:11px; line-height:1; border-radius:6px;
+    transition:background 0.15s, color 0.15s, border-color 0.15s;
+  }
+  .mobile-expand-btn:hover, .mobile-expand-btn:focus {
+    background:rgba(232,220,200,0.1); color:var(--bone); border-color:rgba(232,220,200,0.25); outline:none;
+  }
+  .mobile-detail { display:none; margin-top:10px; padding:10px; background:rgba(0,0,0,0.28); border:1px solid rgba(232,220,200,0.06); border-radius:6px; }
+  tr.expanded .mobile-detail { display:block; }
+  .mobile-detail-grid { display:grid; grid-template-columns:repeat(4, 1fr); gap:8px; text-align:center; }
+  .mobile-detail-grid > div { display:flex; flex-direction:column; gap:3px; }
+  .mobile-detail-label { font-family:'IBM Plex Mono',monospace; font-size:8px; letter-spacing:1.5px; color:var(--bone-muted); text-transform:uppercase; }
+  .mobile-detail-value { font-family:'IBM Plex Mono',monospace; font-size:13px; color:var(--bone); }
 
   /* ── SEASONS PAGE ──────────────── */
   .season-row {
