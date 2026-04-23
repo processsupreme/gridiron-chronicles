@@ -57,6 +57,54 @@
     margin-top:24px;
   }
 
+  /* Prominent hero call-to-action — the "click here to install" moment */
+  .hero-cta {
+    display:flex; align-items:center; gap:18px;
+    margin-top:32px;
+    padding:20px 26px;
+    background:linear-gradient(135deg, rgba(244,166,35,0.14) 0%, rgba(114,47,55,0.18) 100%);
+    border:1px solid rgba(244,166,35,0.45);
+    border-radius:16px;
+    color:var(--bone);
+    text-decoration:none;
+    box-shadow:0 8px 28px rgba(0,0,0,0.35), 0 0 0 1px rgba(244,166,35,0.05) inset;
+    transition:transform 0.18s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+    max-width:560px;
+  }
+  .hero-cta:hover {
+    transform:translateY(-1px);
+    border-color:rgba(244,166,35,0.8);
+    box-shadow:0 12px 36px rgba(0,0,0,0.45), 0 0 0 1px rgba(244,166,35,0.1) inset;
+  }
+  .hero-cta-icon {
+    flex-shrink:0;
+    width:52px; height:52px; border-radius:12px;
+    background:linear-gradient(135deg, var(--wine) 0%, #4a1e24 100%);
+    display:flex; align-items:center; justify-content:center;
+    font-family:'Playfair Display', serif; font-weight:900;
+    font-size:22px; color:var(--bone);
+    letter-spacing:-0.02em;
+    box-shadow:0 4px 12px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.1);
+  }
+  .hero-cta-body { flex:1; min-width:0; }
+  .hero-cta-label {
+    font-family:'IBM Plex Mono', monospace;
+    font-size:10px; letter-spacing:3px;
+    color:var(--yellow); text-transform:uppercase;
+    margin-bottom:4px;
+  }
+  .hero-cta-title {
+    font-family:'Playfair Display', serif; font-weight:900;
+    font-size:clamp(18px, 3vw, 22px); line-height:1.2;
+    color:var(--bone);
+  }
+  .hero-cta-arrow {
+    flex-shrink:0;
+    font-size:22px; color:var(--yellow);
+    transition:transform 0.2s ease;
+  }
+  .hero-cta:hover .hero-cta-arrow { transform:translateY(3px); }
+
   .divider {
     height:1px; margin:clamp(40px, 7vw, 64px) 0;
     background:linear-gradient(90deg, transparent, var(--border), transparent);
@@ -181,13 +229,21 @@
       <div class="brand-eyebrow">The <span style="color:var(--yellow)">BKGFFL</span> Ledger</div>
       <h1>Put <span class="yellow">BKGFFL</span> on Your Home Screen</h1>
       <p class="lede">60 seconds. 4 taps. Then the Ledger lives on your phone like a real app — no more digging through text messages for the link.</p>
+      <a class="hero-cta" href="#step-1">
+        <span class="hero-cta-icon">BK</span>
+        <span class="hero-cta-body">
+          <span class="hero-cta-label">Start Here</span>
+          <span class="hero-cta-title">Add BKGFFL to your phone</span>
+        </span>
+        <span class="hero-cta-arrow">↓</span>
+      </a>
       <div class="tiny-meta">iPhone · Safari or Chrome</div>
     </header>
 
     <hr class="divider">
 
     <!-- STEP 1 -->
-    <div class="step">
+    <div class="step" id="step-1">
       <div class="step-copy">
         <div class="step-num">1</div>
         <div class="step-title">Hit the <span class="yellow">Share</span> button</div>
