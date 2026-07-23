@@ -1,0 +1,5 @@
+.vercel
+yahoo_creds.py
+.DS_Store
+*.bak
+.claude/settings.local.json
