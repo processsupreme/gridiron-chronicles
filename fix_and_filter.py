@@ -6,8 +6,7 @@ Run this in your gridiron-chronicles folder:
 """
 import json, requests, sys, time
 
-CLIENT_ID     = "dj0yJmk9U1g1eFpIRFZNbm1yJmQ9WVdrOU0zQnpUVVk0YUhjbWNHbzlNQT09JnM9Y29uc3VtZXJzZWNyZXQmc3Y9MCZ4PWNj"
-CLIENT_SECRET = "75ac7fe9c3d504665c8104c37532dc9dab20ed90"
+from yahoo_creds import CLIENT_ID, CLIENT_SECRET  # creds live in gitignored yahoo_creds.py
 REDIRECT_URI  = "https://localhost:8080/callback"
 BASE          = "https://fantasysports.yahooapis.com/fantasy/v2"
 
@@ -167,7 +166,7 @@ def main():
     token = get_access_token(auth_code)
 
     # Load existing data
-    with open("league_data.json") as f:
+    with open("data/league_data.json") as f:
         existing = json.load(f)
 
     # Filter to BKGFFL only
@@ -225,12 +224,12 @@ def main():
         champ_name = champion["team_name"] if champion else "TBD"
         print(f"   ✅ {season} — Champion: {champ_name}")
 
-    with open("league_data.json", "w") as f:
+    with open("data/league_data.json", "w") as f:
         json.dump(output, f, indent=2)
 
     total_matchups = sum(len(s["matchups"]) for s in output["seasons"])
     print(f"\n{'='*60}")
-    print(f"  ✅ Done! league_data.json updated")
+    print(f"  ✅ Done! data/league_data.json updated")
     print(f"  📊 {len(output['seasons'])} BKGFFL seasons")
     print(f"  🏈 {total_matchups} matchups")
     print(f"{'='*60}\n")

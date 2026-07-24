@@ -6,7 +6,7 @@ final playoff week) and sets is_championship = True.
 """
 import json
 
-with open("league_data.json") as f:
+with open("data/league_data.json") as f:
     data = json.load(f)
 
 fixed = 0
@@ -60,7 +60,7 @@ for season in data["seasons"]:
         else:
             print(f"  {year}: WARNING — Could not find championship matchup!")
 
-with open("league_data.json", "w") as f:
+with open("data/league_data.json", "w") as f:
     json.dump(data, f, indent=2)
 
 print(f"\nDone! Fixed {fixed} of {len(data['seasons'])} seasons.")

@@ -5,7 +5,7 @@ Data sourced directly from Yahoo Fantasy playoff brackets.
 """
 import json
 
-with open("league_data.json") as f:
+with open("data/league_data.json") as f:
     data = json.load(f)
 
 # Helper to find team_key by team_name in a season's standings
@@ -132,7 +132,7 @@ for season in data["seasons"]:
     print(f"  Champion: {corr['champion_name']} ({corr['champ_score']})")
     print(f"  Runner-up: {old_runner} → {corr['runner_up_name']} ({corr['runner_score']})")
 
-with open("league_data.json", "w") as f:
+with open("data/league_data.json", "w") as f:
     json.dump(data, f, indent=2)
 
 print("\n✅ Done! Week 17 data added and championship results corrected for 2021-2025.")

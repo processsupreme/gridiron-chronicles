@@ -210,12 +210,12 @@ def main():
         })
         print(f"   ✅ Done — Champion: {champion['team_name'] if champion else 'TBD'}")
 
-    with open("league_data.json", "w") as f:
+    with open("data/league_data.json", "w") as f:
         json.dump(output, f, indent=2)
 
     total_matchups = sum(len(s["matchups"]) for s in output["seasons"])
     print(f"\n{'='*60}")
-    print(f"  ✅ SUCCESS! Saved to league_data.json")
+    print(f"  ✅ SUCCESS! Saved to data/league_data.json")
     print(f"  📊 {len(output['seasons'])} seasons pulled")
     print(f"  🏈 {total_matchups} total matchups captured")
     print(f"{'='*60}\n")

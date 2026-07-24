@@ -11,10 +11,10 @@ The BKGFFL Ledger — a static, installable PWA archiving 12 seasons (2014–pre
 No framework, no bundler, no package manager. Plain HTML + CSS + vanilla JS, plus standalone Python 3 scripts (only external dep: `requests`) for pulling data from the Yahoo Fantasy API.
 
 - Run the site: any static file server from the repo root, e.g. `python3 -m http.server 8000`, then open http://localhost:8000. (Opening `index.html` via `file://` breaks the `fetch` of the data JSON and the service worker.)
-- Refresh league data: `python3 yahoo_pull_v3.py` — requires a gitignored `yahoo_creds.py` providing `CLIENT_ID`, `CLIENT_SECRET`, and a fresh `AUTH_CODE`. Writes `./league_data.json` at the repo root.
-- One-off data repair scripts: `python3 fix_championship_flags.py`, `python3 fix_week17.py`, `python3 fix_and_filter.py`, `python3 fetch_drafts.py` — these also read/write the root `league_data.json`.
+- Refresh league data: `python3 yahoo_pull_v3.py` — requires a gitignored `yahoo_creds.py` providing `CLIENT_ID`, `CLIENT_SECRET`, and a fresh `AUTH_CODE`. Writes `data/league_data.json`.
+- One-off data repair scripts: `python3 fix_championship_flags.py`, `python3 fix_week17.py`, `python3 fix_and_filter.py`, `python3 fetch_drafts.py` — these also read/write `data/league_data.json` (except `fetch_drafts.py`, which writes `draft_data.json`).
 
-Note the two copies of the dataset: Python scripts operate on root `league_data.json` (a working copy); the app actually fetches `data/league_data.json`. After regenerating, copy the root file into `data/` for the site to see it.
+`data/league_data.json` is the single canonical dataset — scripts write it and the app fetches it. Run all scripts from the repo root. A root-level `league_data.json` is gitignored to keep stale working copies out of the repo.
 
 ## Key files
 
@@ -22,7 +22,7 @@ Note the two copies of the dataset: Python scripts operate on root `league_data.
 - `js/app.js` — the entire application (~3,800 lines). Starts with the league data policy: `MIN_SEASON_YEAR`, `ALLOWED_MANAGERS`, `RETIRED_MANAGERS`, and `applyLeagueFilters()` — the single source of truth for which seasons/franchises count. All data consumers must go through `applyLeagueFilters()`, never read `DATA.seasons` directly.
 - `css/styles.css` — all styling.
 - `sw.js` — service worker: network-first for shell and data, cache-first for media; designed so Vercel deploys auto-propagate without cache-version bumps.
-- `data/league_data.json` — the dataset the app serves. Root `league_data.json` — script working copy.
+- `data/league_data.json` — the canonical dataset; the app fetches it and all data scripts read/write it.
 - `vercel.json` — cache headers and SPA rewrite to `index.html`.
 - `manifest.json`, `icons/`, `favicon.svg` — PWA install assets; `rings/`, `assets/` — championship-ring images and media; `install.html` — install guide.
 - `.audit-career.md` — verified career-stats audit; documents that `avgPts` intentionally includes playoff games.

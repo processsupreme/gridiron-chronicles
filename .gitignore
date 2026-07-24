@@ -3,3 +3,5 @@ yahoo_creds.py
 .DS_Store
 *.bak
 .claude/settings.local.json
+/league_data.json
+__pycache__/
