@@ -56,19 +56,26 @@ async function check() {
 function publish() {
   loadIntoEnv();
   const names = ['YAHOO_CLIENT_ID', 'YAHOO_CLIENT_SECRET', 'YAHOO_REFRESH_TOKEN'];
+  names.forEach(name => { if (!process.env[name]) throw new Error(name + ' is not set'); });
+  // Every call has a timeout so a CLI waiting on a login prompt can't hang this script.
+  const run = (cmd, argv, input) => spawnSync(cmd, argv, { input, stdio: ['pipe', 'pipe', 'pipe'], timeout: 60000, encoding: 'utf8' });
+
+  const vercelUser = run('vercel', ['whoami', '--non-interactive']);
+  const vercelOk = vercelUser.status === 0;
+  if (!vercelOk) console.log('Vercel: not logged in. Run `vercel login`, then run this again. (Skipping Vercel for now.)');
+
   names.forEach(name => {
     const value = process.env[name];
-    if (!value) throw new Error(name + ' is not set');
     // Values go over stdin so they never appear in argv or shell history.
-    const gh = spawnSync('gh', ['secret', 'set', name], { input: value, stdio: ['pipe', 'inherit', 'inherit'] });
+    const gh = run('gh', ['secret', 'set', name], value);
     console.log(gh.status === 0 ? 'GitHub secret set: ' + name : 'GitHub: could not set ' + name + ' (is `gh` logged in?)');
+    if (!vercelOk) return;
     ['production', 'preview'].forEach(target => {
-      spawnSync('vercel', ['env', 'rm', name, target, '--yes'], { stdio: 'ignore' });
-      const vc = spawnSync('vercel', ['env', 'add', name, target], { input: value, stdio: ['pipe', 'ignore', 'inherit'] });
-      console.log(vc.status === 0 ? 'Vercel env set: ' + name + ' (' + target + ')' : 'Vercel: could not set ' + name + ' for ' + target + ' (run `vercel login` and `vercel link` first)');
+      const vc = run('vercel', ['env', 'add', name, target, '--force', '--yes', '--sensitive', '--non-interactive'], value);
+      console.log(vc.status === 0 ? 'Vercel env set: ' + name + ' (' + target + ')' : 'Vercel: could not set ' + name + ' for ' + target + '. Add it by hand under Project → Settings → Environment Variables.');
     });
   });
-  console.log('\nRedeploy for Vercel to pick up the new variables.');
+  if (vercelOk) console.log('\nVercel reads these at deploy time: the next deployment (or a redeploy) picks them up.');
 }
 
 (async () => {
