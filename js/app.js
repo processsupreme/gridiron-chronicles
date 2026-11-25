@@ -5,7 +5,7 @@
 // dynamic string passes through esc() — team names are typed by league-mates.
 
 import { buildLeague, series, rankOf, playoffRace, ordinal, POLICY, CLOSE_MARGIN, BLOWOUT_MARGIN } from './league.js';
-import { createLiveFeed, mergeSeasons } from './live.js';
+import { createLiveFeed, mergeSeasons, nflWindow } from './live.js';
 import { matchupNotes, seasonStorylines, archiveStorylines, weekRecap, franchiseNotes, versusNotes, currentStreak, shortName, cleanName, scoreRank, plural } from './insights.js';
 
 // League lore that no data feed knows. Keyed by season.
@@ -18,6 +18,7 @@ const state = {
   era: { from: null, to: null }, eraL: null, eraKey: '',
   frSort: { key: 'winPct', dir: -1 },
   lastPath: null, lastSig: '', prevScores: new Map(),
+  livePending: false, // first-ever visit: the live season hasn't answered yet
 };
 let feed = null;
 
@@ -30,6 +31,8 @@ const rec = (w, l, t) => w + '–' + l + (t ? '–' + t : '');
 const pct = x => (x * 100).toFixed(1) + '%';
 const signed = (n, d = 1) => (n > 0 ? '+' : n < 0 ? '−' : '') + Math.abs(n).toFixed(d);
 const cls = (...xs) => xs.filter(Boolean).join(' ');
+/** Games are actually being played right now (not merely "the week has started"). */
+const isHot = S => !!S && S.liveNow && (nflWindow() || Date.now() - (state.liveState.movedAt || 0) < 6 * 60_000);
 const person = fid => { const c = state.L.career(fid); return c ? c.person : ''; };
 const ROUND_NAME = { R1: 'First round', SF: 'Semifinals', F: 'Championship' };
 const RESULT_SHORT = { champion: 'Champion', 'runner-up': 'Runner-up', semifinal: 'Semis', 'first-round': 'Round one', playoffs: 'Playoffs', alive: 'Alive', missed: 'Missed' };
@@ -49,7 +52,7 @@ const sec = (title, sub, more) => '<div class="sec-head"><div><h2 class="sec">' 
 
 // ── Now ──────────────────────────────────────────────────────
 function gameCard(L, S, g, { minor = false } = {}) {
-  const live = g.status === 'midevent', pre = !g.played && !live;
+  const live = g.status === 'midevent' && (g.a.pts > 0 || g.b.pts > 0), pre = !g.played && !live;
   const side = (me, opp) => {
     const T = S.teams.get(me.key);
     const won = g.played && g.winner === me.key, lost = g.played && !g.tie && !won;
@@ -73,7 +76,7 @@ function gameCard(L, S, g, { minor = false } = {}) {
   const notes = g.kind === 'consolation' ? { line: '' } : matchupNotes(L, g);
   const noteText = [notes.line, ...(notes.more || []).slice(0, 1)].filter(Boolean).join(' ');
   const href = g.a.fid && g.b.fid ? '#/versus/' + g.a.fid + '/' + g.b.fid : '#/season/' + S.year;
-  return '<article class="' + cls('game', live && 'is-live', minor && 'minor') + '">' +
+  return '<article class="' + cls('game', live && isHot(S) && 'is-live', minor && 'minor') + '">' +
     '<a class="game-link" href="' + href + '" aria-label="' + esc(g.a.name + ' versus ' + g.b.name) + '">' + side(g.a, g.b) + side(g.b, g.a) + prob + '</a>' +
     (noteText ? '<p class="note">' + esc(noteText) + '</p>' : '') +
     '</article>';
@@ -112,7 +115,7 @@ function wireList(tx) {
   const items = tx.slice(0, 8).map(t => {
     const team = t.type === 'trade' ? '' : (t.moves.find(m => m.action === 'add') || {}).to || (t.moves.find(m => m.action === 'drop') || {}).from || '';
     const mv = t.moves.map(m => {
-      const who = '<b>' + esc(m.player) + '</b> <span class="muted">' + esc([m.pos, m.nfl].filter(Boolean).join(', ')) + '</span>';
+      const who = '<b>' + esc(m.player) + '</b> <span class="muted">' + esc([m.pos, (m.nfl || '').toUpperCase()].filter(Boolean).join(', ')) + '</span>';
       if (m.action === 'add') return '<span class="add">+</span> ' + who;
       if (m.action === 'drop') return '<span class="drop">−</span> ' + who;
       return '<span class="trade">⇄</span> ' + who + ' to ' + esc(shortName(m.to));
@@ -130,16 +133,18 @@ function recapBlock(L, S, week) {
 
 function viewNow(parts) {
   const L = state.L, S = L.current;
+  // Don't call it the offseason while the first live answer is still on its way.
+  if (!S && state.livePending) return { html: '<p class="boot">Checking this week\u2019s scores…</p>', title: '', tab: 'now' };
   if (!S) return viewOffseason();
   const asked = parts[1] === 'week' ? +parts[2] : null;
   const week = Math.max(S.startWeek, Math.min(S.endWeek, asked || S.currentWeek));
   const games = S.games.filter(g => g.week === week);
-  const live = games.some(g => g.status === 'midevent');
+  const live = games.some(g => g.status === 'midevent' && (g.a.pts > 0 || g.b.pts > 0));
   const done = games.length > 0 && games.every(g => g.played);
   const post = week >= S.poStart;
   const roundIdx = S.postWeeks.indexOf(week);
   const phase = post ? (ROUND_NAME[S.rounds[roundIdx >= 0 ? roundIdx : week - S.poStart]] || 'Playoffs') : 'Regular season';
-  const pill = live ? '<span class="pill live">Live</span>' : done ? '<span class="pill">Final</span>' : '<span class="pill">Upcoming</span>';
+  const pill = live && isHot(S) ? '<span class="pill live">Live</span>' : live ? '<span class="pill">In progress</span>' : done ? '<span class="pill">Final</span>' : '<span class="pill">Upcoming</span>';
   const step = (w, label, glyph) => (w >= S.startWeek && w <= S.endWeek)
     ? '<a href="#/now/week/' + w + '" aria-label="' + label + '">' + glyph + '</a>' : '<span aria-hidden="true">' + glyph + '</span>';
 
@@ -161,7 +166,7 @@ function viewNow(parts) {
 
   if (done) html += '<section class="section">' + sec('Week ' + week + ' in the books') + recapBlock(L, S, week) + '</section>';
 
-  let stories = seasonStorylines(L, S).slice(0, 6);
+  let stories = seasonStorylines(L, S).slice(0, 7);
   const storyTitle = 'The Ledger says';
   if (!stories.length) stories = archiveStorylines(L);
   const storiesHtml = stories.length ? '<section class="section">' + sec(storyTitle, 'What this season means against ' + plural(L.seasons.filter(s => s.complete).length, 'season') + ' on record.') + says(stories) + '</section>' : '';
@@ -703,7 +708,7 @@ function render({ keepScroll = false } = {}) {
 function renderChrome() {
   const L = state.L, S = L.current, st = state.liveState;
   const status = document.getElementById('status');
-  const live = S && S.liveNow;
+  const live = isHot(S);
   status.className = cls('status', live && 'is-live');
   status.innerHTML = S ? '<span class="dot"></span>' + (live ? 'Live · ' : '') + 'Week ' + S.currentWeek : '';
   status.title = S ? 'Refresh scores' : '';
@@ -712,7 +717,8 @@ function renderChrome() {
   const feedLine = st.status === 'ok' ? 'Live scores from Yahoo, updated ' + when + '.'
     : st.status === 'stale' ? 'Showing scores saved ' + when + '. Can’t reach the live feed right now.'
     : st.status === 'off' ? 'Live scores aren’t connected, so this is the archive only.' : '';
-  const archived = state.archive.pulled_at ? ' Archive through ' + (L.latestComplete ? L.latestComplete.year : L.lastYear) + '.' : '';
+  const synced = state.archive.pulled_at ? new Date(state.archive.pulled_at.replace(' ', 'T') + 'Z') : null;
+  const archived = synced && !isNaN(synced) ? ' Archive last synced ' + synced.toLocaleDateString([], { month: 'short', day: 'numeric', year: 'numeric' }) + '.' : '';
   document.getElementById('foot').innerHTML = '<p>The BKGFFL Ledger. ' + plural(L.totals.seasons, 'season') + ', ' + L.totals.games.toLocaleString() + ' games that count, since ' + L.firstYear + '.</p>' +
     '<p>' + feedLine + archived + '</p>' +
     '<p class="links"><a href="install.html">Add to your phone</a><button type="button" data-intro>Replay the intro</button></p>';
@@ -727,6 +733,8 @@ const signature = snap => (snap && snap.season ? JSON.stringify([snap.season.cur
 
 function onLive(snapshot, liveState) {
   state.liveState = liveState;
+  const wasPending = state.livePending;
+  state.livePending = false;
   const sig = signature(snapshot);
   if (sig !== state.lastSig) {
     state.live = snapshot;
@@ -736,7 +744,7 @@ function onLive(snapshot, liveState) {
       const editing = document.activeElement && document.activeElement.tagName === 'SELECT';
       if (!editing) render({ keepScroll: true });
     }
-  } else if (state.L) renderChrome();
+  } else if (state.L) { if (wasPending) render({ keepScroll: true }); else renderChrome(); }
   document.getElementById('status').classList.remove('is-busy');
 }
 
@@ -815,6 +823,8 @@ window.addEventListener('hashchange', () => render());
   state.live = feed.cached();
   state.lastSig = signature(state.live);
   if (state.live) state.liveState = { status: 'stale', fetchedAt: state.live.fetched_at };
+  state.livePending = !state.live;
+  setTimeout(() => { if (state.livePending) { state.livePending = false; render({ keepScroll: true }); } }, 7000); // slow feed: fall back to the archive
 
   try {
     const resp = await fetch('data/league_data.json');

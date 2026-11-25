@@ -108,12 +108,14 @@ function normalizeSeason(raw, nameToFid) {
   const regDone = complete || (regGames.length > 0 && regGames.every(g => g.played) && currentWeek >= poStart);
 
   const teamList = [...teams.values()];
+  // Yahoo reports a provisional playoff_seed for every team all season long,
+  // so the field only exists once the regular season is actually over.
   const anySeed = teamList.some(t => t.playoffSeed);
   let field = [];
-  if (anySeed) field = teamList.filter(t => t.playoffSeed && t.playoffSeed <= numPlayoffTeams);
-  else if (complete) field = teamList.filter(t => t.rank && t.rank <= numPlayoffTeams);
-  else if (regDone) {
-    field = [...teamList].sort((x, y) => (y.yahoo.w + y.yahoo.t / 2) - (x.yahoo.w + x.yahoo.t / 2) || y.yahoo.pf - x.yahoo.pf).slice(0, numPlayoffTeams);
+  if (regDone) {
+    if (anySeed) field = teamList.filter(t => t.playoffSeed && t.playoffSeed <= numPlayoffTeams);
+    else if (complete) field = teamList.filter(t => t.rank && t.rank <= numPlayoffTeams);
+    else field = [...teamList].sort((x, y) => (y.yahoo.w + y.yahoo.t / 2) - (x.yahoo.w + x.yahoo.t / 2) || y.yahoo.pf - x.yahoo.pf).slice(0, numPlayoffTeams);
   }
   const fieldKeys = new Set(field.map(t => t.key));
   const alive = new Set(fieldKeys);
@@ -184,7 +186,7 @@ function normalizeSeason(raw, nameToFid) {
 
   // Seeds and results.
   const seedOrder = [...teamList].sort((x, y) => half(y.reg) - half(x.reg) || y.reg.pf - x.reg.pf);
-  teamList.forEach(t => { t.seed = t.playoffSeed || seedOrder.indexOf(t) + 1; });
+  teamList.forEach(t => { t.seed = (regDone && t.playoffSeed) || seedOrder.indexOf(t) + 1; });
   const lostIn = {};
   ['R1', 'SF', 'F'].forEach(r => bracket[r].forEach(g => {
     if (g.played && g.winner) lostIn[g.winner === g.a.key ? g.b.key : g.a.key] = r;
@@ -203,12 +205,14 @@ function normalizeSeason(raw, nameToFid) {
   const table = [...teamList].sort((x, y) => (x.rank || 99) - (y.rank || 99) || half(y.reg) - half(x.reg) || y.reg.pf - x.reg.pf);
 
   const lastPlayedWeek = games.reduce((mx, g) => (g.played ? Math.max(mx, g.week) : mx), 0);
-  const liveNow = games.some(g => g.status === 'midevent');
+  // Yahoo marks the whole week "midevent" from Tuesday; it is only live once someone has scored.
+  const weekUnderway = games.some(g => g.status === 'midevent');
+  const liveNow = games.some(g => g.status === 'midevent' && (g.a.pts > 0 || g.b.pts > 0));
 
   return {
     year, leagueKey: raw.league_key || '', poStart, numPlayoffTeams,
     startWeek: raw.start_week || 1, endWeek: raw.end_week || (postWeeks.length ? postWeeks[postWeeks.length - 1] : poStart + 2),
-    currentWeek, lastPlayedWeek, complete, regDone, liveNow,
+    currentWeek, lastPlayedWeek, complete, regDone, liveNow, weekUnderway,
     teams, table, games, bracket, rounds, postWeeks,
     champion: championKey && (complete || final) ? teams.get(championKey) || null : null,
     runnerUp: runnerUpKey && (complete || final) ? teams.get(runnerUpKey) || null : null,

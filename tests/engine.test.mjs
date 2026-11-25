@@ -76,6 +76,8 @@ for (const [week, phase] of [[1, 'pre'], [6, 'mid'], [12, 'mid'], [14, 'post'], 
   ok(tag + 'season present', !!S);
   ok(tag + 'archive titles untouched until a champion exists', LL.career('lvc').titles === (week >= 18 ? 6 : 5), 'titles ' + LL.career('lvc').titles);
   ok(tag + 'no playoff credit before the regular season ends', week >= 15 || [...S.teams.values()].every(t => !t.madePlayoffs));
+  ok(tag + 'fixture carries provisional seeds like Yahoo does', fx.season.standings.every(t => t.playoff_seed >= 1));
+  ok(tag + 'no byes before the regular season ends', week >= 15 || [...S.teams.values()].every(t => !t.bye && t.result === null));
   ok(tag + 'unplayed games do not count', S.games.filter(g => !g.played).every(g => !g.counts));
   const lvc = LL.career('lvc'), before = L.career('lvc');
   const played = S.games.filter(g => g.counts && (g.a.fid === 'lvc' || g.b.fid === 'lvc')).length;
@@ -91,6 +93,15 @@ for (const [week, phase] of [[1, 'pre'], [6, 'mid'], [12, 'mid'], [14, 'post'], 
     eq(tag + 'replayed chain', S.games.filter(g => g.kind === 'playoff').length, 5);
   } else ok(tag + 'is the current season', LL.current === S && !S.complete);
   if (S.lastPlayedWeek) ok(tag + 'week awards', !!weekAwards(S, S.lastPlayedWeek).high);
+}
+
+// ── 6. Yahoo marks the week "midevent" from Tuesday: not live until someone scores ──
+{
+  const fx = makeFixture({ week: 12, phase: 'mid', source: { seasons: archive } });
+  fx.season.matchups.forEach(m => { if (m.week === 12) { m.team1.points = 0; m.team2.points = 0; } });
+  const S = buildLeague([...archive, fx.season]).season(2026);
+  ok('scoreless midevent week: underway but not live', S.weekUnderway && !S.liveNow);
+  ok('scoreless midevent week: nothing counted', S.games.filter(g => g.week === 12).every(g => !g.played && !g.counts));
 }
 
 console.log((failed ? 'FAILED ' : 'ok ') + passed + ' passed, ' + failed + ' failed');

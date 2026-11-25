@@ -88,7 +88,7 @@ function makeFixture({ week = 12, phase = 'mid', source } = {}) {
     return {
       team_key: key, team_name: t.team_name, managers: t.managers, logo: null,
       rank: finished ? t.rank : seed,
-      playoff_seed: regularSeasonDone && seed <= 6 ? seed : null,
+      playoff_seed: seed, // Yahoo sends a provisional seed for every team, all season
       clinched_playoffs: regularSeasonDone && seed <= 6,
       wins: r.w, losses: r.l, ties: r.t,
       points_for: Math.round(r.pf * 100) / 100, points_against: Math.round(r.pa * 100) / 100,

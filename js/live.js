@@ -19,6 +19,26 @@ function writeStore(snapshot) {
   try { localStorage.setItem(STORE_KEY, JSON.stringify(snapshot)); } catch (e) { /* storage full or blocked: fine */ }
 }
 
+/** True during the usual NFL game windows (US Eastern time). Yahoo flags a
+ *  week as in progress from Tuesday on, so this is how we tell "games are on"
+ *  from "the week has started". */
+export function nflWindow(now = new Date()) {
+  const p = {};
+  new Intl.DateTimeFormat('en-US', { timeZone: 'America/New_York', weekday: 'short', hour: 'numeric', hourCycle: 'h23', month: 'numeric', day: 'numeric' })
+    .formatToParts(now).forEach(x => { p[x.type] = x.value; });
+  const h = +p.hour, d = p.weekday, mo = +p.month, day = +p.day;
+  const lateSeason = mo === 12 || mo === 1;
+  if (h < 1) return ['Mon', 'Tue', 'Fri', 'Sun'].includes(d) || (d === 'Sat' && mo === 11); // night games running past midnight
+  if (d === 'Sun') return h >= 9;
+  if (d === 'Mon') return h >= 19;
+  if (d === 'Thu') return h >= (mo === 11 && day >= 22 && day <= 28 ? 12 : 19); // Thanksgiving starts at lunch
+  if (d === 'Fri') return mo === 11 && day >= 23 && day <= 29 && h >= 14;      // Black Friday game
+  if (d === 'Sat') return lateSeason && h >= 12;
+  return false;
+}
+
+const weekPoints = snap => (snap && snap.season ? snap.season.matchups.filter(m => m.week === snap.season.current_week).reduce((n, m) => n + m.team1.points + m.team2.points, 0) : 0);
+
 const matchupId = m => m.week + ':' + [m.team1.team_key, m.team2.team_key].sort().join(':');
 
 /** Fold a "this week only" response into the last full snapshot. */
@@ -40,6 +60,7 @@ export function createLiveFeed({ onUpdate, endpoint = '/api/live' }) {
   let state = { status: snapshot ? 'stale' : 'idle', fetchedAt: snapshot ? snapshot.fetched_at : null, error: null };
   let timer = null;
   let fullFetchedAt = 0;
+  let movedAt = 0; // last time a score changed between two polls
 
   const emit = () => onUpdate(snapshot, { ...state });
 
@@ -59,9 +80,10 @@ export function createLiveFeed({ onUpdate, endpoint = '/api/live' }) {
       if (json.season.partial) next = mergePartial(snapshot, json);
       if (!next) { fullFetchedAt = 0; return pull(); } // season rolled over: start again with a full pull
       if (!json.season.partial) fullFetchedAt = Date.now();
+      if (snapshot && weekPoints(next) !== weekPoints(snapshot) && next.season.league_key === snapshot.season.league_key) movedAt = Date.now();
       snapshot = next;
       writeStore(snapshot);
-      state = { status: 'ok', fetchedAt: snapshot.fetched_at, error: null };
+      state = { status: 'ok', fetchedAt: snapshot.fetched_at, error: null, movedAt };
       emit();
     } catch (e) {
       state = { ...state, status: snapshot ? 'stale' : 'off', error: 'offline' };
@@ -73,7 +95,8 @@ export function createLiveFeed({ onUpdate, endpoint = '/api/live' }) {
     if (state.status === 'off') return SLOW;
     const s = snapshot && snapshot.season;
     if (!s || s.is_finished) return SLOW;
-    return s.matchups.some(m => m.status === 'midevent') ? FAST : NORMAL;
+    const underway = s.matchups.some(m => m.status === 'midevent');
+    return underway && (nflWindow() || Date.now() - movedAt < 6 * 60_000) ? FAST : NORMAL;
   }
 
   function schedule() {

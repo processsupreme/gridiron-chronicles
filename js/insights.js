@@ -8,12 +8,10 @@ import { series, playoffRace, weekAwards, ordinal, CLOSE_MARGIN } from './league
 
 const pts = n => n.toFixed(n % 1 === 0 ? 1 : 2).replace(/(\.\d)0$/, '$1');
 const rec = (w, l, t) => w + '–' + l + (t ? '–' + t : '');
-export const shortName = name => {
-  const paren = String(name).match(/\(([^)]+)\)\s*$/);
-  return paren ? paren[1] : String(name);
-};
+const TAGGED = /^(.{12,}?)\s*\(([A-Z]{2,6})\)\s*$/; // a long name carrying its own abbreviation
+export const shortName = name => { const m = String(name).match(TAGGED); return m ? m[2] : String(name); };
 /** Full name minus a trailing parenthetical: "Make Joco Great Again (MJGA)" → "Make Joco Great Again". */
-export const cleanName = name => String(name).replace(/\s*\([^)]*\)\s*$/, '');
+export const cleanName = name => { const m = String(name).match(TAGGED); return m ? m[1] : String(name); };
 const nameOf = (L, fid, fallback) => { const c = fid && L.career(fid); return c ? shortName(c.teamName) : shortName(fallback || ''); };
 const plural = (n, word) => n + ' ' + word + (n === 1 ? '' : 's');
 
@@ -175,7 +173,7 @@ export function seasonStorylines(L, S) {
     if (champ) {
       const pos = S.table.indexOf(champ) + 1;
       const c = L.career(champ.fid);
-      add(pos <= 2 ? 50 : pos >= 9 ? 50 : 30, pos >= 9 ? 'cold' : 'plain',
+      add(pos <= 2 || pos > S.numPlayoffTeams ? 56 : 44, pos > S.numPlayoffTeams ? 'cold' : 'plain',
         'Defending champion ' + shortName(champ.name) + ' is ' + rec(champ.reg.w, champ.reg.l, champ.reg.t) + ', ' + ordinal(pos) + ' in the standings' +
         (c.titles >= 2 ? ', chasing title number ' + (c.titles + 1) + '.' : '.'), link(champ));
     }
