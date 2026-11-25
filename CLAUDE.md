@@ -44,7 +44,7 @@ Data flow: `data/league_data.json` (archive) + `/api/live` (current season) → 
 
 Run the two test files, then look at the app: `node tools/dev.js --fixture 12 mid`, click through all five tabs at phone width and desktop width, and check the console. Also check `--fixture 16 mid` (playoffs), `--fixture 18` (season complete), and `--no-live` (offseason). Team names come from league members and are rendered through `esc()`; keep it that way.
 
-`index.html` loads `css/styles.css?v=62` and `js/app.js?v=62` — bump the `?v=` when editing those files.
+`index.html` loads `css/styles.css?v=63` and `js/app.js?v=63` — bump the `?v=` when editing those files.
 
 ## Non-negotiables
 

@@ -402,6 +402,23 @@ function viewFranchises() {
   return { html, title: 'Franchises', tab: 'franchises' };
 }
 
+// The mantle: a lit shelf with the franchise's rings on it, each over an
+// engraved plate (year, and who they beat). No titles means an empty shelf.
+function mantle(L, c) {
+  const shelf = '<span class="mantle-shelf" aria-hidden="true"></span>';
+  const items = c.titleYears.map(y => {
+    const S = L.season(y);
+    const beat = S && S.runnerUp && S.finalScore ? 'Beat ' + esc(shortName(S.runnerUp.name)) + ', ' + pts(S.finalScore.champ) + '–' + pts(S.finalScore.runner) : '';
+    return '<a class="mantle-item" href="#/season/' + y + '" aria-label="' + y + ' championship' + (beat ? '. ' + beat : '') + '">' +
+      '<span class="mantle-ring">' + ring(y, y + ' championship ring') + '</span>' + shelf +
+      '<span class="mantle-plate">' + y + '</span>' + (beat ? '<span class="mantle-line">' + beat + '</span>' : '') + '</a>';
+  }).join('');
+  const body = items
+    ? '<div class="mantle">' + items + '</div>'
+    : '<div class="mantle is-empty"><div class="mantle-item"><p class="mantle-none">Nothing up here yet</p>' + shelf + '<span class="mantle-line">' + esc(statusLine(c)) + '.</span></div></div>';
+  return '<section class="section mod">' + sec('The mantle', c.titles ? plural(c.titles, 'championship') : 'Empty') + body + '</section>';
+}
+
 function viewFranchise(parts) {
   const L = state.L, E = eraLeague(), fid = parts[1];
   const full = L.career(fid), c = E.career(fid);
@@ -412,7 +429,7 @@ function viewFranchise(parts) {
 
   let html = '<a class="crumb" href="#/franchises">‹ All franchises</a><section class="section"><div class="fr-head"><div><h1 class="fr-name">' + esc(full.teamName) + '</h1>' +
     '<p class="fr-meta">' + esc(full.person) + ', since ' + full.firstYear + '. ' + esc(statusLine(full)) + '.' + (former.length ? ' Formerly ' + esc(former.slice(-4).join(', ')) + '.' : '') + '</p></div>' +
-    (full.titleYears.length ? '<div class="rings-row">' + full.titleYears.map(y => '<a href="#/season/' + y + '">' + ring(y) + y + '</a>').join('') + '</div>' : '') + '</div></section>';
+    '</div></section>' + mantle(L, full);
 
   // This season
   const S = L.current, T = S && [...S.teams.values()].find(t => t.fid === fid);

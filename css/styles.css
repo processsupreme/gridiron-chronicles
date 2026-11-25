@@ -336,10 +336,24 @@ a.tn:hover { color: var(--yellow); }
 /* ── Franchise page ─────────────────────────────────────── */
 .fr-head { display: grid; gap: 14px; }
 .fr-meta { color: var(--dim); font-size: 14.5px; margin-top: 9px; max-width: 60ch; }
-.rings-row { display: flex; flex-wrap: wrap; gap: 6px; }
-.rings-row a { width: 60px; text-align: center; font: italic 800 15px var(--cond); color: var(--yellow); background: var(--panel); padding-bottom: 3px; font-variant-numeric: tabular-nums; }
-.rings-row a:hover { background: var(--panel-h); }
-.rings-row .ring { width: 60px; margin-bottom: 2px; }
+/* The mantle: rings on a lit shelf. Each cell stretches to fill its row and
+   draws its own piece of shelf, so the ledge runs the full width even when
+   the rings wrap onto a second row. */
+.mantle { display: flex; flex-wrap: wrap; background: linear-gradient(180deg, #0c1a52 0%, #050c2b 82%); }
+.mantle-item { flex: 1 1 0; min-width: 112px; display: grid; justify-items: center; align-content: start; text-align: center; padding: 20px 0 16px;
+  background: radial-gradient(ellipse 72% 58% at 50% 0%, rgba(255, 198, 41, 0.24), rgba(255, 198, 41, 0.05) 55%, transparent 75%); }
+.mantle-ring { position: relative; display: block; width: clamp(88px, 25vw, 150px); transition: transform 0.2s ease; }
+/* The ring art has a dark backdrop baked in; "lighten" lets the case show through it. */
+/* The art has empty space under the ring, so nudge it down until the ring rests on the ledge. */
+.mantle-ring .ring { position: relative; z-index: 1; width: 100%; background: none; mix-blend-mode: lighten; transform: translateY(10%); }
+.mantle-ring .ring-ph { width: 100%; background: rgba(255, 255, 255, 0.06); border-radius: 50%; }
+.mantle-ring::after { content: ''; position: absolute; left: 12%; right: 12%; bottom: -5px; height: 14px; background: radial-gradient(ellipse at center, rgba(0, 0, 0, 0.75), transparent 70%); }
+a.mantle-item:hover .mantle-ring { transform: translateY(-4px); }
+.mantle-shelf { justify-self: stretch; height: 12px; margin-top: 2px; background: linear-gradient(180deg, #6f88e6 0 2px, #3550bd 2px 5px, #22368f 5px 100%); box-shadow: 0 14px 16px rgba(0, 0, 0, 0.5); position: relative; z-index: 2; }
+.mantle-plate { margin-top: 14px; background: var(--yellow); color: var(--deep); font: italic 900 20px/1.2 var(--cond); padding: 1px 13px; transform: skewX(var(--skew)); font-variant-numeric: tabular-nums; box-shadow: 0 2px 0 rgba(0, 0, 0, 0.35); }
+.mantle-line { font: 500 12px/1.3 var(--text); color: var(--dim); margin-top: 7px; padding: 0 8px; }
+.mantle.is-empty .mantle-item { background: radial-gradient(ellipse 60% 58% at 50% 0%, rgba(255, 255, 255, 0.07), transparent 75%); padding-top: 34px; }
+.mantle-none { font: italic 800 22px/1 var(--cond); text-transform: uppercase; letter-spacing: 0.02em; color: var(--dim-2); padding: 0 12px 14px; }
 .era { display: flex; align-items: center; gap: 7px; font: 600 12px var(--cond); letter-spacing: 0.09em; text-transform: uppercase; color: var(--dim); flex-wrap: wrap; }
 .era select { background-color: var(--deep); color: var(--white); border: 0; border-radius: 0; padding: 5px 24px 5px 9px; font: 700 15px var(--cond); font-variant-numeric: tabular-nums; -webkit-appearance: none; appearance: none;
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 10 6'%3E%3Cpath d='M1 1l4 4 4-4' fill='none' stroke='%23ffc629' stroke-width='1.8'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 8px center; background-size: 9px; }
@@ -478,7 +492,6 @@ a.tn:hover { color: var(--yellow); }
   .crown .who { font-size: 68px; }
   .heads { grid-template-columns: 1.3fr repeat(4, 1fr); }
   .head.wide { grid-column: auto; }
-  .fr-head { grid-template-columns: minmax(0, 1fr) auto; align-items: end; }
   .sheet tbody { grid-template-columns: 1fr 1fr; column-gap: 18px; }
   .toast { bottom: 24px; }
   .chapnav { top: 62px; }
@@ -493,6 +506,9 @@ a.tn:hover { color: var(--yellow); }
   .tc { min-height: 44px; }
   .tn { font-size: 19px; }
   .side .tname { font-size: 23px; }
+  .mantle-item { padding-top: 26px; }
+  .mantle-plate { font-size: 24px; }
+  .mantle-line { font-size: 13px; }
   .lb .who { font-size: 19px; }
 }
 @media (max-width: 899px) { .hide-m { display: none; } }
