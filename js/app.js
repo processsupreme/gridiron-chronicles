@@ -195,7 +195,11 @@ function viewNow(parts) {
     ? '<section class="section mod">' + sec('Last week', 'Week ' + lastWeek + ' awards', '<a class="more" href="#/now/week/' + lastWeek + '">Scores</a>') + recapBlock(L, S, lastWeek) + '</section>' : '';
 
   html += '<div class="cols"><div>' + standingsHtml + lastRecap + '</div><div>' + storiesHtml + wireList(state.live && state.live.transactions) + '</div></div>';
-  return { html, title: 'Week ' + week, tab: 'now' };
+  // What gets texted from this page: the week's state, then its headline.
+  const recap = done ? weekRecap(L, S, week)[0] : null;
+  const share = 'BKGFFL Week ' + week + (live ? ' is underway.' : done ? ' is final.' : ' is coming up.') +
+    (recap ? ' High score: ' + recap.text.split('.')[0] + ', ' + recap.value + '.' : stories[0] ? ' ' + stories[0].text : '');
+  return { html, title: 'Week ' + week, tab: 'now', share };
 }
 
 function crownBlock(S) {
@@ -230,7 +234,7 @@ function viewOffseason() {
   html += '<section class="section">' + crownBlock(S) + '</section>';
   html += '<div class="cols"><div><section class="section">' + sec('How ' + S.year + ' finished', null, '<a class="more" href="#/season/' + S.year + '">Full season</a>') + finalTable(S) + '</section></div>' +
     '<div><section class="section">' + sec('The Ledger says') + says(stories) + '</section></div></div>';
-  return { html, title: 'Home', tab: 'now' };
+  return { html, title: 'Home', tab: 'now', share: stories[0] ? stories[0].text : '' };
 }
 
 // ── Seasons ──────────────────────────────────────────────────
@@ -262,7 +266,7 @@ function viewSeasons() {
   const html = '<section class="section"><h1 class="page-title">Seasons</h1><p class="page-sub">' + plural(L.totals.seasons, 'season') + ', ' + plural(L.totals.champions, 'different champion') + '. Tap a ring for the bracket, standings, and every score.</p></section>' +
     '<section class="section"><div class="ring-wall">' + tiles + '</div></section>' +
     '<section class="section mod">' + sec('Milestones') + '<ul class="facts">' + ms + '</ul></section>';
-  return { html, title: 'Seasons', tab: 'seasons' };
+  return { html, title: 'Seasons', tab: 'seasons', share: 'Every BKGFFL champion since ' + L.firstYear + ', ring by ring.' };
 }
 
 function bracketHtml(S) {
@@ -339,7 +343,11 @@ function viewSeason(parts) {
         real.map(line).join('') + (cons.length ? '<span class="tag">Consolation, doesn’t count</span>' + cons.map(line).join('') : '') + '</div></details>';
     }).join('') + '</div></section>';
   }
-  return { html, title: S.year + ' season', tab: 'seasons' };
+  const lead = S.table[0];
+  const share = S.champion
+    ? S.year + ': ' + shortName(S.champion.name) + ' won the BKGFFL title' + (S.finalScore && S.runnerUp ? ', beating ' + shortName(S.runnerUp.name) + ' ' + pts(S.finalScore.champ) + '–' + pts(S.finalScore.runner) : '') + '.'
+    : S.year + ' BKGFFL standings' + (S.lastPlayedWeek ? ' through Week ' + S.lastPlayedWeek + ': ' + shortName(lead.name) + ' leads at ' + rec(lead.reg.w, lead.reg.l, lead.reg.t) + '.' : '.');
+  return { html, title: S.year + ' season', tab: 'seasons', share };
 }
 
 // ── Franchises ───────────────────────────────────────────────
@@ -399,7 +407,7 @@ function viewFranchises() {
       FR_COLS.map(k => '<td class="' + cls('n', k.key !== key && 'hide-m', k.key === key && 'strong') + '">' + k.fmt(c) + '</td>').join('') + '</tr>';
   });
   html += '</tbody></table></div><p class="legend"><span>Sorted by ' + col.label.toLowerCase() + '.</span><span>Luck = career wins above what weekly scores earned against the whole league.</span></p></section>';
-  return { html, title: 'Franchises', tab: 'franchises' };
+  return { html, title: 'Franchises', tab: 'franchises', share: 'BKGFFL all-time franchise table. ' + (list[0] ? cleanName(list[0].teamName) + ' is on top by ' + col.label.toLowerCase() + '.' : '') };
 }
 
 // The mantle: a lit shelf with the franchise's rings on it, each over an
@@ -447,7 +455,7 @@ function viewFranchise(parts) {
 
   if (!c || !c.seasonsPlayed) {
     html += '<section class="section">' + eraControls() + '<p class="empty" style="margin-top:14px">This franchise didn’t play in the seasons selected.</p></section>';
-    return { html, title: full.teamName, tab: 'franchises' };
+    return { html, title: full.teamName, tab: 'franchises', share: cleanName(full.teamName) + ' in the BKGFFL Ledger.' };
   }
 
   const row = (k, v, r) => '<tr><td>' + k + '</td><td class="v">' + v + '</td>' + (r || '<td class="rk"></td>') + '</tr>';
@@ -495,7 +503,7 @@ function viewFranchise(parts) {
   html += '<div class="cols even"><div><section class="section">' + sec('Season by season') + seasonsHtml + '</section></div>' +
     '<div><section class="section">' + sec('Against everyone', 'Tap for every meeting') + h2hHtml + '</section>' +
     (notesHtml ? '<section class="section mod">' + sec('In the margins') + notesHtml + '</section>' : '') + '</div></div>';
-  return { html, title: full.teamName, tab: 'franchises' };
+  return { html, title: full.teamName, tab: 'franchises', share: cleanName(full.teamName) + ': ' + rec(full.w, full.l, full.t) + ' all-time. ' + statusLine(full) + '.' };
 }
 
 // ── Record book ──────────────────────────────────────────────
@@ -510,7 +518,7 @@ function viewRecords(parts) {
   const chapters = [];
   const WIDE = new Set(['top', 'streaks', 'playoffs', 'strange']);
   const ORDER = ['top', 'scores', 'blowouts', 'streaks', 'totals', 'best', 'playoffs', 'shed', 'close', 'droughts', 'luck', 'strange'];
-  const chap = (id, label, title, sub, body) => chapters.push({ id, label, html: '<section class="section mod' + (WIDE.has(id) ? ' wide' : '') + '" id="ch-' + id + '">' + sec(title, sub) + body + '</section>' });
+  const chap = (id, label, title, sub, body) => chapters.push({ id, label, title, html: '<section class="section mod' + (WIDE.has(id) ? ' wide' : '') + '" id="ch-' + id + '">' + sec(title, sub) + body + '</section>' });
 
   // Headlines
   const champ = [...fr].sort((a, b) => b.titles - a.titles || b.winPct - a.winPct)[0];
@@ -618,7 +626,10 @@ function viewRecords(parts) {
   chapters.sort((a, b) => ORDER.indexOf(a.id) - ORDER.indexOf(b.id));
   const nav = '<nav class="chapnav" aria-label="Record book chapters"><div class="chips">' + chapters.map(c => '<a class="chip" href="#/records/' + c.id + '">' + c.label + '</a>').join('') + '</div></nav>';
   const html = '<h1 class="page-title" style="margin-bottom:12px">Records</h1>' + nav + chapters[0].html + '<div class="chapters">' + chapters.slice(1).map(c => c.html).join('') + '</div>';
-  return { html, title: 'Records', tab: 'records', anchor: parts[1] ? 'ch-' + parts[1] : null };
+  const here = chapters.find(c => c.id === parts[1] && c.id !== 'top');
+  const share = here ? 'BKGFFL record book: ' + here.title.toLowerCase() + '.'
+    : 'The BKGFFL record book.' + (hi ? ' Highest score ever: ' + shortName(hi.name) + ', ' + pts(hi.pts) + '.' : '');
+  return { html, title: 'Records', tab: 'records', anchor: parts[1] ? 'ch-' + parts[1] : null, share };
 }
 
 // ── Versus ───────────────────────────────────────────────────
@@ -696,7 +707,11 @@ function viewVersus(parts) {
   grid += '</tbody></table></div>';
   html += '<section class="section mod">' + sec('Everyone against everyone', 'Read across: the row’s record against the column. Shaded cells are a lead of five or more.') + grid + '</section>';
 
-  return { html, title: shortName(A.teamName) + ' vs. ' + shortName(B.teamName), tab: 'versus' };
+  const an = shortName(A.teamName), bn = shortName(B.teamName);
+  const shareText = !s.g ? an + ' and ' + bn + ' have never played a game that counts.'
+    : s.w === s.l ? an + ' and ' + bn + ' are level at ' + rec(s.w, s.l, s.t) + ' all-time.'
+    : (s.w > s.l ? an + ' leads ' + bn : bn + ' leads ' + an) + ' ' + rec(Math.max(s.w, s.l), Math.min(s.w, s.l), s.t) + ' all-time.';
+  return { html, title: an + ' vs. ' + bn, tab: 'versus', share: shareText };
 }
 
 function notFound(msg) {
@@ -721,6 +736,7 @@ function render({ keepScroll = false } = {}) {
   const samePage = keepScroll || path === state.lastPath;
   el.innerHTML = out.html;
   document.title = (out.title ? out.title + ' · ' : '') + 'The BKGFFL Ledger';
+  state.share = out.share || '';
   document.querySelectorAll('#tabs a').forEach(a => {
     const on = a.dataset.tab === out.tab;
     a.classList.toggle('on', on);
@@ -805,6 +821,43 @@ function playIntro() {
   el.querySelector('button').focus();
 }
 
+// ── Share this page ──────────────────────────────────────────
+// Sends a one-line summary of the current page plus its link. On a phone this
+// opens the share sheet (pick the league thread); elsewhere it copies both.
+function flashToast(msg) {
+  let t = document.getElementById('note-toast');
+  if (!t) {
+    t = document.createElement('div');
+    t.id = 'note-toast'; t.className = 'toast'; t.setAttribute('role', 'status');
+    document.body.appendChild(t);
+  }
+  t.textContent = msg;
+  t.hidden = false;
+  clearTimeout(flashToast.timer);
+  flashToast.timer = setTimeout(() => { t.hidden = true; }, 2800);
+}
+async function sharePage() {
+  const hash = location.hash && location.hash !== '#' && location.hash !== '#/' ? location.hash : '';
+  const url = location.origin + '/' + hash;
+  const text = state.share || 'The BKGFFL Ledger';
+  if (navigator.share) {
+    try { await navigator.share({ title: 'The BKGFFL Ledger', text, url }); return; }
+    catch (e) { if (e && e.name === 'AbortError') return; /* closed the sheet: nothing to do */ }
+  }
+  const message = text + ' ' + url;
+  let copied = false;
+  try { await navigator.clipboard.writeText(message); copied = true; }
+  catch (e) {
+    // Older browsers, or a page without clipboard permission: the textarea route.
+    const ta = document.createElement('textarea');
+    ta.value = message; ta.setAttribute('readonly', ''); ta.style.cssText = 'position:fixed;top:0;left:0;opacity:0';
+    document.body.appendChild(ta); ta.select();
+    try { copied = document.execCommand('copy'); } catch (e2) { copied = false; }
+    ta.remove();
+  }
+  flashToast(copied ? 'Copied. Paste it in the thread.' : 'Couldn\u2019t copy. The link is in the address bar.');
+}
+
 // ── Events ───────────────────────────────────────────────────
 document.addEventListener('click', e => {
   const sortEl = e.target.closest('[data-sort]');
@@ -815,6 +868,7 @@ document.addEventListener('click', e => {
   }
   if (e.target.closest('[data-era-reset]')) { state.era = { from: null, to: null }; return render({ keepScroll: true }); }
   if (e.target.closest('[data-intro]')) return playIntro();
+  if (e.target.closest('#share')) return sharePage();
   if (e.target.closest('#status')) { document.getElementById('status').classList.add('is-busy'); feed && feed.refresh(); }
 });
 document.addEventListener('change', e => {
