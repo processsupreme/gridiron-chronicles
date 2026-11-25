@@ -77,14 +77,18 @@ function gameCard(L, S, g, { minor = false } = {}) {
       badge(me.name) +
       '<span class="tname">' + esc(shortName(me.name)) + '<span class="trec">' + rec(T.reg.w, T.reg.l, T.reg.t) + seed + '</span></span>' +
       score +
-      (live && me.proj != null ? '<span class="proj">projected ' + f1(me.proj) + '</span>' : '') +
+      (live && me.proj != null ? '<span class="proj">projected ' + f1(me.proj) + '</span>' : pre && me.proj != null ? '<span class="proj">projected</span>' : '') +
       '</div>';
   };
+  // Win probability: each end of the bar is labelled with its team, and the
+  // favourite's side is the yellow one, so there's no guessing whose number it is.
   let prob = '';
   if (!g.played && g.a.prob != null && g.b.prob != null) {
-    const pa = Math.round(g.a.prob * 100);
-    prob = '<div class="prob" role="img" aria-label="Win probability ' + pa + ' to ' + (100 - pa) + '"><i style="width:' + pa + '%"></i></div>' +
-      '<div class="prob-cap"><span>' + (pre ? 'Projected. ' : '') + pa + '% to win</span><span>' + (100 - pa) + '%</span></div>';
+    const pa = Math.round(g.a.prob * 100), pb = 100 - pa;
+    const fa = pa >= pb ? ' fav' : '', fb = pb > pa ? ' fav' : '';
+    const an = esc(shortName(g.a.name)), bn = esc(shortName(g.b.name));
+    prob = '<div class="prob" role="img" aria-label="Win probability: ' + an + ' ' + pa + '%, ' + bn + ' ' + pb + '%"><i class="' + fa + '" style="width:' + pa + '%"></i><i class="' + fb + '" style="width:' + pb + '%"></i></div>' +
+      '<div class="prob-cap" aria-hidden="true"><span class="pl' + fa + '"><b>' + pa + '%</b> ' + an + '</span><span class="pm">to win</span><span class="pr' + fb + '">' + bn + ' <b>' + pb + '%</b></span></div>';
   }
   const notes = g.kind === 'consolation' ? { line: '' } : matchupNotes(L, g);
   const noteText = [notes.line, ...(notes.more || []).slice(0, 1)].filter(Boolean).join(' ');
