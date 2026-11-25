@@ -3,27 +3,27 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<meta name="theme-color" content="#0D0B0B">
+<meta name="theme-color" content="#050C2B">
 <title>Install · The BKGFFL Ledger</title>
-<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=DM+Sans:wght@400;500;700&family=IBM+Plex+Mono:wght@400;500&family=Bebas+Neue&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:ital,wght@0,600;0,700;1,800;1,900&family=Barlow:wght@400;500;700&display=swap" rel="stylesheet">
 <style>
   :root {
-    --wine:        #722F37;
-    --wine-bright: #9A4048;
-    --bone:        #E3DAC9;
-    --bone-dim:    #A89F91;
-    --bone-muted:  #5A554D;
-    --yellow:      #F4A623;
-    --black:       #0D0B0B;
-    --card:        #141111;
-    --card-elev:   #1E1A1A;
-    --border:      rgba(114,47,55,0.22);
+    --wine:        #1C3AA8;
+    --wine-bright: #8FA6FF;
+    --bone:        #FFFFFF;
+    --bone-dim:    #B4BFEA;
+    --bone-muted:  #8894CC;
+    --yellow:      #FFC629;
+    --black:       #06113D;
+    --card:        #071033;
+    --card-elev:   #0D1A4D;
+    --border:      rgba(255,255,255,0.14);
   }
   *, *::before, *::after { box-sizing:border-box; margin:0; padding:0; }
   html { scroll-behavior:smooth; -webkit-text-size-adjust:100%; }
   body {
     background:var(--black); color:var(--bone);
-    font-family:'DM Sans', system-ui, sans-serif;
+    font-family:'Barlow', system-ui, sans-serif;
     font-size:16px; font-weight:400; line-height:1.5;
     -webkit-font-smoothing:antialiased;
     min-height:100vh;
@@ -33,25 +33,25 @@
 
   /* Header */
   .brand-eyebrow {
-    font-family:'IBM Plex Mono', monospace;
+    font-family:'Barlow Condensed', sans-serif;
     font-size:10px; letter-spacing:6px;
     color:var(--wine-bright); text-transform:uppercase;
     margin-bottom:14px;
   }
   h1 {
-    font-family:'Playfair Display', serif; font-weight:900;
+    font-family:'Barlow Condensed', sans-serif; font-weight:900;
     font-size:clamp(36px, 7vw, 64px); line-height:1;
     letter-spacing:0.005em;
     font-variant-numeric:lining-nums tabular-nums;
   }
   h1 .yellow { color:var(--yellow); }
   .lede {
-    font-family:'DM Sans', sans-serif; font-weight:400;
+    font-family:'Barlow', sans-serif; font-weight:400;
     font-size:clamp(16px, 2.2vw, 20px); color:var(--bone-dim);
     margin-top:20px; max-width:560px;
   }
   .tiny-meta {
-    font-family:'IBM Plex Mono', monospace;
+    font-family:'Barlow Condensed', sans-serif;
     font-size:10px; letter-spacing:3px;
     color:var(--bone-muted); text-transform:uppercase;
     margin-top:24px;
@@ -62,7 +62,7 @@
     display:flex; align-items:center; gap:18px;
     margin:28px auto 0;
     padding:20px 26px;
-    background:linear-gradient(135deg, rgba(244,166,35,0.14) 0%, rgba(114,47,55,0.18) 100%);
+    background:linear-gradient(135deg, rgba(244,166,35,0.14) 0%, rgba(42,79,214,0.18) 100%);
     border:1px solid rgba(244,166,35,0.45);
     border-radius:16px;
     color:var(--bone);
@@ -82,20 +82,20 @@
     width:52px; height:52px; border-radius:12px;
     background:linear-gradient(135deg, var(--wine) 0%, #4a1e24 100%);
     display:flex; align-items:center; justify-content:center;
-    font-family:'Playfair Display', serif; font-weight:900;
+    font-family:'Barlow Condensed', sans-serif; font-weight:900;
     font-size:22px; color:var(--bone);
     letter-spacing:-0.02em;
     box-shadow:0 4px 12px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.1);
   }
   .hero-cta-body { flex:1; min-width:0; display:flex; flex-direction:column; }
   .hero-cta-label {
-    font-family:'IBM Plex Mono', monospace;
+    font-family:'Barlow Condensed', sans-serif;
     font-size:10px; letter-spacing:3px;
     color:var(--yellow); text-transform:uppercase;
     margin-bottom:4px;
   }
   .hero-cta-title {
-    font-family:'Playfair Display', serif; font-weight:900;
+    font-family:'Barlow Condensed', sans-serif; font-weight:900;
     font-size:clamp(18px, 3vw, 22px); line-height:1.2;
     color:var(--bone);
   }
@@ -135,13 +135,13 @@
     width:44px; height:44px; border-radius:12px;
     background:rgba(244,166,35,0.12); border:1px solid rgba(244,166,35,0.3);
     color:var(--yellow);
-    font-family:'Playfair Display', serif; font-weight:900;
+    font-family:'Barlow Condensed', sans-serif; font-weight:900;
     font-size:22px; line-height:1;
     margin-bottom:16px;
     font-variant-numeric:lining-nums tabular-nums;
   }
   .step-title {
-    font-family:'Playfair Display', serif; font-weight:900;
+    font-family:'Barlow Condensed', sans-serif; font-weight:900;
     font-size:clamp(22px, 3.5vw, 30px); line-height:1.15;
     color:var(--bone);
     margin-bottom:10px;
@@ -156,7 +156,7 @@
     background:rgba(201,168,76,0.06);
     border-left:3px solid var(--yellow);
     border-radius:4px;
-    font-family:'IBM Plex Mono', monospace;
+    font-family:'Barlow Condensed', sans-serif;
     font-size:11px; letter-spacing:0.5px;
     color:var(--bone-dim); line-height:1.5;
   }
@@ -180,19 +180,19 @@
   .done {
     text-align:center;
     padding:clamp(32px, 6vw, 48px) 24px;
-    background:linear-gradient(135deg, rgba(114,47,55,0.10) 0%, var(--card) 65%);
-    border:1px solid rgba(114,47,55,0.3);
+    background:linear-gradient(135deg, rgba(42,79,214,0.10) 0%, var(--card) 65%);
+    border:1px solid rgba(42,79,214,0.3);
     border-radius:16px;
     margin-top:clamp(24px, 5vw, 40px);
   }
   .done-eyebrow {
-    font-family:'IBM Plex Mono', monospace;
+    font-family:'Barlow Condensed', sans-serif;
     font-size:10px; letter-spacing:5px;
     color:var(--wine-bright); text-transform:uppercase;
     margin-bottom:14px;
   }
   .done-title {
-    font-family:'Playfair Display', serif; font-weight:900;
+    font-family:'Barlow Condensed', sans-serif; font-weight:900;
     font-size:clamp(28px, 5vw, 44px); line-height:1;
     color:var(--bone);
   }
@@ -205,7 +205,7 @@
   .footer {
     margin-top:clamp(32px, 5vw, 48px);
     text-align:center;
-    font-family:'IBM Plex Mono', monospace;
+    font-family:'Barlow Condensed', sans-serif;
     font-size:10px; letter-spacing:3px;
     color:var(--bone-muted); text-transform:uppercase;
   }
