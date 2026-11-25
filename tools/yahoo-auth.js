@@ -71,7 +71,9 @@ function publish() {
     console.log(gh.status === 0 ? 'GitHub secret set: ' + name : 'GitHub: could not set ' + name + ' (is `gh` logged in?)');
     if (!vercelOk) return;
     ['production', 'preview'].forEach(target => {
-      const vc = run('vercel', ['env', 'add', name, target, '--force', '--yes', '--sensitive', '--non-interactive'], value);
+      // Preview needs a Git-branch argument; an empty one means "all preview branches".
+      const argv = target === 'preview' ? ['env', 'add', name, target, ''] : ['env', 'add', name, target];
+      const vc = run('vercel', [...argv, '--force', '--yes', '--sensitive', '--non-interactive'], value);
       console.log(vc.status === 0 ? 'Vercel env set: ' + name + ' (' + target + ')' : 'Vercel: could not set ' + name + ' for ' + target + '. Add it by hand under Project → Settings → Environment Variables.');
     });
   });
