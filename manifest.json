@@ -4,8 +4,8 @@
   "description": "Live scores and standings for the BKGFFL season, plus every champion, record, and rivalry since 2014.",
   "start_url": "/",
   "display": "standalone",
-  "background_color": "#0E090A",
-  "theme_color": "#0E090A",
+  "background_color": "#06113D",
+  "theme_color": "#050C2B",
   "orientation": "portrait",
   "shortcuts": [
     { "name": "This week's scores", "short_name": "Scores", "url": "/#/" },

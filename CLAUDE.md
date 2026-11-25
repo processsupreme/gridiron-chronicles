@@ -27,7 +27,7 @@ Data flow: `data/league_data.json` (archive) + `/api/live` (current season) → 
 - `js/insights.js` — turns engine output into sentences (matchup history, storylines, weekly awards, franchise notes). Everything is derived; nothing names a specific team.
 - `js/live.js` — client for `/api/live`: polling (45s when games are live, 5 min otherwise, paused when hidden), a last-known snapshot in localStorage, and merging the live season over the archive.
 - `js/app.js` — hash router (`#/`, `#/now/week/8`, `#/seasons`, `#/season/2025`, `#/franchises`, `#/franchise/lvc`, `#/records/shed`, `#/versus/lvc/mark`) and the views, which return HTML strings.
-- `css/styles.css` — the design system. Two typefaces (Playfair Display, Archivo variable). Gold means a championship, amber means live; don't use either for anything else. The italic serif `.note` with the wine margin rule is reserved for the Ledger commenting on a number.
+- `css/styles.css` — the design system, "Sunday Broadcast": royal-blue field, signal yellow, Barlow Condensed (heavy italic for display) plus Barlow for sentences. Yellow is the brand, the leader, and the champion; red is live and the playoff line. Nothing floats: every list, table, and stat goes in a `.mod` with a yellow header tab (use the `sec()` helper in `js/app.js`), and every franchise row starts with the same `.badge` monogram. Do not give franchises individual colors.
 - `api/live.js` + `api/_yahoo.js` — serverless function and Yahoo client. Reads `YAHOO_CLIENT_ID`, `YAHOO_CLIENT_SECRET`, `YAHOO_REFRESH_TOKEN` from the environment, finds the newest season by following the league's `renewed` chain from the last known league key, and is edge-cached (30s while games are live).
 - `sw.js` — service worker: network-first shell and data, cache-first media, never caches `/api/`.
 - `tests/baseline.json` — career numbers from the pre-2026 app, verified in `.audit-career.md`. The engine test asserts the engine still reproduces them.
@@ -44,7 +44,7 @@ Data flow: `data/league_data.json` (archive) + `/api/live` (current season) → 
 
 Run the two test files, then look at the app: `node tools/dev.js --fixture 12 mid`, click through all five tabs at phone width and desktop width, and check the console. Also check `--fixture 16 mid` (playoffs), `--fixture 18` (season complete), and `--no-live` (offseason). Team names come from league members and are rendered through `esc()`; keep it that way.
 
-`index.html` loads `css/styles.css?v=60` and `js/app.js?v=60` — bump the `?v=` when editing those files.
+`index.html` loads `css/styles.css?v=61` and `js/app.js?v=61` — bump the `?v=` when editing those files.
 
 ## Non-negotiables
 

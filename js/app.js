@@ -48,7 +48,20 @@ const says = items => '<ul class="says">' + items.map(s => {
   const inner = '<span class="tick"></span><p>' + esc(s.text) + '</p>';
   return '<li class="tone-' + (s.tone || 'plain') + '">' + (s.href ? '<a href="' + s.href + '">' + inner + '</a>' : '<span class="says-item">' + inner + '</span>') + '</li>';
 }).join('') + '</ul>';
-const sec = (title, sub, more) => '<div class="sec-head"><div><h2 class="sec">' + esc(title) + '</h2>' + (sub ? '<p class="sec-sub">' + esc(sub) + '</p>' : '') + '</div>' + (more || '') + '</div>';
+// Module header: a yellow title tab, short context on the right, an optional
+// action. A longer description drops under the header instead.
+const sec = (title, sub, more) => {
+  const short = sub && sub.length <= 26;
+  return '<header class="mod-h"><h2>' + esc(title) + '</h2>' + (short ? '<span class="ctx">' + esc(sub) + '</span>' : '') + (more || '') + '</header>' +
+    (sub && !short ? '<p class="mod-sub">' + esc(sub) + '</p>' : '');
+};
+// One badge style for every franchise: a monogram on the brand chip.
+const mono = name => {
+  const w = shortName(name).replace(/^The\s+/i, '').replace(/\(.*?\)/g, '').replace(/[^A-Za-z0-9 ]/g, '').trim().split(/\s+/);
+  return (w.length === 1 ? w[0].slice(0, 2) : w[0][0] + w[1][0]).toUpperCase();
+};
+const badge = name => '<span class="badge" aria-hidden="true">' + esc(mono(name)) + '</span>';
+const teamCell = (T, sub) => '<td class="team"><div class="tc">' + badge(T.name) + '<div class="tx">' + teamLink(T) + (sub ? '<span class="tp">' + sub + '</span>' : '') + '</div></div></td>';
 
 // ── Now ──────────────────────────────────────────────────────
 function gameCard(L, S, g, { minor = false } = {}) {
@@ -56,13 +69,13 @@ function gameCard(L, S, g, { minor = false } = {}) {
   const side = (me, opp) => {
     const T = S.teams.get(me.key);
     const won = g.played && g.winner === me.key, lost = g.played && !g.tie && !won;
-    const seed = S.regDone ? (T.madePlayoffs ? T.seed : '') : S.table.indexOf(T) + 1;
+    const seed = S.regDone && T.madePlayoffs ? ', ' + ordinal(T.seed) + ' seed' : '';
     const score = pre
       ? (me.proj != null ? '<span class="score">' + f1(me.proj) + '</span>' : '<span class="score">–</span>')
       : '<span class="score" data-k="' + esc(g.id + me.key) + '" data-v="' + me.pts + '">' + pts(me.pts) + '</span>';
     return '<div class="' + cls('side', won && 'won', lost && 'lost', pre && 'pre') + '">' +
-      '<span class="seed">' + seed + '</span>' +
-      '<span class="tname">' + esc(shortName(me.name)) + '<span class="trec">' + rec(T.reg.w, T.reg.l, T.reg.t) + '</span></span>' +
+      badge(me.name) +
+      '<span class="tname">' + esc(shortName(me.name)) + '<span class="trec">' + rec(T.reg.w, T.reg.l, T.reg.t) + seed + '</span></span>' +
       score +
       (live && me.proj != null ? '<span class="proj">projected ' + f1(me.proj) + '</span>' : '') +
       '</div>';
@@ -92,11 +105,11 @@ function standingsTable(L, S) {
     const mark = showRace ? (r.clinchedBye ? '<span class="mark z" title="Clinched a bye">z</span>' : r.clinched ? '<span class="mark x" title="Clinched a playoff spot">x</span>' : r.eliminated ? '<span class="mark e" title="Eliminated">e</span>' : '')
       : (S.regDone && T.bye ? '<span class="mark z">z</span>' : S.regDone && T.madePlayoffs ? '<span class="mark x">x</span>' : '');
     html += '<tr><td class="rank">' + (i + 1) + '</td>' +
-      '<td>' + teamLink(T) + (T.fid ? '<span class="tp">' + esc(person(T.fid)) + mark + '</span>' : '') + '</td>' +
+      teamCell(T, T.fid ? esc(person(T.fid)) + mark : '') +
       '<td class="n strong">' + rec(T.reg.w, T.reg.l, T.reg.t) + '</td>' +
       '<td class="n">' + big(T.reg.pf) + '</td>' +
       '<td class="n hide-s">' + big(T.reg.pa) + '</td>' +
-      '<td class="c ' + (st.res === 'W' ? 'pos' : st.res === 'L' ? 'neg' : '') + '">' + (st.len ? st.res + st.len : '–') + '</td>' +
+      '<td class="c">' + (st.len ? '<span class="st ' + st.res.toLowerCase() + '">' + st.res + st.len + '</span>' : '–') + '</td>' +
       '<td class="c hide-s">' + formDots(T.form.slice(-5)) + '</td>' +
       '<td class="n hide-m">' + rec(T.allPlay.w, T.allPlay.l, T.allPlay.t) + '</td>' +
       '<td class="n hide-m ' + (T.luck >= 0.75 ? 'pos' : T.luck <= -0.75 ? 'neg' : '') + '">' + (T.reg.g ? signed(T.luck) : '–') + '</td></tr>';
@@ -104,7 +117,7 @@ function standingsTable(L, S) {
     if (i === S.numPlayoffTeams - 1) html += '<tr class="cut"><td colspan="9"><span>Playoff line</span></td></tr>';
   });
   html += '</tbody></table></div>';
-  html += '<p class="legend"><span><b class="mark z">z</b> clinched a bye</span><span><b class="mark x">x</b> clinched a playoff spot</span><span><b class="mark e">e</b> eliminated</span>' +
+  html += '<p class="legend"><span>Top ' + S.numPlayoffTeams + ' make the playoffs. The top two skip round one.</span><span><b class="mark z">z</b> clinched a bye</span><span><b class="mark x">x</b> clinched a playoff spot</span><span><b class="mark e">e</b> eliminated</span>' +
     '<span class="hide-m" style="display:inline">Luck = wins above what the team’s weekly scores earned against the whole league.</span></p>';
   return html;
 }
@@ -122,7 +135,7 @@ function wireList(tx) {
     }).join('<br>');
     return '<li><span>' + (t.type === 'trade' ? 'Trade' : esc(shortName(team))) + '</span><span class="when">' + ago(t.ts) + '</span><span class="mv">' + mv + '</span></li>';
   }).join('');
-  return '<section class="section">' + sec('The wire', 'Latest adds, drops, and trades.') + '<ul class="wire">' + items + '</ul></section>';
+  return '<section class="section mod">' + sec('The wire', 'Adds, drops, trades') + '<ul class="wire">' + items + '</ul></section>';
 }
 
 function recapBlock(L, S, week) {
@@ -164,18 +177,18 @@ function viewNow(parts) {
   }
   html += '</section>';
 
-  if (done) html += '<section class="section">' + sec('Week ' + week + ' in the books') + recapBlock(L, S, week) + '</section>';
+  if (done) html += '<section class="section mod">' + sec('Week ' + week + ' in the books') + recapBlock(L, S, week) + '</section>';
 
   let stories = seasonStorylines(L, S).slice(0, 7);
   const storyTitle = 'The Ledger says';
   if (!stories.length) stories = archiveStorylines(L);
-  const storiesHtml = stories.length ? '<section class="section">' + sec(storyTitle, 'What this season means against ' + plural(L.seasons.filter(s => s.complete).length, 'season') + ' on record.') + says(stories) + '</section>' : '';
-  const standingsHtml = '<section class="section" id="standings">' + sec(S.year + ' standings', S.regDone ? 'Final regular-season order.' : (S.lastPlayedWeek ? 'Through Week ' + S.lastPlayedWeek + '. ' : 'Nothing played yet. ') + 'Top ' + S.numPlayoffTeams + ' make the playoffs, and the top two skip round one.',
+  const storiesHtml = stories.length ? '<section class="section mod">' + sec(storyTitle, plural(L.seasons.filter(s => s.complete).length, 'season') + ' on record') + says(stories) + '</section>' : '';
+  const standingsHtml = '<section class="section mod" id="standings">' + sec('Standings', S.regDone ? 'Final' : S.lastPlayedWeek ? 'Through week ' + S.lastPlayedWeek : 'Preseason',
     '<a class="more" href="#/season/' + S.year + '">Full season</a>') + standingsTable(L, S) + '</section>';
 
   const lastWeek = S.lastPlayedWeek;
   const lastRecap = !done && lastWeek && lastWeek !== week
-    ? '<section class="section">' + sec('Last week', 'Week ' + lastWeek + ' awards.', '<a class="more" href="#/now/week/' + lastWeek + '">Scores</a>') + recapBlock(L, S, lastWeek) + '</section>' : '';
+    ? '<section class="section mod">' + sec('Last week', 'Week ' + lastWeek + ' awards', '<a class="more" href="#/now/week/' + lastWeek + '">Scores</a>') + recapBlock(L, S, lastWeek) + '</section>' : '';
 
   html += '<div class="cols"><div>' + standingsHtml + lastRecap + '</div><div>' + storiesHtml + wireList(state.live && state.live.transactions) + '</div></div>';
   return { html, title: 'Week ' + week, tab: 'now' };
@@ -189,14 +202,14 @@ function crownBlock(S) {
     '<div><p class="lbl">' + S.year + ' champion' + (nth > 1 ? ', title number ' + nth : '') + '</p>' +
     '<p class="who">' + teamLink(S.champion, '') + '</p>' +
     (S.finalScore && S.runnerUp ? '<p class="fin"><b>' + pts(S.finalScore.champ) + '–' + pts(S.finalScore.runner) + '</b> over ' + esc(S.runnerUp.name) + '</p>' : '') +
-    (SEASON_NOTES[S.year] ? '<p class="note" style="margin-top:10px">' + esc(SEASON_NOTES[S.year]) + '</p>' : '') +
+    (SEASON_NOTES[S.year] ? '<p class="note">' + esc(SEASON_NOTES[S.year]) + '</p>' : '') +
     '</div></div>';
 }
 
 function finalTable(S, { compact = false } = {}) {
   let html = '<div class="tbl-wrap"><table class="tbl"><thead><tr><th></th><th>Team</th><th class="n">W–L</th><th class="n">PF</th><th class="n hide-s">PA</th><th class="n hide-m">Seed</th><th class="n hide-m">Luck</th><th class="n">' + (S.complete ? 'Finish' : 'Status') + '</th></tr></thead><tbody>';
   S.table.forEach((T, i) => {
-    html += '<tr><td class="rank">' + (i + 1) + '</td><td>' + teamLink(T) + (T.fid ? '<span class="tp">' + esc(person(T.fid)) + '</span>' : '<span class="tp">Retired franchise</span>') + '</td>' +
+    html += '<tr><td class="rank">' + (i + 1) + '</td>' + teamCell(T, T.fid ? esc(person(T.fid)) : 'Retired franchise') +
       '<td class="n strong">' + rec(T.reg.w, T.reg.l, T.reg.t) + '</td><td class="n">' + big(T.reg.pf) + '</td><td class="n hide-s">' + big(T.reg.pa) + '</td>' +
       '<td class="n hide-m">' + T.seed + (T.bye ? ' <span class="muted">bye</span>' : '') + '</td>' +
       '<td class="n hide-m ' + (T.luck >= 0.75 ? 'pos' : T.luck <= -0.75 ? 'neg' : '') + '">' + signed(T.luck) + '</td>' +
@@ -244,7 +257,7 @@ function viewSeasons() {
   const ms = milestones(L).map(m => '<li><span class="row"><span class="k">' + m.year + '</span><span class="t">' + esc(m.text) + (m.note ? ' <em class="muted">' + esc(m.note) + '</em>' : '') + '</span></span></li>').join('');
   const html = '<section class="section"><h1 class="page-title">Seasons</h1><p class="page-sub">' + plural(L.totals.seasons, 'season') + ', ' + plural(L.totals.champions, 'different champion') + '. Tap a ring for the bracket, standings, and every score.</p></section>' +
     '<section class="section"><div class="ring-wall">' + tiles + '</div></section>' +
-    '<section class="section">' + sec('Milestones') + '<ul class="facts">' + ms + '</ul></section>';
+    '<section class="section mod">' + sec('Milestones') + '<ul class="facts">' + ms + '</ul></section>';
   return { html, title: 'Seasons', tab: 'seasons' };
 }
 
@@ -284,9 +297,9 @@ function viewSeason(parts) {
     crownBlock(S) + '</section>';
 
   const br = bracketHtml(S);
-  if (br) html += '<section class="section">' + sec('Playoff bracket', 'Seeds from the regular season. Placement and consolation games are left out; they don’t count.') + br + '</section>';
+  if (br) html += '<section class="section mod">' + sec('Playoff bracket', 'Seeds from the regular season. Placement and consolation games are left out; they don’t count.') + br + '</section>';
 
-  html += '<section class="section">' + sec(S.complete ? 'Final standings' : 'Standings', S.complete ? 'Ordered by final finish. Records are regular season.' : 'Through Week ' + S.lastPlayedWeek + '.') + (S.complete ? finalTable(S) : standingsTable(L, S)) + '</section>';
+  html += '<section class="section mod">' + sec(S.complete ? 'Final standings' : 'Standings', S.complete ? 'Ordered by final finish. Records are regular season.' : 'Through Week ' + S.lastPlayedWeek + '.') + (S.complete ? finalTable(S) : standingsTable(L, S)) + '</section>';
 
   if (sides.length) {
     const byPF = [...teams].sort((a, b) => b.reg.pf - a.reg.pf)[0];
@@ -295,7 +308,7 @@ function viewSeason(parts) {
     const hi = sides[0], lo = sides[sides.length - 1], blow = decided[0], close = decided[decided.length - 1];
     const aw = (k, v, t) => '<div class="award"><dt>' + k + '</dt><dd class="v">' + v + '</dd><dd class="t">' + t + '</dd></div>';
     const hiRank = scoreRank(L, hi.me.pts);
-    html += '<section class="section">' + sec('Season marks') + '<dl class="awards">' +
+    html += '<section class="section mod">' + sec('Season marks') + '<dl class="awards">' +
       aw('Most points', big(byPF.reg.pf), esc(shortName(byPF.name)) + ', regular season.') +
       aw('Best single game', pts(hi.me.pts), esc(shortName(hi.me.name)) + ', Week ' + hi.g.week + '.' + (hiRank <= 25 ? ' ' + ordinal(hiRank) + ' all-time.' : '')) +
       (blow ? aw('Biggest blowout', '+' + pts(blow.m), esc(shortName(blow.w.name)) + ' over ' + esc(shortName(blow.l.name)) + ', Week ' + blow.g.week + '.') : '') +
@@ -309,7 +322,7 @@ function viewSeason(parts) {
 
   const weeks = [...new Set(S.games.filter(g => g.played || g.status === 'midevent').map(g => g.week))].sort((a, b) => a - b);
   if (weeks.length) {
-    html += '<section class="section">' + sec('Every score', 'Week by week.') + '<div class="weeks">' + weeks.map(w => {
+    html += '<section class="section mod">' + sec('Every score', 'Week by week') + '<div class="weeks">' + weeks.map(w => {
       const gs = S.games.filter(g => g.week === w && (g.played || g.status === 'midevent'));
       const top = gs.flatMap(g => [g.a, g.b]).sort((a, b) => b.pts - a.pts)[0];
       const line = g => {
@@ -372,12 +385,12 @@ function viewFranchises() {
   const live = L.current;
   let html = '<section class="section"><h1 class="page-title">Franchises</h1><p class="page-sub">Career numbers for all ' + L.franchises.length + ' franchises. Records count the regular season and championship-bracket playoff games' +
     (live && live.lastPlayedWeek ? ', through Week ' + live.lastPlayedWeek + ' of ' + live.year : '') + '.</p></section>';
-  html += '<section class="section">' + eraControls() +
-    '<div class="chips only-m" style="margin-top:12px" role="group" aria-label="Stat to show">' + FR_COLS.map(c => '<button type="button" class="chip ' + (c.key === key ? 'on' : '') + '" data-sort="' + c.key + '">' + c.label + '</button>').join('') + '</div>' +
-    '<div class="tbl-wrap" style="margin-top:6px"><table class="tbl"><thead><tr><th></th><th>Franchise</th><th class="n">Record</th>' +
+  html += '<section class="section">' +
+    '<div class="chips only-m" role="group" aria-label="Stat to show">' + FR_COLS.map(c => '<button type="button" class="chip ' + (c.key === key ? 'on' : '') + '" data-sort="' + c.key + '">' + c.label + '</button>').join('') + '</div>' +
+    '</section><section class="section mod">' + sec('Career table', null, eraControls()) + '<div class="tbl-wrap"><table class="tbl"><thead><tr><th></th><th>Franchise</th><th class="n">Record</th>' +
     FR_COLS.map(c => '<th class="' + cls('n', c.key !== key && 'hide-m', c.key === key && 'sorted', c.key === key && dir > 0 && 'asc') + '" data-sort="' + c.key + '">' + c.label + '</th>').join('') + '</tr></thead><tbody>';
   list.forEach((c, i) => {
-    html += '<tr><td class="rank">' + (i + 1) + '</td><td><a class="tn" href="#/franchise/' + c.fid + '">' + esc(cleanName(c.teamName)) + '</a><span class="tp">' + esc(c.person) + ', ' + esc(statusLine(c).toLowerCase()) + '</span></td>' +
+    html += '<tr><td class="rank">' + (i + 1) + '</td>' + teamCell({ name: c.teamName, fid: c.fid }, esc(c.person) + ', ' + esc(statusLine(c).toLowerCase())) +
       '<td class="n">' + rec(c.w, c.l, c.t) + '</td>' +
       FR_COLS.map(k => '<td class="' + cls('n', k.key !== key && 'hide-m', k.key === key && 'strong') + '">' + k.fmt(c) + '</td>').join('') + '</tr>';
   });
@@ -390,7 +403,7 @@ function viewFranchise(parts) {
   const full = L.career(fid), c = E.career(fid);
   if (!full || !full.seasonsPlayed) return notFound('No franchise by that name.');
   const n = E.franchises.length;
-  const rk = (pick, low) => { const r = rankOf(E, fid, pick, { lowIsBest: !!low }); return '<td class="rk ' + (r <= 3 ? 'top' : r > n - 3 ? 'bot' : '') + '">' + ordinal(r) + ' of ' + n + '</td>'; };
+  const rk = (pick, low) => { const r = rankOf(E, fid, pick, { lowIsBest: !!low }); return '<td class="rk ' + (r <= 3 ? 'hi' : r > n - 3 ? 'lo' : '') + '">' + ordinal(r) + ' of ' + n + '</td>'; };
   const former = full.teamNames.slice(0, -1).map(t => t.name).filter((v, i, a) => a.indexOf(v) === i && v !== full.teamName);
 
   let html = '<a class="crumb" href="#/franchises">‹ All franchises</a><section class="section"><div class="fr-head"><div><h1 class="fr-name">' + esc(full.teamName) + '</h1>' +
@@ -417,7 +430,7 @@ function viewFranchise(parts) {
   }
 
   const row = (k, v, r) => '<tr><td>' + k + '</td><td class="v">' + v + '</td>' + (r || '<td class="rk"></td>') + '</tr>';
-  html += '<section class="section">' + sec('The sheet', 'League rank in the right-hand column.', eraControls()) + '<table class="sheet"><tbody>' +
+  html += '<section class="section mod">' + sec('Career sheet', null, eraControls()) + '<table class="sheet"><tbody>' +
     row('Record', rec(c.w, c.l, c.t) + ' <small>' + pct(c.winPct) + '</small>', rk(x => x.winPct)) +
     row('Championships', c.titles + (c.titleYears.length ? ' <small>' + c.titleYears.join(', ') + '</small>' : ''), rk(x => x.titles)) +
     row('Finals', c.finals + (c.runnerUps ? ' <small>' + plural(c.runnerUps, 'loss').replace('losss', 'losses') + '</small>' : ''), rk(x => x.finals)) +
@@ -438,7 +451,7 @@ function viewFranchise(parts) {
   [...c.seasons].reverse().forEach(r => {
     const t = r.team;
     const dots = t.form.map(x => '<i class="' + x.toLowerCase() + '"></i>').join('') + (t.po.w ? '<i style="background:none;width:3px"></i>' + '<i class="pw"></i>'.repeat(t.po.w) : '');
-    seasonsHtml += '<tr><td class="n" style="text-align:left"><a href="#/season/' + r.year + '" class="strong">' + r.year + '</a></td><td><span class="tn" style="font-size:15px">' + esc(t.name) + '</span><span class="winbar" aria-hidden="true">' + dots + '</span></td>' +
+    seasonsHtml += '<tr><td class="yr"><a href="#/season/' + r.year + '" class="strong">' + r.year + '</a></td><td><span class="tn">' + esc(cleanName(t.name)) + '</span><span class="winbar" aria-hidden="true">' + dots + '</span></td>' +
       '<td class="n strong">' + rec(t.reg.w, t.reg.l, t.reg.t) + '</td><td class="n hide-s">' + big(t.reg.pf) + '</td><td class="n hide-s">' + (r.complete ? ordinal(t.rank) : '–') + '</td>' +
       '<td class="n"><span class="res-tag ' + (t.result || '') + '">' + (t.result ? RESULT_SHORT[t.result] : 'In progress') + '</span></td></tr>';
   });
@@ -450,7 +463,7 @@ function viewFranchise(parts) {
   let h2hHtml = '<div class="tbl-wrap"><table class="tbl"><thead><tr><th>Opponent</th><th class="n">W–L</th><th class="n hide-s">Avg score</th><th style="width:28%"></th></tr></thead><tbody>';
   h2hRows.forEach(({ o, s }) => {
     const p = (s.w + s.t / 2) / s.g;
-    h2hHtml += '<tr><td><a class="tn" style="font-size:15px" href="#/versus/' + fid + '/' + o.fid + '">' + esc(o.teamName) + '</a></td><td class="n strong ' + (s.w > s.l ? 'pos' : s.w < s.l ? 'neg' : '') + '">' + rec(s.w, s.l, s.t) + '</td>' +
+    h2hHtml += '<tr><td class="team"><div class="tc">' + badge(o.teamName) + '<div class="tx"><a class="tn" href="#/versus/' + fid + '/' + o.fid + '">' + esc(cleanName(o.teamName)) + '</a></div></div></td><td class="n strong ' + (s.w > s.l ? 'pos' : s.w < s.l ? 'neg' : '') + '">' + rec(s.w, s.l, s.t) + '</td>' +
       '<td class="n hide-s">' + f1(s.pf / s.g) + '–' + f1(s.pa / s.g) + '</td><td>' + bar(p, p >= 0.5 ? 'win' : 'loss') + '</td></tr>';
   });
   h2hHtml += '</tbody></table></div>';
@@ -459,13 +472,14 @@ function viewFranchise(parts) {
   const notesHtml = notes.length ? '<ul class="facts">' + notes.map(x => '<li><a href="' + x.href + '"><span class="k">' + esc(x.label) + '</span><span class="t">' + esc(x.text) + '</span></a></li>').join('') + '</ul>' : '';
 
   html += '<div class="cols even"><div><section class="section">' + sec('Season by season') + seasonsHtml + '</section></div>' +
-    '<div><section class="section">' + sec('Against everyone', 'Tap an opponent for every meeting.') + h2hHtml + '</section>' +
-    (notesHtml ? '<section class="section">' + sec('In the margins') + notesHtml + '</section>' : '') + '</div></div>';
+    '<div><section class="section">' + sec('Against everyone', 'Tap for every meeting') + h2hHtml + '</section>' +
+    (notesHtml ? '<section class="section mod">' + sec('In the margins') + notesHtml + '</section>' : '') + '</div></div>';
   return { html, title: full.teamName, tab: 'franchises' };
 }
 
 // ── Record book ──────────────────────────────────────────────
-const lbItem = (k, who, ctx, v, extra = '', klass = '') => '<li class="' + klass + '"><span class="k">' + k + '</span><span class="who">' + who + (ctx ? '<span class="ctx">' + ctx + '</span>' : '') + '</span><span class="v">' + v + '</span>' + extra + '</li>';
+const plainName = h => h.split('<span')[0].replace(/<[^>]+>/g, '').replace(/&amp;/g, '&').replace(/&#39;/g, "'").trim();
+const lbItem = (k, who, ctx, v, extra = '', klass = '') => '<li class="' + klass + '"><span class="k">' + k + '</span>' + badge(plainName(who)) + '<span class="who">' + who + (ctx ? '<span class="ctx">' + ctx + '</span>' : '') + '</span><span class="v">' + v + '</span>' + extra + '</li>';
 const whoLink = (name, fid) => (fid ? '<a href="#/franchise/' + fid + '">' + esc(name) + '</a>' : esc(name));
 const roundTag = x => (x.kind === 'playoff' ? ', ' + ROUND_NAME[x.round].toLowerCase() : '');
 
@@ -473,7 +487,9 @@ function viewRecords(parts) {
   const L = state.L, fr = L.franchises, liveYear = L.current ? L.current.year : null;
   const isNew = y => (y === liveYear ? 'is-new' : '');
   const chapters = [];
-  const chap = (id, label, title, sub, body) => chapters.push({ id, label, html: '<section class="section" id="ch-' + id + '">' + sec(title, sub) + body + '</section>' });
+  const WIDE = new Set(['top', 'streaks', 'playoffs', 'strange']);
+  const ORDER = ['top', 'scores', 'blowouts', 'streaks', 'totals', 'best', 'playoffs', 'shed', 'close', 'droughts', 'luck', 'strange'];
+  const chap = (id, label, title, sub, body) => chapters.push({ id, label, html: '<section class="section mod' + (WIDE.has(id) ? ' wide' : '') + '" id="ch-' + id + '">' + sec(title, sub) + body + '</section>' });
 
   // Headlines
   const champ = [...fr].sort((a, b) => b.titles - a.titles || b.winPct - a.winPct)[0];
@@ -497,14 +513,14 @@ function viewRecords(parts) {
 
   // Blowouts
   chap('blowouts', 'Blowouts', 'Biggest blowouts', 'Largest margins of victory.',
-    '<ol class="lb">' + L.margins.slice(0, 10).map((m, i) => lbItem(i + 1, whoLink(shortName(m.w.name), m.w.fid) + ' <span class="muted" style="font-weight:400;font-style:italic">over</span> ' + whoLink(shortName(m.l.name), m.l.fid), m.year + ', Week ' + m.week + roundTag(m) + '. ' + pts(m.w.pts) + '–' + pts(m.l.pts), '+' + pts(m.margin), '', isNew(m.year))).join('') + '</ol>');
+    '<ol class="lb">' + L.margins.slice(0, 10).map((m, i) => lbItem(i + 1, whoLink(shortName(m.w.name), m.w.fid) + ' <span class="over">over</span> ' + whoLink(shortName(m.l.name), m.l.fid), m.year + ', Week ' + m.week + roundTag(m) + '. ' + pts(m.w.pts) + '–' + pts(m.l.pts), '+' + pts(m.margin), '', isNew(m.year))).join('') + '</ol>');
 
   // Streaks
   const ws = [...fr].sort((a, b) => b.bestWinStreak.len - a.bestWinStreak.len).slice(0, 7);
   const ls = [...fr].sort((a, b) => b.bestLossStreak.len - a.bestLossStreak.len).slice(0, 7);
   chap('streaks', 'Streaks', 'Streaks', 'Longest runs inside one regular season.',
-    '<div class="duo"><div><h3 class="games-label">Longest win streaks</h3><ol class="lb">' + ws.map((c, i) => lbItem(i + 1, whoLink(c.teamName, c.fid), c.bestWinStreak.year, '<span class="pos">' + c.bestWinStreak.len + 'W</span>', '', isNew(c.bestWinStreak.year))).join('') + '</ol></div>' +
-    '<div><h3 class="games-label">Longest losing streaks</h3><ol class="lb">' + ls.map((c, i) => lbItem(i + 1, whoLink(c.teamName, c.fid), c.bestLossStreak.year, '<span class="neg">' + c.bestLossStreak.len + 'L</span>', '', isNew(c.bestLossStreak.year))).join('') + '</ol></div></div>');
+    '<div class="duo"><div><h3 class="sub-h">Longest win streaks</h3><ol class="lb">' + ws.map((c, i) => lbItem(i + 1, whoLink(c.teamName, c.fid), c.bestWinStreak.year, '<span class="pos">' + c.bestWinStreak.len + 'W</span>', '', isNew(c.bestWinStreak.year))).join('') + '</ol></div>' +
+    '<div><h3 class="sub-h">Longest losing streaks</h3><ol class="lb">' + ls.map((c, i) => lbItem(i + 1, whoLink(c.teamName, c.fid), c.bestLossStreak.year, '<span class="neg">' + c.bestLossStreak.len + 'L</span>', '', isNew(c.bestLossStreak.year))).join('') + '</ol></div></div>');
 
   // Season totals
   const totals = [...L.seasonLines].filter(x => x.team.reg.g > 0).sort((a, b) => b.team.reg.pf - a.team.reg.pf).slice(0, 10);
@@ -515,7 +531,7 @@ function viewRecords(parts) {
   const po = [...fr].filter(c => c.playoffApps > 0).sort((a, b) => b.titles - a.titles || b.poW - a.poW || b.poPct - a.poPct);
   chap('playoffs', 'Playoffs', 'When it matters', 'Championship-bracket games only. An upset is a win over a better seed.',
     '<div class="tbl-wrap"><table class="tbl"><thead><tr><th></th><th>Franchise</th><th class="n">W–L</th><th class="n">Win %</th><th class="n hide-s">Trips</th><th class="n">Titles</th><th class="n hide-s">Finals</th><th class="n hide-s">Upsets</th></tr></thead><tbody>' +
-    po.map((c, i) => '<tr><td class="rank">' + (i + 1) + '</td><td><a class="tn" href="#/franchise/' + c.fid + '">' + esc(c.teamName) + '</a></td><td class="n strong">' + rec(c.poW, c.poL) + '</td><td class="n ' + (c.poPct >= 0.6 ? 'gold' : c.poPct < 0.4 ? 'neg' : '') + '">' + (c.poG ? Math.round(c.poPct * 100) + '%' : '–') + '</td><td class="n hide-s">' + c.playoffApps + '</td><td class="n">' + (c.titles ? '<span class="gold strong">' + c.titles + '</span>' : '–') + '</td><td class="n hide-s">' + (c.finals || '–') + '</td><td class="n hide-s">' + (c.upsets || '–') + '</td></tr>').join('') +
+    po.map((c, i) => '<tr><td class="rank">' + (i + 1) + '</td>' + teamCell({ name: c.teamName, fid: c.fid }) + '<td class="n strong">' + rec(c.poW, c.poL) + '</td><td class="n ' + (c.poPct >= 0.6 ? 'gold' : c.poPct < 0.4 ? 'neg' : '') + '">' + (c.poG ? Math.round(c.poPct * 100) + '%' : '–') + '</td><td class="n hide-s">' + c.playoffApps + '</td><td class="n">' + (c.titles ? '<span class="gold strong">' + c.titles + '</span>' : '–') + '</td><td class="n hide-s">' + (c.finals || '–') + '</td><td class="n hide-s">' + (c.upsets || '–') + '</td></tr>').join('') +
     '</tbody></table></div>');
 
   // The shed
@@ -523,7 +539,7 @@ function viewRecords(parts) {
   chap('shed', 'The shed', 'Taken to the shed', 'Regular-season games won or lost by ' + BLOWOUT_MARGIN + ' or more. Who does the taking, and who gets taken?',
     '<ol class="lb">' + shed.map(({ c, net }, i) => {
       const tot = c.blowouts.dealt + c.blowouts.received || 1;
-      return lbItem(i + 1, whoLink(c.teamName, c.fid) + (net >= 10 ? ' <span class="res-tag champion">Bully</span>' : net <= -10 ? ' <span class="res-tag" style="color:var(--loss)">Victim</span>' : ''),
+      return lbItem(i + 1, whoLink(c.teamName, c.fid) + (net >= 10 ? ' <span class="tag champ">Bully</span>' : net <= -10 ? ' <span class="tag bad">Victim</span>' : ''),
         c.blowouts.dealt + ' dealt, ' + c.blowouts.received + ' taken. Biggest win +' + f1(c.blowouts.maxWin), signed(net, 0),
         '<span class="bar split"><i style="width:' + (c.blowouts.dealt / tot * 100).toFixed(1) + '%"></i><i style="width:' + (c.blowouts.received / tot * 100).toFixed(1) + '%"></i></span>');
     }).join('') + '</ol>');
@@ -531,7 +547,7 @@ function viewRecords(parts) {
   // Close games
   const close = [...fr].map(c => ({ c, g: c.close.w + c.close.l, p: (c.close.w + c.close.l) ? c.close.w / (c.close.w + c.close.l) : 0 })).filter(x => x.g > 0).sort((a, b) => b.p - a.p || b.g - a.g);
   chap('close', 'Close games', 'Close games', 'Regular-season games decided by ' + CLOSE_MARGIN + ' points or fewer. Ice in the veins, or heartbreak on repeat?',
-    '<ol class="lb">' + close.map(({ c, g, p }, i) => lbItem(i + 1, whoLink(c.teamName, c.fid) + (p >= 0.6 ? ' <span class="res-tag" style="color:var(--win)">Clutch</span>' : p < 0.4 ? ' <span class="res-tag" style="color:var(--loss)">Heartbreak</span>' : ''), rec(c.close.w, c.close.l) + ' in ' + g + ' games', Math.round(p * 100) + '%', bar(p, p >= 0.5 ? 'win' : 'loss'))).join('') + '</ol>');
+    '<ol class="lb">' + close.map(({ c, g, p }, i) => lbItem(i + 1, whoLink(c.teamName, c.fid) + (p >= 0.6 ? ' <span class="tag good">Clutch</span>' : p < 0.4 ? ' <span class="tag bad">Heartbreak</span>' : ''), rec(c.close.w, c.close.l) + ' in ' + g + ' games', Math.round(p * 100) + '%', bar(p, p >= 0.5 ? 'win' : 'loss'))).join('') + '</ol>');
 
   // Best seasons ever (league ruling: one franchise is pinned to 12th)
   const scored = frLines.map(x => {
@@ -542,7 +558,7 @@ function viewRecords(parts) {
   const best12 = scored.filter(r => r.t.fid !== PINNED_LAST).slice(0, 11);
   if (pinned) best12.push(pinned);
   chap('best', 'Best seasons', 'Best seasons ever', 'Record, points, and how it ended, weighed together.',
-    '<ol class="lb">' + best12.map((r, i) => lbItem(i + 1, whoLink(r.t.name, r.t.fid) + (r.t.champion ? ' <span class="res-tag champion">Champion</span>' : ''), r.x.year + '. ' + Math.round(r.t.reg.pf).toLocaleString() + ' points, finished ' + ordinal(r.t.rank), rec(r.t.reg.w, r.t.reg.l, r.t.reg.t))).join('') + '</ol>');
+    '<ol class="lb">' + best12.map((r, i) => lbItem(i + 1, whoLink(r.t.name, r.t.fid) + (r.t.champion ? ' <span class="tag champ">Champion</span>' : ''), r.x.year + '. ' + Math.round(r.t.reg.pf).toLocaleString() + ' points, finished ' + ordinal(r.t.rank), rec(r.t.reg.w, r.t.reg.l, r.t.reg.t))).join('') + '</ol>');
 
   // Droughts
   const dr = [...fr].sort((a, b) => (a.lastTitle ? 1 : 0) - (b.lastTitle ? 1 : 0) || (a.lastTitle ? b.drought - a.drought : b.winPct - a.winPct));
@@ -578,8 +594,9 @@ function viewRecords(parts) {
   odds += '</dl>';
   chap('strange', 'Strange but true', 'Strange but true', 'The most painful and absurd lines in the ledger.', odds);
 
+  chapters.sort((a, b) => ORDER.indexOf(a.id) - ORDER.indexOf(b.id));
   const nav = '<nav class="chapnav" aria-label="Record book chapters"><div class="chips">' + chapters.map(c => '<a class="chip" href="#/records/' + c.id + '">' + c.label + '</a>').join('') + '</div></nav>';
-  const html = '<h1 class="page-title" style="margin-bottom:10px">Records</h1>' + nav + chapters.map(c => c.html).join('');
+  const html = '<h1 class="page-title" style="margin-bottom:12px">Records</h1>' + nav + chapters[0].html + '<div class="chapters">' + chapters.slice(1).map(c => c.html).join('') + '</div>';
   return { html, title: 'Records', tab: 'records', anchor: parts[1] ? 'ch-' + parts[1] : null };
 }
 
@@ -608,7 +625,7 @@ function viewVersus(parts) {
   const notes = versusNotes(L, s);
   const up = s.upcoming[0];
   const upNote = up ? (up.game.status === 'midevent' ? 'They are playing right now, Week ' + up.week + '.' : 'Next meeting: Week ' + up.week + ', ' + up.year + '.') : '';
-  const notesHtml = '<section class="section">' + sec('The Ledger says') + (upNote ? '<p class="note" style="color:var(--amber);border-color:var(--amber)">' + esc(upNote) + '</p>' : '') + notes.map(n => '<p class="note">' + esc(n) + '</p>').join('') + '</section>';
+  const notesHtml = '<section class="section mod">' + sec('The Ledger says') + (upNote ? '<p class="note next">' + esc(upNote) + '</p>' : '') + notes.map(n => '<p class="note">' + esc(n) + '</p>').join('') + '</section>';
 
   // Tale of the tape
   const tape = [
@@ -630,7 +647,7 @@ function viewVersus(parts) {
     return '<tr><td class="a ' + ca + '">' + show(A) + '</td><td class="k">' + k + '</td><td class="b ' + cb + '">' + show(B) + '</td></tr>';
   }).join('');
   const edge = edgeA === edgeB ? 'Dead even across ' + cats + ' career categories.' : esc(shortName(edgeA > edgeB ? A.teamName : B.teamName)) + ' leads ' + Math.max(edgeA, edgeB) + ' of ' + cats + ' career categories.';
-  const tapeHtml = '<section class="section">' + sec('Tale of the tape', edge) + '<table class="tape"><tbody>' + tapeRows + '</tbody></table></section>';
+  const tapeHtml = '<section class="section mod">' + sec('Tale of the tape', edge) + '<table class="tape"><tbody>' + tapeRows + '</tbody></table></section>';
 
   // Game log
   const log = [...s.meetings].reverse().map(m => {
@@ -639,7 +656,7 @@ function viewVersus(parts) {
     return '<li class="' + (m.counts ? '' : 'void') + '"><span class="when">' + m.year + ' Wk ' + m.week + '</span><span class="sc"><b class="' + (hiA ? '' : 'lo') + '">' + pts(m.me.pts) + '</b> – <b class="' + (hiA ? 'lo' : '') + '">' + pts(m.opp.pts) + '</b>' + (tag ? '<small>' + tag + '</small>' : '') + '</span>' +
       '<span class="r ' + (m.counts ? m.res.toLowerCase() : 't') + '">' + (m.counts ? m.res : '·') + '</span></li>';
   }).join('');
-  const logHtml = '<section class="section">' + sec('Every meeting', 'Newest first. W and L are from ' + shortName(A.teamName) + '’s side.') + (log ? '<ul class="log">' + log + '</ul>' : '<p class="empty">They haven’t played yet.</p>') + '</section>';
+  const logHtml = '<section class="section mod">' + sec('Every meeting', 'Newest first. W and L are from ' + shortName(A.teamName) + '’s side.') + (log ? '<ul class="log">' + log + '</ul>' : '<p class="empty">They haven’t played yet.</p>') + '</section>';
 
   html += '<div class="cols even"><div>' + notesHtml + tapeHtml + '</div><div>' + logHtml + '</div></div>';
 
@@ -656,7 +673,7 @@ function viewVersus(parts) {
     }).join('') + '</tr>';
   });
   grid += '</tbody></table></div>';
-  html += '<section class="section">' + sec('Everyone against everyone', 'Read across: the row’s record against the column. Shaded cells are a lead of five or more.') + grid + '</section>';
+  html += '<section class="section mod">' + sec('Everyone against everyone', 'Read across: the row’s record against the column. Shaded cells are a lead of five or more.') + grid + '</section>';
 
   return { html, title: shortName(A.teamName) + ' vs. ' + shortName(B.teamName), tab: 'versus' };
 }
@@ -710,7 +727,7 @@ function renderChrome() {
   const status = document.getElementById('status');
   const live = isHot(S);
   status.className = cls('status', live && 'is-live');
-  status.innerHTML = S ? '<span class="dot"></span>' + (live ? 'Live · ' : '') + 'Week ' + S.currentWeek : '';
+  status.innerHTML = S ? '<span class="dot"></span>' + (live ? 'Live, week ' : 'Week ') + S.currentWeek : '';
   status.title = S ? 'Refresh scores' : '';
 
   const when = st.fetchedAt ? new Date(st.fetchedAt).toLocaleString([], { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' }) : null;
