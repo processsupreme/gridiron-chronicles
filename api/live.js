@@ -10,11 +10,12 @@
 const yahoo = require('./_yahoo');
 
 function cacheHeader(season) {
-  if (season.is_finished) return 'public, s-maxage=3600, stale-while-revalidate=86400';
+  // max-age=0: browsers always ask; the edge (s-maxage) is what absorbs the load.
+  if (season.is_finished) return 'public, max-age=0, s-maxage=3600, stale-while-revalidate=86400';
   const live = season.matchups.some(m => m.week === season.current_week && m.status === 'midevent');
   return live
-    ? 'public, s-maxage=30, stale-while-revalidate=120'
-    : 'public, s-maxage=120, stale-while-revalidate=600';
+    ? 'public, max-age=0, s-maxage=30, stale-while-revalidate=120'
+    : 'public, max-age=0, s-maxage=120, stale-while-revalidate=600';
 }
 
 module.exports = async function handler(req, res) {
