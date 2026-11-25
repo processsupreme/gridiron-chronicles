@@ -3,219 +3,95 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<meta name="description" content="12 seasons of BKGFFL fantasy football history. Championships, records, rivalries, and the stats that settle arguments.">
-<meta property="og:title" content="BKGFFL — The BKGFFL Ledger">
-<meta property="og:description" content="12 seasons. 12 managers. 849 matchups. 6 champions. The complete archive of BKGFFL fantasy football.">
+<meta name="description" content="The BKGFFL Ledger: live scores and standings for the season in progress, and every champion, record, and rivalry since 2014.">
+<meta property="og:title" content="The BKGFFL Ledger">
+<meta property="og:description" content="This week's scores, the playoff race, and every champion, record, and rivalry since 2014.">
 <meta property="og:type" content="website">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:title" content="BKGFFL — The BKGFFL Ledger">
-<meta name="twitter:description" content="The complete statistical archive of 12 seasons of BKGFFL fantasy football.">
-<meta name="theme-color" content="#722F37">
+<meta name="theme-color" content="#0E090A">
 <link rel="icon" type="image/svg+xml" href="favicon.svg">
 <link rel="manifest" href="manifest.json">
 <meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="BKGFFL">
 <link rel="apple-touch-icon" href="icons/icon-192.png">
-<title>BKGFFL — The BKGFFL Ledger</title>
-<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,400&family=DM+Sans:wght@300;400;500;600;700&family=IBM+Plex+Mono:wght@300;400;500;600&family=Bebas+Neue&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="css/styles.css?v=40">
+<title>The BKGFFL Ledger</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,400..800&family=Playfair+Display:ital,wght@0,700;0,900;1,400;1,500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/styles.css?v=60">
+<link rel="modulepreload" href="js/league.js">
 </head>
 <body>
 
-<a href="#tab-champions" class="skip-link">Skip to content</a>
+<a href="#view" class="skip-link">Skip to content</a>
 
-<div id="landing" class="landing" role="banner">
-  <video class="hall-video" id="landing-video" autoplay muted loop playsinline webkit-playsinline preload="metadata" aria-hidden="true" tabindex="-1">
-    <source src="assets/videos/hall-intro.mp4" type="video/mp4">
-  </video>
-  <div class="hall-scrim"></div>
-  <div class="landing-vignette"></div>
-  <div class="landing-grain"></div>
-  <div class="landing-inner">
-    <h1 class="landing-title">The <span style="color:var(--yellow)">BKGFFL</span> Ledger</h1>
-    <p class="landing-supporting">12 seasons of wins, collapses, and disputed greatness.</p>
-    <div class="landing-est">Est. 2014 · 12 Seasons of History</div>
-    <button class="landing-cta" id="landing-cta">Enter the Hall</button>
-  </div>
-</div>
-
-<div id="app" style="display:none">
-
-<!-- Hamburger toggle (mobile only) -->
-<button class="hamburger" id="hamburger" aria-label="Open menu" aria-expanded="false">
-  <span class="hamburger-line"></span>
-  <span class="hamburger-line"></span>
-  <span class="hamburger-line"></span>
-</button>
-
-<!-- Mobile drawer overlay -->
-<div class="drawer-overlay" id="drawer-overlay">
-  <nav class="drawer" id="drawer">
-    <div class="drawer-header">BKGFFL</div>
-    <button class="drawer-link" data-nav="home">Home</button>
-    <button class="drawer-link" data-nav="champions">Champions</button>
-    <button class="drawer-link" data-nav="standings">Standings</button>
-    <button class="drawer-link" data-nav="records">Records</button>
-    <button class="drawer-link" data-nav="seasons">Seasons</button>
-    <button class="drawer-link" data-nav="managers">Managers</button>
-    <button class="drawer-link" data-nav="compare">Compare</button>
+<header class="top" id="top">
+  <a class="wordmark" href="#/" aria-label="The BKGFFL Ledger, home">The <b>BKGFFL</b> Ledger</a>
+  <nav class="tabs" id="tabs" aria-label="Sections">
+    <a href="#/" data-tab="now">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M12 5v14M7 10v4M17 10v4"/></svg>
+      <span>Now</span>
+    </a>
+    <a href="#/seasons" data-tab="seasons">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="14" r="6"/><path d="M9 8.6 7.5 4h9L15 8.6"/></svg>
+      <span>Seasons</span>
+    </a>
+    <a href="#/franchises" data-tab="franchises">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 19V9l8-5 8 5v10"/><path d="M9 19v-6h6v6"/></svg>
+      <span>Franchises</span>
+    </a>
+    <a href="#/records" data-tab="records">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 4h11a3 3 0 0 1 3 3v13H8a3 3 0 0 1-3-3V4z"/><path d="M9 4v12M12.5 9H16M12.5 12.5H16"/></svg>
+      <span>Records</span>
+    </a>
+    <a href="#/versus" data-tab="versus">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6l5 12M9 6 4 18M14 8h6M14 12h6M14 16h4"/></svg>
+      <span>Versus</span>
+    </a>
   </nav>
-</div>
-
-<!-- Compact mobile page header (hidden on desktop) -->
-<header id="mobilePageHeader" class="mobile-page-header">
-  <button class="mph-back" id="mphBack" aria-label="Back to Home">&#8592;</button>
-  <div id="mphKicker" class="mph-kicker"></div>
-  <h1 id="mphTitle" class="mph-title"></h1>
-  <div id="mphSub" class="mph-sub"></div>
+  <button class="status" id="status" type="button" aria-live="polite" title="Refresh scores"></button>
 </header>
 
-<div class="top-bar"></div>
-<header class="masthead" id="heroHeader">
-  <h1 class="masthead-logo">The <span style="color:var(--yellow)">BKGFFL</span> Ledger</h1>
-  <div class="masthead-rule"></div>
-  <div class="masthead-meta-2" id="masthead-meta-2">EST. 2014 · 12 SEASONS OF HISTORY</div>
-  <div class="masthead-vol" id="masthead-vol" style="display:none"></div>
-  <div class="league-stats-strip" id="stats-strip"></div>
-</header>
-
-<nav class="nav" id="desktopNav">
-  <button class="nav-btn active" onclick="showTab('home',this)" aria-label="View Home">◈ Home</button>
-  <button class="nav-btn" onclick="showTab('champions',this)" aria-label="View Champions">◆ Champions</button>
-  <button class="nav-btn" onclick="showTab('power',this)" aria-label="View Standings">▲ Standings</button>
-  <button class="nav-btn" onclick="showTab('records',this)" aria-label="View Records">◉ Records</button>
-  <button class="nav-btn" onclick="showTab('seasons',this)" aria-label="View Seasons">▸ Seasons</button>
-  <button class="nav-btn" onclick="showTab('managers',this)" aria-label="View Managers">● Managers</button>
-  <button class="nav-btn" onclick="showTab('compare',this)" aria-label="Compare Managers">⇄ Compare</button>
-</nav>
-
-<main>
-<section id="tab-home" class="section active" data-view="home">
-  <div class="home-snapshot">
-    <div class="home-section-header">
-      <h2 class="home-section-title">League Snapshot</h2>
-      <p class="home-section-sub">The story right now.</p>
-    </div>
-    <div class="snapshot-cards" id="snapshot-cards"></div>
-  </div>
-  <div class="home-archive">
-    <div class="home-section-header">
-      <h2 class="home-section-title">Explore the Archive</h2>
-      <p class="home-section-sub">Every page tells a different version of the story.</p>
-    </div>
-    <div class="archive-cards" id="archive-cards"></div>
-  </div>
-  <div class="home-footer">
-    <div class="home-footer-name">BKGFFL</div>
-    <div class="home-footer-desc">Complete League Ledger</div>
-    <div class="home-footer-since">Since 2014</div>
-  </div>
-</section>
-
-<section id="tab-champions" class="section" data-view="champions">
-  <div class="section-header">
-    <span class="section-title">HALL OF CHAMPIONS</span>
-    <div class="dynasty-callout" id="dynasty-callout"></div>
-  </div>
-  <div class="champions-grid" id="champions-grid"></div>
-</section>
-
-<section id="tab-power" class="section" data-view="standings"><div class="section-header"><div class="section-eyebrow">All Time</div><span class="section-title">All-Time Franchise Stats</span><span class="section-desc">Career numbers across every season</span><span class="section-desc" style="font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:3px;color:rgba(232,220,200,0.25);text-transform:uppercase;margin-top:6px;">Dynasties. Pretenders. The forever rebuild.</span></div><table class="power-table"><thead><tr><th data-sort="rank">Rank</th><th>Franchise</th><th data-sort="wins">W-L</th><th data-sort="winPct" class="sort-active sort-desc">Win %</th><th data-sort="championships">Titles</th><th data-sort="playoffAppearances">Playoffs</th><th data-sort="playoffByes" title="Number of times receiving a first-round playoff bye (top 2 seed)">Byes</th><th data-sort="tenWinSeasons" title="Number of regular seasons with 10 or more wins">10+W</th><th data-sort="avgPts">PPG</th></tr></thead><tbody id="power-tbody"></tbody></table></section>
-<section id="tab-records" class="section" data-view="records"><div class="section-header"><div class="section-eyebrow">Historical Data</div><span class="section-title">The Record Book</span><span class="section-desc">12 seasons of receipts</span></div><nav class="records-nav" id="records-nav" aria-label="Record Book chapters"></nav><div class="records-container" id="records-container"></div><div id="records-blowouts" class="records-chapter"></div><div id="records-close" class="records-chapter"></div><div id="records-bestseason" class="records-chapter"></div><div id="records-drought" class="records-chapter"></div></section>
-<section id="tab-seasons" class="section" data-view="seasons"><div class="section-header"><div class="section-eyebrow">Year By Year</div><span class="section-title">Season History</span></div><div class="timeline" id="timeline"></div><div class="seasons-list" id="seasons-list"></div></section>
-<section id="tab-managers" class="section" data-view="managers"><div class="section-header"><div class="section-eyebrow">The Roster</div><span class="section-title">Manager Profiles</span><span class="section-desc">Complete franchise histories.</span></div><div class="managers-grid" id="managers-grid"></div></section>
-
-<section id="tab-compare" class="section" data-view="compare">
-  <div class="section-header"><div class="section-eyebrow">Side by Side</div><span class="section-title">Compare</span><span class="section-desc">Head-to-head career stats</span></div>
-  <div class="compare-selects">
-    <div class="custom-select" id="cmp-a-wrap"><div class="custom-select-display" id="cmp-a-display" tabindex="0" role="combobox" aria-label="Select first manager" aria-expanded="false">Select Manager</div><div class="custom-select-options" id="cmp-a-options" role="listbox"></div><input type="hidden" id="cmp-a"></div>
-    <div class="compare-vs">VS</div>
-    <div class="custom-select" id="cmp-b-wrap"><div class="custom-select-display" id="cmp-b-display" tabindex="0" role="combobox" aria-label="Select second manager" aria-expanded="false">Select Manager</div><div class="custom-select-options" id="cmp-b-options" role="listbox"></div><input type="hidden" id="cmp-b"></div>
-  </div>
-  <div id="compare-container"></div>
-</section>
+<main id="view" tabindex="-1">
+  <p class="boot" id="boot">Opening the ledger…</p>
 </main>
-<div class="modal-overlay" id="modal-overlay" onclick="if(event.target===this)closeModal()">
-  <div class="modal" role="dialog" aria-modal="true">
-    <div class="modal-drag-handle"></div>
-    <button class="modal-close" onclick="closeModal()">✕</button>
-    <div class="modal-header" id="modal-header"></div>
-    <div class="modal-body" id="modal-body"></div>
-  </div>
-</div>
 
-<button class="back-to-top" id="back-to-top" aria-label="Back to top" onclick="window.scrollTo({top:0,behavior:'smooth'})">&#9650;</button>
+<footer class="foot" id="foot"></footer>
 
-<div id="install-banner" class="install-banner" style="display:none">
-  <span class="install-banner-text">Add BKGFFL to your home screen for offline access</span>
-  <button id="install-btn" class="install-btn">Install</button>
-  <button id="install-dismiss" class="install-dismiss">&#10005;</button>
-</div>
+<div id="toast" class="toast" role="status" hidden></div>
 
-<div class="footnote" id="footnote"></div>
-</div>
-
-<script src="js/app.js?v=44" defer></script>
+<script type="module" src="js/app.js?v=60"></script>
 <script>
-// Register the service worker and watch for updates. When a new worker is
-// found, show a small bottom-anchored toast so the user can reload into
-// the new build with one tap — no need to close the app or re-add it.
-if ('serviceWorker' in navigator) {
+// Service worker: registers, checks for new builds every 30 minutes, and
+// offers a one-tap refresh when one is waiting.
+if ('serviceWorker' in navigator && location.hostname !== 'localhost') {
   window.addEventListener('load', function () {
     navigator.serviceWorker.register('/sw.js').then(function (reg) {
-      // Poll for updates every 30 minutes while the app stays open.
-      setInterval(function () { reg.update().catch(function(){}); }, 30 * 60 * 1000);
-
-      function showUpdateToast(worker) {
-        if (document.getElementById('sw-update-toast')) return;
-        var toast = document.createElement('div');
-        toast.id = 'sw-update-toast';
-        toast.setAttribute('role', 'status');
-        toast.style.cssText = [
-          'position:fixed','left:50%','bottom:20px','transform:translateX(-50%)',
-          'z-index:99999','background:#722F37','color:#E3DAC9',
-          'border:1px solid rgba(232,220,200,0.2)','border-radius:999px',
-          'box-shadow:0 10px 30px rgba(0,0,0,0.45)',
-          'padding:10px 18px','font-family:"IBM Plex Mono",monospace',
-          'font-size:12px','letter-spacing:1.5px','text-transform:uppercase',
-          'display:flex','align-items:center','gap:14px','max-width:92vw'
-        ].join(';');
-        toast.innerHTML = '<span>New version ready</span>' +
-          '<button type="button" id="sw-update-btn" style="' +
-            'background:#F4A623;color:#0D0B0B;border:0;border-radius:999px;' +
-            'padding:6px 14px;font-family:inherit;font-size:11px;' +
-            'letter-spacing:1.5px;text-transform:uppercase;font-weight:700;' +
-            'cursor:pointer">Refresh</button>';
-        document.body.appendChild(toast);
-        document.getElementById('sw-update-btn').onclick = function () {
-          toast.style.opacity = '0.6';
-          if (worker) worker.postMessage({ type: 'SKIP_WAITING' });
-        };
+      setInterval(function () { reg.update().catch(function () {}); }, 30 * 60 * 1000);
+      function offer(worker) {
+        var toast = document.getElementById('toast');
+        if (!toast || !worker) return;
+        toast.innerHTML = '<span>A new version is ready.</span><button type="button">Refresh</button>';
+        toast.hidden = false;
+        toast.querySelector('button').onclick = function () { worker.postMessage({ type: 'SKIP_WAITING' }); };
       }
-
-      // A new SW was found but is waiting because an old one controls the page.
-      if (reg.waiting) showUpdateToast(reg.waiting);
-
+      if (reg.waiting && navigator.serviceWorker.controller) offer(reg.waiting);
       reg.addEventListener('updatefound', function () {
         var nw = reg.installing;
         if (!nw) return;
         nw.addEventListener('statechange', function () {
-          if (nw.state === 'installed' && navigator.serviceWorker.controller) {
-            showUpdateToast(nw);
-          }
+          if (nw.state === 'installed' && navigator.serviceWorker.controller) offer(nw);
         });
       });
-
-      // When the new SW takes control (after skipWaiting), reload once so
-      // the page switches to the new assets. Guarded to avoid refresh loops.
       var refreshing = false;
       navigator.serviceWorker.addEventListener('controllerchange', function () {
         if (refreshing) return;
         refreshing = true;
         window.location.reload();
       });
-    }).catch(function(){});
+    }).catch(function () {});
   });
 }
 </script>

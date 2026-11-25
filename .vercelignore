@@ -1,0 +1,15 @@
+# Keep the deployment to what the app serves. Everything here stays in the
+# repo; it just isn't uploaded to (or publicly served from) Vercel.
+venv
+__pycache__
+*.py
+*.bak
+*.zip
+*.md
+bkgffl (9).html
+rings
+assets/rings/*.png
+tools
+tests
+.github
+.claude
